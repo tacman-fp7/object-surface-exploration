@@ -26,3 +26,12 @@
 *.exe
 *.out
 *.app
+
+# Kdevelop
+*.kdev4
+*.kdev_include_paths
+
+# Misc
+build
+*.*~
+

@@ -1,5 +1,5 @@
-#keyboardControl.thrift
-service Keyboardcontrol {
+#robotControl.thrift
+service robotControl {
   	bool approach();
 	bool contact();
 	bool explore();
