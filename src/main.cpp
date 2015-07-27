@@ -25,6 +25,7 @@ int main(int argc, char *argv[])
   
   yarp::os::ResourceFinder rf;
   rf.setVerbose(true);
+  rf.setDefaultConfigFile("objectExplorationConfig.ini");
   rf.configure(argc, argv);
     
   // Create a robot control server

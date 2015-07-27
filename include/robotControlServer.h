@@ -1,10 +1,29 @@
+#pragma once
+
 #include <yarp/os/RFModule.h>
 #include <robotControl.h>
+#include <yarp/os/ResourceFinder.h>
+#include <approachObject.h>
+#include <string.h>
+#include <yarp/dev/PolyDriver.h>
+#include <yarp/dev/CartesianControl.h>
+#include <yarp/sig/Vector.h>
+
+struct robotControlData
+{
+  std::string device;
+  std::string local;
+  std::string remote;
+};
+
+typedef struct robotControlData t_robotControlData ;
 
 class robotControlServer: public robotControl, public yarp::os::RFModule
 {
 public:
   robotControlServer();
+  virtual ~robotControlServer();
+  
   virtual bool approach();
   virtual bool contact();
   virtual bool explore();
@@ -19,6 +38,11 @@ public:
 private:
   yarp::os::Port _port;
   bool _stopModule;
-  
+  objectExploration::ApproachObject* _approachObjectCntrl; 
+  t_robotControlData _robotcontrolData;
+  yarp::dev::PolyDriver _deviceController;
+  yarp::dev::ICartesianControl* _armCartesianController;
+  yarp::sig::Vector xd, od; // Testing only
+  double t;
 };
 
