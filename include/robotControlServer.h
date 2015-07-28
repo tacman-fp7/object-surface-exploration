@@ -12,9 +12,14 @@
 
 struct robotControlData
 {
-  std::string device;
-  std::string local;
-  std::string remote;
+  //std::string device;
+  //std::string local;
+  //std::string remote;
+  //std::string remoteTactile;
+  std::string arm;
+  std::string robotName;
+  std::string controller;
+  std::string controllerName;
 };
 
 typedef struct robotControlData t_robotControlData ;

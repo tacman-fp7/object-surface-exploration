@@ -125,24 +125,31 @@ bool robotControlServer::configure(yarp::os::ResourceFinder& rf)
   yarp::os::Bottle &armConfig = rf.findGroup("Arm");
   if(!armConfig.isNull()){
    // Read the arm configuration
-   _robotcontrolData.device = armConfig.check("device", Value("Error")).asString();
-   _robotcontrolData.local = armConfig.check("local", Value("Error")).asString();
-   _robotcontrolData.remote = armConfig.check("remote", Value("Error")).asString();
+    _robotcontrolData.arm = armConfig.check("arm", Value("Error")).asString();
+    _robotcontrolData.robotName = armConfig.check("robotName", Value("Error")).asString();
+    _robotcontrolData.controller = armConfig.check("controller", Value("Error")).asString();
+    _robotcontrolData.controllerName = armConfig.check("controllerName", Value("Error")).asString();
    
    std::cout << "Configuring the approachObject module:" << std::endl;
-   std::cout << "Device: " << _robotcontrolData.device << std::endl;
-   std::cout << "Local: " << _robotcontrolData.local << std::endl;
-   std::cout << "Remote: " << _robotcontrolData.remote << std::endl;
+   std::cout << "Robot name: " << _robotcontrolData.robotName << std::endl;
+   std::cout << "Arm: " << _robotcontrolData.arm << std::endl;
+   std::cout << "Controller: " << _robotcontrolData.controller << std::endl;
+   std::cout << "Controller name: " << _robotcontrolData.controllerName << std::endl;
   }
-  
+ 
+
+ /////////////////////////////// Configure the controller //////////////////////////////////
    yarp::os::Property deviceOptions;
-   deviceOptions.put("device", _robotcontrolData.device);
-   deviceOptions.put("local", _robotcontrolData.local);
-   deviceOptions.put("remote", _robotcontrolData.remote);
+   deviceOptions.put("device", _robotcontrolData.controller);
+   deviceOptions.put("local", "/client_controller/" + _robotcontrolData.arm + "_arm");
+   deviceOptions.put("remote", "/" + _robotcontrolData.robotName
+   + "/" + _robotcontrolData.controllerName + "/" + _robotcontrolData.arm + "_arm");
+   
+   std::cout << deviceOptions.toString() << std::endl;
    
    if(!_deviceController.open(deviceOptions))
    {
-      std::cout << "Failed to open the device: " << _robotcontrolData.device << std::endl;
+      std::cout << "Failed to open the device: " << _robotcontrolData.controller << std::endl;
       ret = false;
     
    }
@@ -157,23 +164,10 @@ bool robotControlServer::configure(yarp::os::ResourceFinder& rf)
    }
    
    
-   
-   
-   
-   //// Testing only
-   yarp::sig::Vector position;
-   yarp::sig::Vector orientation;
-   
-   xd.resize(3);
-   od.resize(4);
-   position.resize(3);
-   orientation.resize(4);
-   _armCartesianController->getPose(position, orientation);
-   
-   std:: cout << position.toString() << std::endl;
-   
-   /// Testing only
-   
+   if(ret)
+     std::cout << "Configuration completed." << std::endl;
+   else
+     std::cerr << "Failed to configure." << std::endl;
    return ret;
 }
 
