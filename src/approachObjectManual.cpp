@@ -1,27 +1,32 @@
 
 #include <approachObjectManual.h>
 
-
-
+ 
 objectExploration::ApproachObjectManual::ApproachObjectManual()
 {
- _initContactPos_isValid = false;   
-  _initContactPos.resize(3);
-}
-
-
-
-
-
-
-bool objectExploration::ApproachObjectManual::estimateInitContactPos()
-{
-  // Read iCub's position
   
-  return true;
+  _contactPose_isValid = false;   
+  _contactPos.resize(POS_SIZE);
+  _contactOrient.resize(ORIENT_SIZE);
+  _homePos.resize(POS_SIZE);
+  _homeOrient.resize(ORIENT_SIZE);
 }
 
-bool objectExploration::ApproachObjectManual::approach()
+
+
+
+
+
+
+
+bool objectExploration::ApproachObjectManual::approach(yarp::dev::ICartesianControl& armController)
 {
+  
+  // Synched approach
+  armController.goToPoseSync(_contactPos, _contactOrient);
+  armController.waitMotionDone(0.04);
+  
+  
+  
   return true;
 }

@@ -1,29 +1,42 @@
 #include <approachObject.h>
 #include <string.h> 
 #include <iostream>
+#include <stdio.h>
 
 using namespace yarp::os;
 
 objectExploration::ApproachObject::ApproachObject()
 {
-  _initContactPos.resize(3);
+ _contactPose_isValid = false;   
+  _contactPos.resize(POS_SIZE);
+  _contactOrient.resize(ORIENT_SIZE);
+  _homePos.resize(POS_SIZE);
+  _homeOrient.resize(ORIENT_SIZE);
 }
 
-/*bool objectExploration::ApproachObject::configure(ResourceFinder& rf)
+bool objectExploration::ApproachObject::updateContactpose(Vector& pos, Vector& orient)
 {
-  yarp::os::Bottle &armConfig = rf.findGroup("Arm");
-  if(!armConfig.isNull()){
-   // Read the arm configuration
-   std::string device = armConfig.check("device", Value("Error")).asString();
-   std::string local = armConfig.check("local", Value("Error")).asString();
-   std::string remote = armConfig.check("remote", Value("Error")).asString();
-   
-   std::cout << "Configuring the approachObject module:" << std::endl;
-   std::cout << "Device: " << device << std::endl;
-   std::cout << "Local: " << local << std::endl;
-   std::cout << "Remote: " << remote << std::endl;
-   
-  }
+  _contactPos = pos;
+  _contactOrient = orient;
+  printf("Contact pose updated %s : %s\n", _contactPos.toString().c_str(), _contactOrient.toString().c_str());
+  return true;
 }
 
-*/
+bool objectExploration::ApproachObject::updateHomePose(Vector& pos, Vector& orient)
+{
+  _homePos = pos;
+  _homeOrient = orient;
+  
+  printf("Home pose updated %s : %s\n", _homePos.toString().c_str(), _homeOrient.toString().c_str());
+  return true;
+}
+
+
+bool objectExploration::ApproachObject::goToHomepose(yarp::dev::ICartesianControl& armController)
+{
+   // Synched approach
+  armController.goToPoseSync(_homePos, _homeOrient);
+  armController.waitMotionDone(0.04);
+  return true;
+}
+

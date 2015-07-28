@@ -6,6 +6,30 @@
 
 
 
+class robotControl_goToHomePose : public yarp::os::Portable {
+public:
+  bool _return;
+  void init();
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
+};
+
+class robotControl_updateHomePose : public yarp::os::Portable {
+public:
+  bool _return;
+  void init();
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
+};
+
+class robotControl_updateContactPose : public yarp::os::Portable {
+public:
+  bool _return;
+  void init();
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
+};
+
 class robotControl_approach : public yarp::os::Portable {
 public:
   bool _return;
@@ -37,6 +61,69 @@ public:
   virtual bool write(yarp::os::ConnectionWriter& connection);
   virtual bool read(yarp::os::ConnectionReader& connection);
 };
+
+bool robotControl_goToHomePose::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(1)) return false;
+  if (!writer.writeTag("goToHomePose",1,1)) return false;
+  return true;
+}
+
+bool robotControl_goToHomePose::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void robotControl_goToHomePose::init() {
+  _return = false;
+}
+
+bool robotControl_updateHomePose::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(1)) return false;
+  if (!writer.writeTag("updateHomePose",1,1)) return false;
+  return true;
+}
+
+bool robotControl_updateHomePose::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void robotControl_updateHomePose::init() {
+  _return = false;
+}
+
+bool robotControl_updateContactPose::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(1)) return false;
+  if (!writer.writeTag("updateContactPose",1,1)) return false;
+  return true;
+}
+
+bool robotControl_updateContactPose::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void robotControl_updateContactPose::init() {
+  _return = false;
+}
 
 bool robotControl_approach::write(yarp::os::ConnectionWriter& connection) {
   yarp::os::idl::WireWriter writer(connection);
@@ -125,6 +212,36 @@ void robotControl_quit::init() {
 robotControl::robotControl() {
   yarp().setOwner(*this);
 }
+bool robotControl::goToHomePose() {
+  bool _return = false;
+  robotControl_goToHomePose helper;
+  helper.init();
+  if (!yarp().canWrite()) {
+    yError("Missing server method '%s'?","bool robotControl::goToHomePose()");
+  }
+  bool ok = yarp().write(helper,helper);
+  return ok?helper._return:_return;
+}
+bool robotControl::updateHomePose() {
+  bool _return = false;
+  robotControl_updateHomePose helper;
+  helper.init();
+  if (!yarp().canWrite()) {
+    yError("Missing server method '%s'?","bool robotControl::updateHomePose()");
+  }
+  bool ok = yarp().write(helper,helper);
+  return ok?helper._return:_return;
+}
+bool robotControl::updateContactPose() {
+  bool _return = false;
+  robotControl_updateContactPose helper;
+  helper.init();
+  if (!yarp().canWrite()) {
+    yError("Missing server method '%s'?","bool robotControl::updateContactPose()");
+  }
+  bool ok = yarp().write(helper,helper);
+  return ok?helper._return:_return;
+}
 bool robotControl::approach() {
   bool _return = false;
   robotControl_approach helper;
@@ -175,6 +292,39 @@ bool robotControl::read(yarp::os::ConnectionReader& connection) {
   if (direct) tag = reader.readTag();
   while (!reader.isError()) {
     // TODO: use quick lookup, this is just a test
+    if (tag == "goToHomePose") {
+      bool _return;
+      _return = goToHomePose();
+      yarp::os::idl::WireWriter writer(reader);
+      if (!writer.isNull()) {
+        if (!writer.writeListHeader(1)) return false;
+        if (!writer.writeBool(_return)) return false;
+      }
+      reader.accept();
+      return true;
+    }
+    if (tag == "updateHomePose") {
+      bool _return;
+      _return = updateHomePose();
+      yarp::os::idl::WireWriter writer(reader);
+      if (!writer.isNull()) {
+        if (!writer.writeListHeader(1)) return false;
+        if (!writer.writeBool(_return)) return false;
+      }
+      reader.accept();
+      return true;
+    }
+    if (tag == "updateContactPose") {
+      bool _return;
+      _return = updateContactPose();
+      yarp::os::idl::WireWriter writer(reader);
+      if (!writer.isNull()) {
+        if (!writer.writeListHeader(1)) return false;
+        if (!writer.writeBool(_return)) return false;
+      }
+      reader.accept();
+      return true;
+    }
     if (tag == "approach") {
       bool _return;
       _return = approach();
@@ -253,6 +403,9 @@ std::vector<std::string> robotControl::help(const std::string& functionName) {
   std::vector<std::string> helpString;
   if(showAll) {
     helpString.push_back("*** Available commands:");
+    helpString.push_back("goToHomePose");
+    helpString.push_back("updateHomePose");
+    helpString.push_back("updateContactPose");
     helpString.push_back("approach");
     helpString.push_back("contact");
     helpString.push_back("explore");
@@ -260,6 +413,15 @@ std::vector<std::string> robotControl::help(const std::string& functionName) {
     helpString.push_back("help");
   }
   else {
+    if (functionName=="goToHomePose") {
+      helpString.push_back("bool goToHomePose() ");
+    }
+    if (functionName=="updateHomePose") {
+      helpString.push_back("bool updateHomePose() ");
+    }
+    if (functionName=="updateContactPose") {
+      helpString.push_back("bool updateContactPose() ");
+    }
     if (functionName=="approach") {
       helpString.push_back("bool approach() ");
     }

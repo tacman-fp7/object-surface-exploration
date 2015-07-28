@@ -30,8 +30,8 @@ target_link_libraries(${PROJECTNAME} ${YARP_LIBRARIES})
 
 install(TARGETS ${PROJECTNAME} DESTINATION ./bin)
 
-install(FILES ./context/surfaceExplorationContext.ini
-  DESTINATION ./context/${PROJECTNAME}/)
+install(FILES ./contexts/surfaceExplorationContext.xml ./contexts/objectExplorationConfig.ini
+  DESTINATION ./contexts/${PROJECTNAME}/)
 
 
 

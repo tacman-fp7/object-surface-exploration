@@ -21,13 +21,49 @@ robotControlServer::robotControlServer()
 robotControlServer::~robotControlServer()
 {
   //std::cout << "Destructor called." << std::endl;
-  delete _approachObjectCntrl;
+   if(_approachObjectCntrl != NULL)
+    delete(_approachObjectCntrl);
+   
   _deviceController.close();
 }
+
+bool robotControlServer::updateContactPose()
+{
+  Vector pos, orient;
+  pos.resize(3); // x,y,z position 
+  orient.resize(4); // x,y,z,w prientation
+  _armCartesianController->getPose(pos, orient);
+  _approachObjectCntrl->updateContactpose(pos, orient);
+  
+  return true;
+}
+
+bool robotControlServer::updateHomePose()
+{
+    Vector pos, orient;
+  pos.resize(3); // x,y,z position 
+  orient.resize(4); // x,y,z,w prientation
+  _armCartesianController->getPose(pos, orient);
+  _approachObjectCntrl->updateHomePose(pos, orient);
+return true;
+}
+
+
+
 
 bool robotControlServer::approach()
 {
   printf("Approaching the object.\n");
+  // TODO: use mutex to make sure only one thread controls the robot.
+  // At the moment I am running on a single thread.
+  
+  _approachObjectCntrl->approach(*_armCartesianController);
+  return true;
+}
+
+bool robotControlServer::goToHomePose()
+{
+  _approachObjectCntrl->goToHomepose(*_armCartesianController);
   return true;
 }
 
@@ -82,7 +118,7 @@ bool robotControlServer::configure(yarp::os::ResourceFinder& rf)
         std::cout << getName() << ": Unable to open port " << portName << std::endl;
         return false;
     }
-   ////////
+   
    
    
   // Get the configuration for the  arm
@@ -115,8 +151,16 @@ bool robotControlServer::configure(yarp::os::ResourceFinder& rf)
        _deviceController.view(_armCartesianController);
   
    if(_armCartesianController == NULL)
+   {
      std::cout << "Failed to open cartesian controller" << std::endl;
+     ret = false;
+   }
    
+   
+   
+   
+   
+   //// Testing only
    yarp::sig::Vector position;
    yarp::sig::Vector orientation;
    
@@ -128,6 +172,7 @@ bool robotControlServer::configure(yarp::os::ResourceFinder& rf)
    
    std:: cout << position.toString() << std::endl;
    
+   /// Testing only
    
    return ret;
 }
@@ -137,6 +182,9 @@ bool robotControlServer::close()
 {
   // Close neatly, this function is called when Ctl+C is registered
   _port.close();
+  _deviceController.close(); // Close the device controller
+ 
+  
   return true;
 }
 
@@ -144,10 +192,12 @@ bool robotControlServer::close()
 bool robotControlServer::updateModule()
 {
   // Put a repetitive task here that will be run every getPeriod() time
-  if(_stopModule)
+  if(_stopModule){
+    printf("User requested to stop the module!\n");
     raise(SIGINT);
+  }
     
- t += 0.1;
+ /*t += 0.1;
   
   // translational target part: a circular trajectory
         // in the yz plane centered in [-0.3,-0.1,0.1] with radius=0.1 m
@@ -163,5 +213,6 @@ bool robotControlServer::updateModule()
         od[0]=0.0; od[1]=0.0; od[2]=1.0; od[3]=M_PI;
 	
 	_armCartesianController->goToPose(xd, od);
+	*/
 }
 

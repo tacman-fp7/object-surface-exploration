@@ -11,8 +11,7 @@ class ApproachObjectManual: public objectExploration::ApproachObject
 {
 public:
   ApproachObjectManual();
-  virtual bool estimateInitContactPos();
-  virtual bool approach();
+  virtual bool approach(yarp::dev::ICartesianControl& armController);
 };
 
 }

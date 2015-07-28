@@ -7,9 +7,14 @@
  */
 #include <yarp/sig/Vector.h>
 #include <yarp/os/ResourceFinder.h>
+#include <yarp/dev/CartesianControl.h>
 
 using  yarp::sig::Vector;
 using yarp::os::ResourceFinder;
+
+#define POS_SIZE 3
+#define ORIENT_SIZE 4
+
 
 namespace objectExploration{
   class ApproachObject;
@@ -20,13 +25,20 @@ class objectExploration::ApproachObject{
   public:
     ApproachObject();
     //bool configure(ResourceFinder& rf);
-    virtual bool estimateInitContactPos()=0;
-    virtual bool approach()=0;
+    virtual bool approach(yarp::dev::ICartesianControl& armController)=0;
+    virtual bool goToHomepose(yarp::dev::ICartesianControl& armController);
+    virtual bool estimateInitContactPos(){};
+    virtual bool updateHomePose(Vector& pos, Vector& orient);
+    virtual bool updateContactpose(Vector& pos, Vector& orient);
     
-  public:
-    Vector _initContactPos;
+  protected:
+    Vector _contactPos;
+    Vector _contactOrient;
+    Vector _homePos;
+    Vector _homeOrient;
+    
     
 protected:
-  bool _initContactPos_isValid;
+  bool _contactPose_isValid;
 };
 

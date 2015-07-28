@@ -11,12 +11,31 @@
 	<!-- Required modules -->
 	<module>
 		<name>object-surface-exploration</name>
-		<parameters></parameters>
+		<parameters>--context object-surface-exploration</parameters>
 		<node>localhost</node>
 		<display></display>
 		<stdio></stdio>
 	</module>
 
+	<module>
+	  <name>iCub_SIM</name>
+	  <node>localhost</node>
+	</module>
+
+	<module>
+	  <name>simCartesianControl</name>
+	  <parameters>--no_legs</parameters>
+	  <node>localhost</node>
+	</module>
+
+	<module>
+	  <name>iKinCartesianSolver</name>
+	  <parameters>--context simCartesianControl --part left_arm</parameters>
+	  <node>localhost</node>
+	</module>
+  
+  
+  
 	<!--<connection> 
 		<from>/cam/right</from> 
 		<to>/view/right</to> 

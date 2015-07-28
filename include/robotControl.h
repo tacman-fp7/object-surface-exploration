@@ -13,6 +13,9 @@ class robotControl;
 class robotControl : public yarp::os::Wire {
 public:
   robotControl();
+  virtual bool goToHomePose();
+  virtual bool updateHomePose();
+  virtual bool updateContactPose();
   virtual bool approach();
   virtual bool contact();
   virtual bool explore();

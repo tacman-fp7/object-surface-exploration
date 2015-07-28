@@ -9,6 +9,7 @@
 #include <yarp/dev/CartesianControl.h>
 #include <yarp/sig/Vector.h>
 
+
 struct robotControlData
 {
   std::string device;
@@ -24,6 +25,9 @@ public:
   robotControlServer();
   virtual ~robotControlServer();
   
+  virtual bool goToHomePose();
+  virtual bool updateHomePose();
+  virtual bool updateContactPose();
   virtual bool approach();
   virtual bool contact();
   virtual bool explore();
@@ -35,6 +39,8 @@ public:
   virtual bool updateModule();
   virtual bool close();
   
+
+  
 private:
   yarp::os::Port _port;
   bool _stopModule;
@@ -42,7 +48,11 @@ private:
   t_robotControlData _robotcontrolData;
   yarp::dev::PolyDriver _deviceController;
   yarp::dev::ICartesianControl* _armCartesianController;
+    
   yarp::sig::Vector xd, od; // Testing only
-  double t;
+  double t; // Testing only
+  
+  
+  
 };
 
