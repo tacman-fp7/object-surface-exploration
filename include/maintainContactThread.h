@@ -7,11 +7,14 @@ namespace objectExploration
   {
   public:
 
-    MaintainContactThread(int period):RateThread(period){};
-    bool setDesiredForce(double desiredForce){/*Do nothing at the moment*/};
-    void run(){/*Fill later*/};
+    MaintainContactThread(int period):RateThread(period), _desiredForce(0){};
+    bool setDesiredForce(double desiredForce);
+    void run();
+    bool threadInit();
+    void threadRelease();
   private:
     // things
+    double _desiredForce;
   };
   
 } // End of namespace

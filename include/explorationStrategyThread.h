@@ -1,7 +1,7 @@
 #pragma once
 #include <yarp/sig/Vector.h>
 #include <yarp/os/RateThread.h>
-#include <objectFeatures.h>
+#include <objectFeaturesThread.h>
 
 namespace objectExploration
 {
@@ -14,7 +14,7 @@ namespace objectExploration
     virtual yarp::sig::Vector getNextWayPoint(){/*Do nothing at the moment*/};
     
   private:
-    ObjectFeatures* _objectFeatures;
+    ObjectFeaturesThread* _objectFeatures;
     
   };
   

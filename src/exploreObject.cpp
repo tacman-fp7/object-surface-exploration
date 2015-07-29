@@ -2,11 +2,14 @@
 #include <approachObjectManual.h>
 #include <yarp/sig/Vector.h>
 #include <signal.h>
+#include <yarp/os/Bottle.h>
 
-objectExploration::ExploreObject::ExploreObject(yarp::dev::PolyDriver* deviceController)
+objectExploration::ExploreObject::ExploreObject(yarp::dev::PolyDriver* deviceController,
+						yarp::os::ResourceFinder& rf)
 {
 
   bool failed = false;
+  _rf = rf;
   _deviceController = deviceController;
   
   if(_deviceController->isValid())
@@ -23,6 +26,36 @@ objectExploration::ExploreObject::ExploreObject(yarp::dev::PolyDriver* deviceCon
   }
   _approachObjectCntrl = new ApproachObjectManual; 
   
+  ///////////// Use the the resourcr finder to configure ///////////
+  int readTactilePeriod;
+  int maintainContactPeriod;
+  double desiredForce;
+  yarp::os::Bottle& exploreObjectConfig = rf.findGroup("ExploreObject");
+  if(!exploreObjectConfig.isNull()){
+    maintainContactPeriod = exploreObjectConfig.check("maintainContactPeriod", 5).asInt();
+    desiredForce = exploreObjectConfig.check("desiredForce", 0.0).asDouble();
+    readTactilePeriod = exploreObjectConfig.check("readTactilePeriod", 10).asInt();
+    
+    printf("\n");
+    printf("Explore object config data:\n");
+    printf("Maintain-contact period: %d\n", maintainContactPeriod);
+    printf("desiredForce: %0.2f\n", desiredForce);
+    printf("Read-tactile period: %d\n", readTactilePeriod);
+    printf("\n");
+  }
+  else
+  {
+   printf("Failed to locate ExploreObject configuration\n");
+   failed = true;
+  }
+  
+  ////////// Setting up the MaintainContactThread ///////////////////////
+  _maintainContactThread = new MaintainContactThread(maintainContactPeriod);
+  _maintainContactThread->setDesiredForce(desiredForce);
+  
+  ////////// Setting up the tactile data reading thread ////////////
+  _objectFeaturesThread = new ObjectFeaturesThread(readTactilePeriod, rf);
+  _objectFeaturesThread->start();
   //if(failed)
   //  raise(SIGINT);
 }
@@ -31,6 +64,19 @@ objectExploration::ExploreObject::~ExploreObject()
 {
   if (_approachObjectCntrl != NULL)
     delete(_approachObjectCntrl);
+  
+  if(_maintainContactThread != NULL)
+  {
+    _maintainContactThread->stop();
+    delete(_maintainContactThread);
+  }
+  
+  if(_objectFeaturesThread != NULL)
+  {    
+    _objectFeaturesThread->stop();
+    delete(_objectFeaturesThread);
+  }
+  
 }
 
 bool objectExploration::ExploreObject::approach()
@@ -64,5 +110,38 @@ bool objectExploration::ExploreObject::updateHomePose()
   _approachObjectCntrl->updateHomePose(pos, orient);
 return true;
 }
+
+bool objectExploration::ExploreObject::exploreObject(bool onOff)
+{
+  if(onOff)
+  {
+   //TODO: do some checks if the thread is running on so on
+  // First step is to reach the pre-contact location
+  _approachObjectCntrl->approach(*_armCartesianController);
+  // Then explore the object
+  _maintainContactThread->start();
+  
+  }
+  else{
+    _approachObjectCntrl->goToHomepose(*_armCartesianController);
+    _maintainContactThread->stop();
+  }
+  
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

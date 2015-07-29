@@ -40,26 +40,29 @@ bool robotControlServer::updateHomePose()
 
 bool robotControlServer::approach()
 {
-  printf("Approaching the object.\n");
+  printf("Approaching the object in the precontact position.\n");
   _exploreObject->approach();
   return true;
 }
 
 bool robotControlServer::goToHomePose()
 {
+  printf("Going to home position...");
   _exploreObject->goToHomePose();
+  printf("done!\n");
   return true;
 }
 
 bool robotControlServer::contact()
 {
-  printf("Making contact.\n");
+  printf("Not implemented yet.\n");
   return true;
 }
 
 bool robotControlServer::explore()
 {
   printf("Performing the exploratory behaviour.\n");
+  _exploreObject->exploreObject(true); // implement toggle behaviour
   return true;
 }
 
@@ -138,9 +141,7 @@ bool robotControlServer::configure(yarp::os::ResourceFinder& rf)
     
    }
    
-
-  
-  _exploreObject = new objectExploration::ExploreObject(&_deviceController);
+  _exploreObject = new objectExploration::ExploreObject(&_deviceController, rf);
   
    if(ret)
      std::cout << "Configuration completed." << std::endl;
@@ -169,22 +170,5 @@ bool robotControlServer::updateModule()
     raise(SIGINT);
   }
     
- /*t += 0.1;
-  
-  // translational target part: a circular trajectory
-        // in the yz plane centered in [-0.3,-0.1,0.1] with radius=0.1 m
-        // and frequency 0.1 Hz
-        xd[0]=-0.3;
-        xd[1]=-0.1+0.1*cos(2.0*M_PI*0.1*(t));
-        xd[2]=+0.1+0.1*sin(2.0*M_PI*0.1*(t));
-
-        // we keep the orientation of the left arm constant:
-        // we want the middle finger to point forward (end-effector x-axis)
-        // with the palm turned down (end-effector y-axis points leftward);
-        // to achieve that it is enough to rotate the root frame of pi around z-axis
-        od[0]=0.0; od[1]=0.0; od[2]=1.0; od[3]=M_PI;
-	
-	_armCartesianController->goToPose(xd, od);
-	*/
 }
 

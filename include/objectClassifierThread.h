@@ -1,5 +1,5 @@
 #pragma once
-#include <objectFeatures.h>
+#include <objectFeaturesThread.h>
 #include <yarp/os/RateThread.h>
 
 namespace objectExploration
@@ -13,7 +13,7 @@ namespace objectExploration
     void rund(){};
   private:
     // A container for the features
-    ObjectFeatures* _objectFeatures;
+    ObjectFeaturesThread* _objectFeatures;
   };
   
 } // End of namespace
