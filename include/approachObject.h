@@ -17,11 +17,11 @@ using yarp::os::ResourceFinder;
 
 
 namespace objectExploration{
-  class ApproachObject;
-}
+ 
 
 
-class objectExploration::ApproachObject{
+
+class ApproachObject{
   public:
     ApproachObject();
     //bool configure(ResourceFinder& rf);
@@ -42,3 +42,4 @@ protected:
   bool _contactPose_isValid;
 };
 
+}

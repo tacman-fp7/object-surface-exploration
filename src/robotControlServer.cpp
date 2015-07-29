@@ -14,38 +14,25 @@ using namespace yarp::math;
 robotControlServer::robotControlServer()
 {
   _stopModule = false;
-  _approachObjectCntrl = new objectExploration::ApproachObjectManual;
 }
 
 
 robotControlServer::~robotControlServer()
 {
-  //std::cout << "Destructor called." << std::endl;
-   if(_approachObjectCntrl != NULL)
-    delete(_approachObjectCntrl);
-   
+  //std::cout << "Destructor called." << std::endl; 
   _deviceController.close();
 }
 
 bool robotControlServer::updateContactPose()
 {
-  Vector pos, orient;
-  pos.resize(3); // x,y,z position 
-  orient.resize(4); // x,y,z,w prientation
-  _armCartesianController->getPose(pos, orient);
-  _approachObjectCntrl->updateContactpose(pos, orient);
-  
+  _exploreObject->updateContactPose();
   return true;
 }
 
 bool robotControlServer::updateHomePose()
-{
-    Vector pos, orient;
-  pos.resize(3); // x,y,z position 
-  orient.resize(4); // x,y,z,w prientation
-  _armCartesianController->getPose(pos, orient);
-  _approachObjectCntrl->updateHomePose(pos, orient);
-return true;
+{  
+  _exploreObject->updateHomePose();
+  return true;
 }
 
 
@@ -54,16 +41,13 @@ return true;
 bool robotControlServer::approach()
 {
   printf("Approaching the object.\n");
-  // TODO: use mutex to make sure only one thread controls the robot.
-  // At the moment I am running on a single thread.
-  
-  _approachObjectCntrl->approach(*_armCartesianController);
+  _exploreObject->approach();
   return true;
 }
 
 bool robotControlServer::goToHomePose()
 {
-  _approachObjectCntrl->goToHomepose(*_armCartesianController);
+  _exploreObject->goToHomePose();
   return true;
 }
 
@@ -154,16 +138,10 @@ bool robotControlServer::configure(yarp::os::ResourceFinder& rf)
     
    }
    
-   if(_deviceController.isValid())
-       _deviceController.view(_armCartesianController);
+
   
-   if(_armCartesianController == NULL)
-   {
-     std::cout << "Failed to open cartesian controller" << std::endl;
-     ret = false;
-   }
-   
-   
+  _exploreObject = new objectExploration::ExploreObject(&_deviceController);
+  
    if(ret)
      std::cout << "Configuration completed." << std::endl;
    else

@@ -8,6 +8,7 @@
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/CartesianControl.h>
 #include <yarp/sig/Vector.h>
+#include <exploreObject.h>
 
 
 struct robotControlData
@@ -49,10 +50,12 @@ public:
 private:
   yarp::os::Port _port;
   bool _stopModule;
-  objectExploration::ApproachObject* _approachObjectCntrl; 
+  objectExploration::ExploreObject* _exploreObject; //Not doing anything with it yet
+  
+  //objectExploration::ApproachObject* _approachObjectCntrl; 
   t_robotControlData _robotcontrolData;
   yarp::dev::PolyDriver _deviceController;
-  yarp::dev::ICartesianControl* _armCartesianController;
+  //yarp::dev::ICartesianControl* _armCartesianController;
     
   yarp::sig::Vector xd, od; // Testing only
   double t; // Testing only

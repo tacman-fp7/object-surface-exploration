@@ -5,6 +5,7 @@
 
 using namespace yarp::os;
 
+
 objectExploration::ApproachObject::ApproachObject()
 {
  _contactPose_isValid = false;   
