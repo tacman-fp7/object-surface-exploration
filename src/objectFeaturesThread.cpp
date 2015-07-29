@@ -8,6 +8,7 @@ using yarp::os::Value;
 using yarp::os::Bottle;
 using std::cout;
 using std::endl;
+using std::cerr;
 
 /*
  * 192 for hand data, where 1-60 are taxels of fingertips (12 each in this order:
@@ -16,8 +17,22 @@ using std::endl;
  */
 void objectExploration::ObjectFeaturesThread::run()
 {
-  Bottle* tactileData = _tactilePort.read();
+  Bottle* tactileData = _tactilePort.read(true); // Wait for data
+  
+  if(tactileData->isNull()){
+    cerr << "Did not receive tactile data" << endl;
+    return;
+  }
   cout << tactileData->size() << endl;
+  
+ 
+  // The first 12 are for the index finger, I am only using the 4 on the tip
+  _tactileSum = tactileData->get(1).asDouble();
+  _tactileSum = tactileData->get(2).asDouble();
+  _tactileSum = tactileData->get(10).asDouble();
+  _tactileSum = tactileData->get(11).asDouble();
+  
+  cout << _tactileSum << endl;
 }
 
 
@@ -48,7 +63,7 @@ bool objectExploration::ObjectFeaturesThread::threadInit()
    printf("Failed to open tactile port\n");
   }
   
-  yarp::os::Network::connect("/" + _robotName + "/skin/" + _arm + "_hand_raw",
+  yarp::os::Network::connect("/" + _robotName + "/skin/" + _arm + "_hand_comp",
     "/objectExploration/tactileSensors/" + _arm + "_hand");
   
   return ret;
