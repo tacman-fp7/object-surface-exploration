@@ -34,6 +34,11 @@ namespace objectExploration
     ObjectFeaturesThread(int period, ResourceFinder rf):RateThread(period), _tactileSum(0), _rf(rf){
       _armOrientation.resize(4);
       _armPosition.resize(3);
+      _desiredEndPose_isValid = false;
+      _desiredStartingPose_isValid = false;
+      _wayPoint_isValid = false;
+      _wayPointOrient.resize(4);
+      _wayPointPos.resize(3);
       _desiredEndOrientation.resize(4);
       _desiredEndPosition.resize(3);
       _desiredStartingOrientation.resize(4);
@@ -61,6 +66,50 @@ namespace objectExploration
         
        return temp;
      }
+     
+     void setEndPose(Vector& pos, Vector& orient)
+     {
+	_desiredEndPosition = pos;
+	_desiredEndOrientation = orient;
+	_desiredEndPose_isValid = true;
+     }
+     
+     void setStartingPose(Vector& pos, Vector& orient)
+     {
+       _desiredStartingPosition = pos;
+       _desiredStartingOrientation = orient;
+       _desiredStartingPose_isValid = true;
+       
+     }
+     
+     bool getDesiredEndPose(Vector& pos, Vector& orient)
+     {
+       if(_desiredEndPose_isValid)
+       {
+	 pos = _desiredEndPosition;
+	 orient = _desiredEndOrientation;
+       }
+       return _desiredEndPose_isValid;
+    };
+    
+    void setWayPoint(Vector pos, Vector orient)
+    {
+	_wayPointPos = pos;
+	_wayPointOrient = orient;
+	_wayPoint_isValid = true;
+    }
+    
+    bool getWayPoint(Vector& pos, Vector& orient, bool invalidateWayPoint = true)
+    {
+	  if(_wayPoint_isValid)
+	  {
+	      pos = _wayPointPos;
+	      orient = _wayPointOrient;
+	      _wayPoint_isValid = !invalidateWayPoint;
+	      return true;
+	  }
+	  return false;
+    };
   private:
     string _arm;
     string _robotName;
@@ -80,12 +129,17 @@ namespace objectExploration
     Vector _armOrientation;
     
   protected: // Make them private later 
+    bool _desiredStartingPose_isValid;
     Vector _desiredStartingPosition;
     Vector _desiredStartingOrientation;
     
+    bool _desiredEndPose_isValid;
     Vector _desiredEndPosition;
     Vector _desiredEndOrientation;
     
+    bool _wayPoint_isValid;
+    Vector _wayPointPos;
+    Vector _wayPointOrient;
     
     // A container for the features
   };

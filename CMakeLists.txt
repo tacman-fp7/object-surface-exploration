@@ -9,7 +9,8 @@ include_directories(${YARP_INCLUDE_DIRS} ./include/)
 
 set(SOURCES src/main.cpp src/robotControlServer.cpp src/robotControl.cpp
 src/approachObject.cpp src/approachObjectManual.cpp src/exploreObject.cpp
-src/maintainContactThread.cpp src/objectFeaturesThread.cpp)
+src/maintainContactThread.cpp src/objectFeaturesThread.cpp
+src/planarExplorationThread.cpp)
 set(HEADERS include/robotControlServer.h include/robotControl.h 
 include/exploreObject.h include/explorationStrategy.h include/linearExplorationThread.h
 include/maintainContact.h include/objectClassifierThread.h include/objectFeatures.h)

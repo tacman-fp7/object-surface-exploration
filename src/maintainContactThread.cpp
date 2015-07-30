@@ -23,8 +23,6 @@ void objectExploration::MaintainContactThread::run()
   px = _objectFeatures->getPosition();
   po = _objectFeatures->getOrientation();
   
-  
-  
   //cout << _objectFeatures->getForce() << endl;
   // Read the current position
   //cout << _objectFeatures->getPosition().toString() << endl;
@@ -33,6 +31,10 @@ void objectExploration::MaintainContactThread::run()
   // Calculate the action to be taken
   
   // Introduce a new waypoint 
+  // currently hacking it to an increase in the height
+  px[2] += 0.001;
+  _objectFeatures->setWayPoint(px, po);
+  
   
 }
 

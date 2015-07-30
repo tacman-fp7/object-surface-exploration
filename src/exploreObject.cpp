@@ -3,6 +3,7 @@
 #include <yarp/sig/Vector.h>
 #include <signal.h>
 #include <yarp/os/Bottle.h>
+#include <planarExplorationThread.h>
 
 objectExploration::ExploreObject::ExploreObject(yarp::dev::PolyDriver* deviceController,
 						yarp::os::ResourceFinder& rf)
@@ -30,18 +31,22 @@ objectExploration::ExploreObject::ExploreObject(yarp::dev::PolyDriver* deviceCon
   ///////////// Use the the resourcr finder to configure ///////////
   int readTactilePeriod;
   int maintainContactPeriod;
+  int explorationThreadPeriod;
+  
   double desiredForce;
   yarp::os::Bottle& exploreObjectConfig = rf.findGroup("ExploreObject");
   if(!exploreObjectConfig.isNull()){
     maintainContactPeriod = exploreObjectConfig.check("maintainContactPeriod", 5).asInt();
     desiredForce = exploreObjectConfig.check("desiredForce", 0.0).asDouble();
     readTactilePeriod = exploreObjectConfig.check("readTactilePeriod", 10).asInt();
+    explorationThreadPeriod = exploreObjectConfig.check("explorationThreadPeriod", 10).asInt();
     
     printf("\n");
     printf("Explore object config data:\n");
     printf("Maintain-contact period: %d\n", maintainContactPeriod);
     printf("desiredForce: %0.2f\n", desiredForce);
     printf("Read-tactile period: %d\n", readTactilePeriod);
+    printf("exploration thread period period: %d\n", explorationThreadPeriod);
     printf("\n");
   }
   else
@@ -60,6 +65,8 @@ objectExploration::ExploreObject::ExploreObject(yarp::dev::PolyDriver* deviceCon
   _maintainContactThread = new MaintainContactThread(maintainContactPeriod, _objectFeaturesThread);
   _maintainContactThread->setDesiredForce(desiredForce);
   
+  _exploreObjectThread = new PlanarExplorationThread(explorationThreadPeriod, 
+    _armCartesianController,_objectFeaturesThread);
   
   
   //if(failed)
@@ -81,6 +88,12 @@ objectExploration::ExploreObject::~ExploreObject()
   {    
     _objectFeaturesThread->stop();
     delete(_objectFeaturesThread);
+  }
+  
+  if(_exploreObjectThread !=NULL)
+  {
+     _objectFeaturesThread->stop();
+     delete(_objectFeaturesThread);
   }
   
 }
@@ -109,6 +122,11 @@ bool objectExploration::ExploreObject::updateContactPose()
   orient.resize(4); // x,y,z,w prientation
   _armCartesianController->getPose(pos, orient);
   _approachObjectCntrl->updateContactpose(pos, orient);
+  
+  /// TODO: One of them is redundant
+  
+ _objectFeaturesThread->setStartingPose(pos, orient);
+  //_objectFeaturesThread->
   return true;
 }
 
@@ -119,6 +137,9 @@ bool objectExploration::ExploreObject::setEndPose()
   orient.resize(4); // x,y,z,w prientation
   _armCartesianController->getPose(pos, orient);
   _approachObjectCntrl->setEndPose(pos, orient);
+  
+  /// TODO: One of them is redundant
+  _objectFeaturesThread->setEndPose(pos, orient);
   return true;
 }
 
@@ -145,6 +166,10 @@ bool objectExploration::ExploreObject::exploreObject(bool onOff)
   // Then explore the object
   if(!_maintainContactThread->start())
     ret = false;
+  
+  if(!_exploreObjectThread->start())
+    ret = false;
+  
   _exploreObjectOnOff = false;
   
   }

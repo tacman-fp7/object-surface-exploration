@@ -2,19 +2,23 @@
 #include <yarp/sig/Vector.h>
 #include <yarp/os/RateThread.h>
 #include <objectFeaturesThread.h>
+#include <yarp/dev/CartesianControl.h>
+
+using yarp::dev::ICartesianControl;
 
 namespace objectExploration
 {
   class ExplorationStrategyThread: public yarp::os::RateThread
   {
   public:
-
-    ExplorationStrategyThread(int period):RateThread(period){};
-    virtual void run(){};
-    virtual yarp::sig::Vector getNextWayPoint(){/*Do nothing at the moment*/};
+    ExplorationStrategyThread(int period, ICartesianControl* robotCartesianController,
+			      ObjectFeaturesThread* objectFeatures):RateThread(period),
+    _objectFeatures(objectFeatures), _robotCartesianController(robotCartesianController){};
     
-  private:
+  protected:
     ObjectFeaturesThread* _objectFeatures;
+    ICartesianControl* _robotCartesianController;
+    
     
   };
   
