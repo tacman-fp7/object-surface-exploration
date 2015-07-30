@@ -3,13 +3,14 @@
 #include <yarp/os/Value.h>
 #include <yarp/os/Bottle.h>
 
+
 using yarp::os::Network;
 using yarp::os::Value;
 using yarp::os::Bottle;
 using std::cout;
 using std::endl;
 using std::cerr;
-
+using yarp::os::Mutex;
 /*
  * 192 for hand data, where 1-60 are taxels of fingertips (12 each in this order:
  * index, middle, ring, little, thumb); 61-96 zeros; 97-144 palm taxels 
@@ -21,26 +22,39 @@ void objectExploration::ObjectFeaturesThread::run()
   ///// Read the tactile data ///////
   Bottle* tactileData = _tactilePort.read(true); // Wait for data
   
-  //// Read the arm position. //////
+  //// Read the corresponding arm position. //////
   ///  TODO: this should be changed to the fingertip position ///
-  
-  if(tactileData->isNull()){
-    cerr << "Did not receive tactile data" << endl;
+  Bottle* armPose = _armPositionPort.read(true);
+  if(tactileData->isNull() || armPose->isNull()){
+    cerr << "Did not receive tactile or arm data" << endl;
     return;
   }
   
   
+  _armPoseMutex.lock();
+  for (int i = 0; i < 3; i++)
+    _armPosition[i] = armPose->get(i).asDouble();
+  for (int i = 3; i < 7; i++)
+    _armOrientation[i] = armPose->get(i).asDouble();
+  _armPoseMutex.unlock();
   
- 
+  //cout << armPose->toString() << endl << endl;
+  //cout << _armPosition.toString() << endl;
+  //cout << _armOrientation.toString() << endl << endl;
+  
+  _tactileMutex.lock();
   // The first 12 are for the index finger, I am only using the 4 on the tip
   _tactileSum = tactileData->get(1).asDouble();
   _tactileSum += tactileData->get(2).asDouble();
   _tactileSum += tactileData->get(10).asDouble();
   _tactileSum += tactileData->get(11).asDouble();
+  _tactileSum  /= 4;
+  _tactileMutex.unlock();
+  
   //cout << "Buffer size:" << tactileData->size() << endl;
   //cout << "Tactile data:" << endl;
   //cout << tactileData->toString() << endl;
-  //cout << "Tactile sum: " << _tactileSum << endl << endl;
+  //cout << "Tactile sum: " << _tactileSum << endl;
 }
 
 
@@ -93,6 +107,12 @@ bool objectExploration::ObjectFeaturesThread::threadInit()
    cerr << "Failed to connect to the arm pose port" << endl;
   }
   
+  // TODO: figure out why removing this crashes the application
+  // is it because the the network connection needs time?
+  if(ret)
+    cout << "Object feagtures thread configured" << endl;
+  else
+    cerr << "Error, object features thread failed during configuration" << endl;
   
   return ret;
 }

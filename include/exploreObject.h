@@ -40,5 +40,6 @@ namespace objectExploration
     ObjectFeaturesThread* _objectFeaturesThread; // This is shared between threads. Must have sync
     yarp::dev::PolyDriver* _deviceController; // The view depends on the use
     yarp::dev::ICartesianControl* _armCartesianController;
+    bool _exploreObjectOnOff;
   };
 } // End of namespace

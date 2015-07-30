@@ -1,5 +1,7 @@
 #pragma once
 #include <yarp/os/RateThread.h>
+#include <objectFeaturesThread.h>
+
 
 namespace objectExploration
 {
@@ -7,7 +9,8 @@ namespace objectExploration
   {
   public:
 
-    MaintainContactThread(int period):RateThread(period), _desiredForce(0){};
+    MaintainContactThread(int period, ObjectFeaturesThread* objectFeatures):RateThread(period), _desiredForce(0),
+    _objectFeatures(objectFeatures){};
     bool setDesiredForce(double desiredForce);
     void run();
     bool threadInit();
@@ -15,6 +18,7 @@ namespace objectExploration
   private:
     // things
     double _desiredForce;
+    ObjectFeaturesThread* _objectFeatures;
   };
   
 } // End of namespace

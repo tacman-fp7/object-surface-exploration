@@ -9,6 +9,7 @@ objectExploration::ExploreObject::ExploreObject(yarp::dev::PolyDriver* deviceCon
 {
 
   bool failed = false;
+  _exploreObjectOnOff = true;
   _rf = rf;
   _deviceController = deviceController;
   
@@ -49,13 +50,18 @@ objectExploration::ExploreObject::ExploreObject(yarp::dev::PolyDriver* deviceCon
    failed = true;
   }
   
-  ////////// Setting up the MaintainContactThread ///////////////////////
-  _maintainContactThread = new MaintainContactThread(maintainContactPeriod);
-  _maintainContactThread->setDesiredForce(desiredForce);
+
   
   ////////// Setting up the tactile data reading thread ////////////
   _objectFeaturesThread = new ObjectFeaturesThread(readTactilePeriod, rf);
   _objectFeaturesThread->start();
+  
+    ////////// Setting up the MaintainContactThread ///////////////////////
+  _maintainContactThread = new MaintainContactThread(maintainContactPeriod, _objectFeaturesThread);
+  _maintainContactThread->setDesiredForce(desiredForce);
+  
+  
+  
   //if(failed)
   //  raise(SIGINT);
 }
@@ -113,20 +119,32 @@ return true;
 
 bool objectExploration::ExploreObject::exploreObject(bool onOff)
 {
-  if(onOff)
+  bool ret = true;
+  
+  if(_exploreObjectOnOff)
   {
    //TODO: do some checks if the thread is running on so on
   // First step is to reach the pre-contact location
-  _approachObjectCntrl->approach(*_armCartesianController);
+  if(!_approachObjectCntrl->approach(*_armCartesianController))
+    ret = false;
   // Then explore the object
-  _maintainContactThread->start();
+  if(!_maintainContactThread->start())
+    ret = false;
+  _exploreObjectOnOff = false;
   
   }
   else{
-    _approachObjectCntrl->goToHomepose(*_armCartesianController);
+    
+    if(!_approachObjectCntrl->goToHomepose(*_armCartesianController))
+      ret = false;
+    
     _maintainContactThread->stop();
+     
+    
+    _exploreObjectOnOff = true;
   }
   
+  return ret;
 }
 
 
