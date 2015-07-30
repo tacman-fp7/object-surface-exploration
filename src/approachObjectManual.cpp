@@ -32,7 +32,7 @@ bool objectExploration::ApproachObjectManual::approach(yarp::dev::ICartesianCont
   // Synched approach
   
   armController.goToPoseSync(_contactPos, _contactOrient);
-  //armController.waitMotionDone(0.04);
+  armController.waitMotionDone(0.04);
   
   
   
