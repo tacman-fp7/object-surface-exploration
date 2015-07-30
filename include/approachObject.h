@@ -40,6 +40,7 @@ class ApproachObject{
     
 protected:
   bool _contactPose_isValid;
+  bool _homePose_isValid;
 };
 
 }

@@ -25,7 +25,7 @@ namespace objectExploration
     bool updateContactPose();
   
     //bool approachObject(){/*do nothing at the moment.*/ };
-    bool maintainContact(bool toggle){/*do nothing at the moment.*/ };
+    bool maintainContact(bool onOff){return false;/*do nothing at the moment.*/ };
     bool exploreObject(bool onOff);
     
   private:

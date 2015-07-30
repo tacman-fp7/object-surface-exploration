@@ -25,14 +25,14 @@ robotControlServer::~robotControlServer()
 
 bool robotControlServer::updateContactPose()
 {
-  _exploreObject->updateContactPose();
-  return true;
+  return _exploreObject->updateContactPose();
+  
 }
 
 bool robotControlServer::updateHomePose()
 {  
-  _exploreObject->updateHomePose();
-  return true;
+  return _exploreObject->updateHomePose();
+  
 }
 
 
@@ -41,29 +41,28 @@ bool robotControlServer::updateHomePose()
 bool robotControlServer::approach()
 {
   printf("Approaching the object in the precontact position.\n");
-  _exploreObject->approach();
-  return true;
+  return _exploreObject->approach();
+  
 }
 
 bool robotControlServer::goToHomePose()
 {
-  printf("Going to home position...");
-  _exploreObject->goToHomePose();
-  printf("done!\n");
-  return true;
+  printf("Going to home position.");
+  return _exploreObject->goToHomePose();
+ 
 }
 
 bool robotControlServer::contact()
 {
   printf("Not implemented yet.\n");
-  return true;
+  return false;
 }
 
 bool robotControlServer::explore()
 {
   printf("Performing the exploratory behaviour.\n");
-  _exploreObject->exploreObject(true); // implement toggle behaviour
-  return true;
+  return _exploreObject->exploreObject(true); // implement toggle behaviour
+ 
 }
 
 bool robotControlServer::quit()

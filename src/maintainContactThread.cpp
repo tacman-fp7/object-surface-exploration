@@ -10,8 +10,12 @@ void objectExploration::MaintainContactThread::run()
 {
   // Read the tactile data
   
+  // Read the current position
   
-  // request a move to the next location
+  // Calculate the action to be taken
+  
+  // Introduce a new waypoint 
+  
 }
 
 

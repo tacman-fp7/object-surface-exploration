@@ -4,11 +4,14 @@
 #include <stdio.h>
 
 using namespace yarp::os;
-
+using std::cout;
+using std::cerr;
+using std::endl;
 
 objectExploration::ApproachObject::ApproachObject()
 {
- _contactPose_isValid = false;   
+ _contactPose_isValid = false; 
+ _homePose_isValid = false;
   _contactPos.resize(POS_SIZE);
   _contactOrient.resize(ORIENT_SIZE);
   _homePos.resize(POS_SIZE);
@@ -20,6 +23,7 @@ bool objectExploration::ApproachObject::updateContactpose(Vector& pos, Vector& o
   _contactPos = pos;
   _contactOrient = orient;
   printf("Contact pose updated %s : %s\n", _contactPos.toString().c_str(), _contactOrient.toString().c_str());
+  _contactPose_isValid = true;
   return true;
 }
 
@@ -29,6 +33,7 @@ bool objectExploration::ApproachObject::updateHomePose(Vector& pos, Vector& orie
   _homeOrient = orient;
   
   printf("Home pose updated %s : %s\n", _homePos.toString().c_str(), _homeOrient.toString().c_str());
+  _homePose_isValid = true;
   return true;
 }
 
@@ -36,6 +41,11 @@ bool objectExploration::ApproachObject::updateHomePose(Vector& pos, Vector& orie
 bool objectExploration::ApproachObject::goToHomepose(yarp::dev::ICartesianControl& armController)
 {
    // Synched approach
+  if(!_homePose_isValid){
+      cerr << "Error, home-pose is not initialised" << endl;
+      return false;
+  }
+  // We are safe to move the arm
   armController.goToPoseSync(_homePos, _homeOrient);
   armController.waitMotionDone(0.04);
   return true;

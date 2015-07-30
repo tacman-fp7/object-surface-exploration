@@ -12,13 +12,16 @@
 
 // Make it a thread that reads the finger data, sums 
 
-
-namespace objectExploration
-{
   using yarp::os::RateThread;
   using yarp::os::BufferedPort;
   using yarp::os::Bottle;
   using yarp::os::ResourceFinder;
+  using std::string;
+  
+
+namespace objectExploration
+{
+
   
   class ObjectFeaturesThread: public RateThread
   {
@@ -30,9 +33,14 @@ namespace objectExploration
     void threadRelease();
   private:
     double _tactileSum;   
-    std::string _arm;
-    std::string _robotName;
+    string _arm;
+    string _robotName;
+    string _controller;
+    string _controllerName;
+    
+   
     BufferedPort<Bottle> _tactilePort;
+    BufferedPort<Bottle> _armPositionPort; // TODO: This should be changed to the fingertip poistion
     ResourceFinder _rf;
     
     // A container for the features
