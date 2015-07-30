@@ -1,9 +1,11 @@
 #include <maintainContactThread.h>
 #include <stdio.h>
 #include <iostream>
+#include <yarp/sig/Vector.h>
 using std::cerr;
 using std::cout;
 using std::endl;
+using yarp::sig::Vector;
 
 bool objectExploration::MaintainContactThread::setDesiredForce(double desiredForce)
 {
@@ -13,6 +15,16 @@ bool objectExploration::MaintainContactThread::setDesiredForce(double desiredFor
 void objectExploration::MaintainContactThread::run()
 {
   // Read the tactile data
+  double force = _objectFeatures->getForce();
+  
+  // Read the corresponding robot positon
+  //TODO: Gotta make sure there is deep copy constructor
+  Vector px, po; // position and getOrientation
+  px = _objectFeatures->getPosition();
+  po = _objectFeatures->getOrientation();
+  
+  
+  
   //cout << _objectFeatures->getForce() << endl;
   // Read the current position
   //cout << _objectFeatures->getPosition().toString() << endl;

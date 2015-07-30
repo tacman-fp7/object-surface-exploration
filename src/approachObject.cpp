@@ -47,7 +47,7 @@ bool objectExploration::ApproachObject::goToHomepose(yarp::dev::ICartesianContro
   }
   // We are safe to move the arm
   armController.goToPoseSync(_homePos, _homeOrient);
-  armController.waitMotionDone(0.04);
+  //armController.waitMotionDone(0.04);
   return true;
 }
 
