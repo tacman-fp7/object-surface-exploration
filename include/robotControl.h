@@ -19,7 +19,7 @@ public:
   virtual bool setEndPose();
   virtual bool goToStartingPose();
   virtual bool goToEndPose();
-  virtual bool explore();
+  virtual bool explore(const bool onOff);
   virtual bool updateHomePose();
   virtual bool updateContactPose();
   virtual bool approach();

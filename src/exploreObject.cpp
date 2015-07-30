@@ -5,6 +5,9 @@
 #include <yarp/os/Bottle.h>
 #include <planarExplorationThread.h>
 
+using std::cout;
+using std::endl;
+
 objectExploration::ExploreObject::ExploreObject(yarp::dev::PolyDriver* deviceController,
 						yarp::os::ResourceFinder& rf)
 {
@@ -157,6 +160,7 @@ bool objectExploration::ExploreObject::exploreObject(bool onOff)
 {
   bool ret = true;
   
+  
   if(_exploreObjectOnOff)
   {
    //TODO: do some checks if the thread is running on so on
@@ -170,6 +174,7 @@ bool objectExploration::ExploreObject::exploreObject(bool onOff)
   if(!_exploreObjectThread->start())
     ret = false;
   
+  cout << "Exoploring the object\n" << endl;
   _exploreObjectOnOff = false;
   
   }
@@ -180,7 +185,9 @@ bool objectExploration::ExploreObject::exploreObject(bool onOff)
     
     _maintainContactThread->stop();
      
+    _exploreObjectThread->stop();
     
+    cout << "Stopped the exploration" << endl;
     _exploreObjectOnOff = true;
   }
   

@@ -6,7 +6,7 @@ service robotControl {
 	bool setEndPose();
 	bool goToStartingPose();
 	bool goToEndPose();
-	bool explore();
+	bool explore(1: bool onOff);
 	bool updateHomePose();
 	bool updateContactPose();
   	bool approach();

@@ -56,8 +56,9 @@ public:
 
 class robotControl_explore : public yarp::os::Portable {
 public:
+  bool onOff;
   bool _return;
-  void init();
+  void init(const bool onOff);
   virtual bool write(yarp::os::ConnectionWriter& connection);
   virtual bool read(yarp::os::ConnectionReader& connection);
 };
@@ -230,8 +231,9 @@ void robotControl_goToEndPose::init() {
 
 bool robotControl_explore::write(yarp::os::ConnectionWriter& connection) {
   yarp::os::idl::WireWriter writer(connection);
-  if (!writer.writeListHeader(1)) return false;
+  if (!writer.writeListHeader(2)) return false;
   if (!writer.writeTag("explore",1,1)) return false;
+  if (!writer.writeBool(onOff)) return false;
   return true;
 }
 
@@ -245,8 +247,9 @@ bool robotControl_explore::read(yarp::os::ConnectionReader& connection) {
   return true;
 }
 
-void robotControl_explore::init() {
+void robotControl_explore::init(const bool onOff) {
   _return = false;
+  this->onOff = onOff;
 }
 
 bool robotControl_updateHomePose::write(yarp::os::ConnectionWriter& connection) {
@@ -417,12 +420,12 @@ bool robotControl::goToEndPose() {
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-bool robotControl::explore() {
+bool robotControl::explore(const bool onOff) {
   bool _return = false;
   robotControl_explore helper;
-  helper.init();
+  helper.init(onOff);
   if (!yarp().canWrite()) {
-    yError("Missing server method '%s'?","bool robotControl::explore()");
+    yError("Missing server method '%s'?","bool robotControl::explore(const bool onOff)");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
@@ -554,8 +557,13 @@ bool robotControl::read(yarp::os::ConnectionReader& connection) {
       return true;
     }
     if (tag == "explore") {
+      bool onOff;
+      if (!reader.readBool(onOff)) {
+        reader.fail();
+        return false;
+      }
       bool _return;
-      _return = explore();
+      _return = explore(onOff);
       yarp::os::idl::WireWriter writer(reader);
       if (!writer.isNull()) {
         if (!writer.writeListHeader(1)) return false;
@@ -687,7 +695,7 @@ std::vector<std::string> robotControl::help(const std::string& functionName) {
       helpString.push_back("bool goToEndPose() ");
     }
     if (functionName=="explore") {
-      helpString.push_back("bool explore() ");
+      helpString.push_back("bool explore(const bool onOff) ");
     }
     if (functionName=="updateHomePose") {
       helpString.push_back("bool updateHomePose() ");

@@ -90,10 +90,11 @@ bool robotControlServer::contact()
   return false;
 }
 
-bool robotControlServer::explore()
+bool robotControlServer::explore(const bool onOff)
 {
+  
   printf("Performing the exploratory behaviour.\n");
-  return _exploreObject->exploreObject(true); // implement toggle behaviour
+  return _exploreObject->exploreObject(onOff); // implement toggle behaviour
  
 }
 

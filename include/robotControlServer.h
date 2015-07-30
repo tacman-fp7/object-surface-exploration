@@ -45,7 +45,7 @@ public:
   virtual bool updateContactPose();
   virtual bool approach();
   virtual bool contact();
-  virtual bool explore();
+  virtual bool explore(const bool onOff);
   virtual bool quit();
   //virtual bool setStartingPoint();
   //virtual bool setEndPoint();
