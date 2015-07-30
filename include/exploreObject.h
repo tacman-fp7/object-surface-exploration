@@ -23,6 +23,8 @@ namespace objectExploration
     bool goToHomePose();
     bool updateHomePose();
     bool updateContactPose();
+    bool setEndPose();
+    bool goToEndPose();
   
     //bool approachObject(){/*do nothing at the moment.*/ };
     bool maintainContact(bool onOff){return false;/*do nothing at the moment.*/ };

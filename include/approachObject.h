@@ -30,17 +30,25 @@ class ApproachObject{
     virtual bool estimateInitContactPos(){};
     virtual bool updateHomePose(Vector& pos, Vector& orient);
     virtual bool updateContactpose(Vector& pos, Vector& orient);
+    virtual bool setEndPose(Vector& pos, Vector& orient);
+    virtual bool goToEndPose(yarp::dev::ICartesianControl& armController);
     
-  protected:
-    Vector _contactPos;
+  protected: 
+    // Starting pose
+    Vector _contactPos; 
     Vector _contactOrient;
+    // Home pose
     Vector _homePos;
     Vector _homeOrient;
     
+    // End pose
+    Vector _endPos;
+    Vector _endOrient;
     
 protected:
   bool _contactPose_isValid;
   bool _homePose_isValid;
+  bool _endPose_isValid;
 };
 
 }

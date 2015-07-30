@@ -6,7 +6,55 @@
 
 
 
+class robotControl_setHomePose : public yarp::os::Portable {
+public:
+  bool _return;
+  void init();
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
+};
+
 class robotControl_goToHomePose : public yarp::os::Portable {
+public:
+  bool _return;
+  void init();
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
+};
+
+class robotControl_setStartingPose : public yarp::os::Portable {
+public:
+  bool _return;
+  void init();
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
+};
+
+class robotControl_setEndPose : public yarp::os::Portable {
+public:
+  bool _return;
+  void init();
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
+};
+
+class robotControl_goToStartingPose : public yarp::os::Portable {
+public:
+  bool _return;
+  void init();
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
+};
+
+class robotControl_goToEndPose : public yarp::os::Portable {
+public:
+  bool _return;
+  void init();
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
+};
+
+class robotControl_explore : public yarp::os::Portable {
 public:
   bool _return;
   void init();
@@ -46,14 +94,6 @@ public:
   virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
-class robotControl_explore : public yarp::os::Portable {
-public:
-  bool _return;
-  void init();
-  virtual bool write(yarp::os::ConnectionWriter& connection);
-  virtual bool read(yarp::os::ConnectionReader& connection);
-};
-
 class robotControl_quit : public yarp::os::Portable {
 public:
   bool _return;
@@ -61,6 +101,27 @@ public:
   virtual bool write(yarp::os::ConnectionWriter& connection);
   virtual bool read(yarp::os::ConnectionReader& connection);
 };
+
+bool robotControl_setHomePose::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(1)) return false;
+  if (!writer.writeTag("setHomePose",1,1)) return false;
+  return true;
+}
+
+bool robotControl_setHomePose::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void robotControl_setHomePose::init() {
+  _return = false;
+}
 
 bool robotControl_goToHomePose::write(yarp::os::ConnectionWriter& connection) {
   yarp::os::idl::WireWriter writer(connection);
@@ -80,6 +141,111 @@ bool robotControl_goToHomePose::read(yarp::os::ConnectionReader& connection) {
 }
 
 void robotControl_goToHomePose::init() {
+  _return = false;
+}
+
+bool robotControl_setStartingPose::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(1)) return false;
+  if (!writer.writeTag("setStartingPose",1,1)) return false;
+  return true;
+}
+
+bool robotControl_setStartingPose::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void robotControl_setStartingPose::init() {
+  _return = false;
+}
+
+bool robotControl_setEndPose::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(1)) return false;
+  if (!writer.writeTag("setEndPose",1,1)) return false;
+  return true;
+}
+
+bool robotControl_setEndPose::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void robotControl_setEndPose::init() {
+  _return = false;
+}
+
+bool robotControl_goToStartingPose::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(1)) return false;
+  if (!writer.writeTag("goToStartingPose",1,1)) return false;
+  return true;
+}
+
+bool robotControl_goToStartingPose::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void robotControl_goToStartingPose::init() {
+  _return = false;
+}
+
+bool robotControl_goToEndPose::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(1)) return false;
+  if (!writer.writeTag("goToEndPose",1,1)) return false;
+  return true;
+}
+
+bool robotControl_goToEndPose::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void robotControl_goToEndPose::init() {
+  _return = false;
+}
+
+bool robotControl_explore::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(1)) return false;
+  if (!writer.writeTag("explore",1,1)) return false;
+  return true;
+}
+
+bool robotControl_explore::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void robotControl_explore::init() {
   _return = false;
 }
 
@@ -167,27 +333,6 @@ void robotControl_contact::init() {
   _return = false;
 }
 
-bool robotControl_explore::write(yarp::os::ConnectionWriter& connection) {
-  yarp::os::idl::WireWriter writer(connection);
-  if (!writer.writeListHeader(1)) return false;
-  if (!writer.writeTag("explore",1,1)) return false;
-  return true;
-}
-
-bool robotControl_explore::read(yarp::os::ConnectionReader& connection) {
-  yarp::os::idl::WireReader reader(connection);
-  if (!reader.readListReturn()) return false;
-  if (!reader.readBool(_return)) {
-    reader.fail();
-    return false;
-  }
-  return true;
-}
-
-void robotControl_explore::init() {
-  _return = false;
-}
-
 bool robotControl_quit::write(yarp::os::ConnectionWriter& connection) {
   yarp::os::idl::WireWriter writer(connection);
   if (!writer.writeListHeader(1)) return false;
@@ -212,12 +357,72 @@ void robotControl_quit::init() {
 robotControl::robotControl() {
   yarp().setOwner(*this);
 }
+bool robotControl::setHomePose() {
+  bool _return = false;
+  robotControl_setHomePose helper;
+  helper.init();
+  if (!yarp().canWrite()) {
+    yError("Missing server method '%s'?","bool robotControl::setHomePose()");
+  }
+  bool ok = yarp().write(helper,helper);
+  return ok?helper._return:_return;
+}
 bool robotControl::goToHomePose() {
   bool _return = false;
   robotControl_goToHomePose helper;
   helper.init();
   if (!yarp().canWrite()) {
     yError("Missing server method '%s'?","bool robotControl::goToHomePose()");
+  }
+  bool ok = yarp().write(helper,helper);
+  return ok?helper._return:_return;
+}
+bool robotControl::setStartingPose() {
+  bool _return = false;
+  robotControl_setStartingPose helper;
+  helper.init();
+  if (!yarp().canWrite()) {
+    yError("Missing server method '%s'?","bool robotControl::setStartingPose()");
+  }
+  bool ok = yarp().write(helper,helper);
+  return ok?helper._return:_return;
+}
+bool robotControl::setEndPose() {
+  bool _return = false;
+  robotControl_setEndPose helper;
+  helper.init();
+  if (!yarp().canWrite()) {
+    yError("Missing server method '%s'?","bool robotControl::setEndPose()");
+  }
+  bool ok = yarp().write(helper,helper);
+  return ok?helper._return:_return;
+}
+bool robotControl::goToStartingPose() {
+  bool _return = false;
+  robotControl_goToStartingPose helper;
+  helper.init();
+  if (!yarp().canWrite()) {
+    yError("Missing server method '%s'?","bool robotControl::goToStartingPose()");
+  }
+  bool ok = yarp().write(helper,helper);
+  return ok?helper._return:_return;
+}
+bool robotControl::goToEndPose() {
+  bool _return = false;
+  robotControl_goToEndPose helper;
+  helper.init();
+  if (!yarp().canWrite()) {
+    yError("Missing server method '%s'?","bool robotControl::goToEndPose()");
+  }
+  bool ok = yarp().write(helper,helper);
+  return ok?helper._return:_return;
+}
+bool robotControl::explore() {
+  bool _return = false;
+  robotControl_explore helper;
+  helper.init();
+  if (!yarp().canWrite()) {
+    yError("Missing server method '%s'?","bool robotControl::explore()");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
@@ -262,16 +467,6 @@ bool robotControl::contact() {
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-bool robotControl::explore() {
-  bool _return = false;
-  robotControl_explore helper;
-  helper.init();
-  if (!yarp().canWrite()) {
-    yError("Missing server method '%s'?","bool robotControl::explore()");
-  }
-  bool ok = yarp().write(helper,helper);
-  return ok?helper._return:_return;
-}
 bool robotControl::quit() {
   bool _return = false;
   robotControl_quit helper;
@@ -292,9 +487,75 @@ bool robotControl::read(yarp::os::ConnectionReader& connection) {
   if (direct) tag = reader.readTag();
   while (!reader.isError()) {
     // TODO: use quick lookup, this is just a test
+    if (tag == "setHomePose") {
+      bool _return;
+      _return = setHomePose();
+      yarp::os::idl::WireWriter writer(reader);
+      if (!writer.isNull()) {
+        if (!writer.writeListHeader(1)) return false;
+        if (!writer.writeBool(_return)) return false;
+      }
+      reader.accept();
+      return true;
+    }
     if (tag == "goToHomePose") {
       bool _return;
       _return = goToHomePose();
+      yarp::os::idl::WireWriter writer(reader);
+      if (!writer.isNull()) {
+        if (!writer.writeListHeader(1)) return false;
+        if (!writer.writeBool(_return)) return false;
+      }
+      reader.accept();
+      return true;
+    }
+    if (tag == "setStartingPose") {
+      bool _return;
+      _return = setStartingPose();
+      yarp::os::idl::WireWriter writer(reader);
+      if (!writer.isNull()) {
+        if (!writer.writeListHeader(1)) return false;
+        if (!writer.writeBool(_return)) return false;
+      }
+      reader.accept();
+      return true;
+    }
+    if (tag == "setEndPose") {
+      bool _return;
+      _return = setEndPose();
+      yarp::os::idl::WireWriter writer(reader);
+      if (!writer.isNull()) {
+        if (!writer.writeListHeader(1)) return false;
+        if (!writer.writeBool(_return)) return false;
+      }
+      reader.accept();
+      return true;
+    }
+    if (tag == "goToStartingPose") {
+      bool _return;
+      _return = goToStartingPose();
+      yarp::os::idl::WireWriter writer(reader);
+      if (!writer.isNull()) {
+        if (!writer.writeListHeader(1)) return false;
+        if (!writer.writeBool(_return)) return false;
+      }
+      reader.accept();
+      return true;
+    }
+    if (tag == "goToEndPose") {
+      bool _return;
+      _return = goToEndPose();
+      yarp::os::idl::WireWriter writer(reader);
+      if (!writer.isNull()) {
+        if (!writer.writeListHeader(1)) return false;
+        if (!writer.writeBool(_return)) return false;
+      }
+      reader.accept();
+      return true;
+    }
+    if (tag == "explore") {
+      bool _return;
+      _return = explore();
       yarp::os::idl::WireWriter writer(reader);
       if (!writer.isNull()) {
         if (!writer.writeListHeader(1)) return false;
@@ -339,17 +600,6 @@ bool robotControl::read(yarp::os::ConnectionReader& connection) {
     if (tag == "contact") {
       bool _return;
       _return = contact();
-      yarp::os::idl::WireWriter writer(reader);
-      if (!writer.isNull()) {
-        if (!writer.writeListHeader(1)) return false;
-        if (!writer.writeBool(_return)) return false;
-      }
-      reader.accept();
-      return true;
-    }
-    if (tag == "explore") {
-      bool _return;
-      _return = explore();
       yarp::os::idl::WireWriter writer(reader);
       if (!writer.isNull()) {
         if (!writer.writeListHeader(1)) return false;
@@ -403,18 +653,41 @@ std::vector<std::string> robotControl::help(const std::string& functionName) {
   std::vector<std::string> helpString;
   if(showAll) {
     helpString.push_back("*** Available commands:");
+    helpString.push_back("setHomePose");
     helpString.push_back("goToHomePose");
+    helpString.push_back("setStartingPose");
+    helpString.push_back("setEndPose");
+    helpString.push_back("goToStartingPose");
+    helpString.push_back("goToEndPose");
+    helpString.push_back("explore");
     helpString.push_back("updateHomePose");
     helpString.push_back("updateContactPose");
     helpString.push_back("approach");
     helpString.push_back("contact");
-    helpString.push_back("explore");
     helpString.push_back("quit");
     helpString.push_back("help");
   }
   else {
+    if (functionName=="setHomePose") {
+      helpString.push_back("bool setHomePose() ");
+    }
     if (functionName=="goToHomePose") {
       helpString.push_back("bool goToHomePose() ");
+    }
+    if (functionName=="setStartingPose") {
+      helpString.push_back("bool setStartingPose() ");
+    }
+    if (functionName=="setEndPose") {
+      helpString.push_back("bool setEndPose() ");
+    }
+    if (functionName=="goToStartingPose") {
+      helpString.push_back("bool goToStartingPose() ");
+    }
+    if (functionName=="goToEndPose") {
+      helpString.push_back("bool goToEndPose() ");
+    }
+    if (functionName=="explore") {
+      helpString.push_back("bool explore() ");
     }
     if (functionName=="updateHomePose") {
       helpString.push_back("bool updateHomePose() ");
@@ -427,9 +700,6 @@ std::vector<std::string> robotControl::help(const std::string& functionName) {
     }
     if (functionName=="contact") {
       helpString.push_back("bool contact() ");
-    }
-    if (functionName=="explore") {
-      helpString.push_back("bool explore() ");
     }
     if (functionName=="quit") {
       helpString.push_back("bool quit() ");

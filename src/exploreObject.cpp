@@ -88,13 +88,18 @@ objectExploration::ExploreObject::~ExploreObject()
 bool objectExploration::ExploreObject::approach()
 {
   
-  _approachObjectCntrl->approach(*_armCartesianController);
+  return _approachObjectCntrl->approach(*_armCartesianController);
 }
 
 
 bool objectExploration::ExploreObject::goToHomePose()
 {
-  _approachObjectCntrl->goToHomepose(*_armCartesianController);
+ return _approachObjectCntrl->goToHomepose(*_armCartesianController);
+}
+
+bool objectExploration::ExploreObject::goToEndPose()
+{
+  return _approachObjectCntrl->goToEndPose(*_armCartesianController);
 }
 
 bool objectExploration::ExploreObject::updateContactPose()
@@ -104,6 +109,16 @@ bool objectExploration::ExploreObject::updateContactPose()
   orient.resize(4); // x,y,z,w prientation
   _armCartesianController->getPose(pos, orient);
   _approachObjectCntrl->updateContactpose(pos, orient);
+  return true;
+}
+
+bool objectExploration::ExploreObject::setEndPose()
+{
+  Vector pos, orient;
+  pos.resize(3); // x,y,z position 
+  orient.resize(4); // x,y,z,w prientation
+  _armCartesianController->getPose(pos, orient);
+  _approachObjectCntrl->setEndPose(pos, orient);
   return true;
 }
 

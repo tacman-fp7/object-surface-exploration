@@ -34,6 +34,10 @@ namespace objectExploration
     ObjectFeaturesThread(int period, ResourceFinder rf):RateThread(period), _tactileSum(0), _rf(rf){
       _armOrientation.resize(4);
       _armPosition.resize(3);
+      _desiredEndOrientation.resize(4);
+      _desiredEndPosition.resize(3);
+      _desiredStartingOrientation.resize(4);
+      _desiredStartingPosition.resize(3);
     };
     double getFingerForce(int nFinger){ return _tactileSum;};
     void run();
@@ -74,6 +78,14 @@ namespace objectExploration
     Mutex _armPoseMutex;
     Vector _armPosition;
     Vector _armOrientation;
+    
+  protected: // Make them private later 
+    Vector _desiredStartingPosition;
+    Vector _desiredStartingOrientation;
+    
+    Vector _desiredEndPosition;
+    Vector _desiredEndOrientation;
+    
     
     // A container for the features
   };

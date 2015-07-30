@@ -11,11 +11,48 @@
 using namespace yarp::os;
 using namespace yarp::math;
 
+
 robotControlServer::robotControlServer()
 {
   _stopModule = false;
 }
 
+bool robotControlServer::setHomePose()
+{
+  return _exploreObject->updateHomePose();
+}
+
+bool robotControlServer::goToHomePose()
+{
+  printf("Going to home position.");
+  return _exploreObject->goToHomePose();
+ 
+}
+
+bool robotControlServer::setStartingPose()
+{
+return _exploreObject->updateContactPose();
+}
+
+bool robotControlServer::goToStartingPose()
+{
+ return _exploreObject->approach();
+}
+
+
+
+//////
+bool robotControlServer::setEndPose()
+{
+  // Need to be implemented
+  return _exploreObject->setEndPose();
+}
+
+bool robotControlServer::goToEndPose()
+{
+return _exploreObject->goToEndPose();
+}
+//////
 
 robotControlServer::~robotControlServer()
 {
@@ -45,12 +82,7 @@ bool robotControlServer::approach()
   
 }
 
-bool robotControlServer::goToHomePose()
-{
-  printf("Going to home position.");
-  return _exploreObject->goToHomePose();
- 
-}
+
 
 bool robotControlServer::contact()
 {

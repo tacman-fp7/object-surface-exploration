@@ -10,6 +10,7 @@
 #include <yarp/sig/Vector.h>
 #include <exploreObject.h>
 
+using yarp::os::RFModule;
 
 struct robotControlData
 {
@@ -31,13 +32,23 @@ public:
   robotControlServer();
   virtual ~robotControlServer();
   
+  virtual bool setHomePose();
+  virtual bool setStartingPose();
+  virtual bool setEndPose();
   virtual bool goToHomePose();
+  virtual bool goToStartingPose();
+  virtual bool goToEndPose();
+  
+  
+  //virtual bool goToHomePose();
   virtual bool updateHomePose();
   virtual bool updateContactPose();
   virtual bool approach();
   virtual bool contact();
   virtual bool explore();
   virtual bool quit();
+  //virtual bool setStartingPoint();
+  //virtual bool setEndPoint();
   
   // RF module methods
   virtual bool attach(yarp::os::Port &source);

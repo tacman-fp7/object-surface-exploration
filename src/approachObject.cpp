@@ -12,6 +12,7 @@ objectExploration::ApproachObject::ApproachObject()
 {
  _contactPose_isValid = false; 
  _homePose_isValid = false;
+ _endPose_isValid = false;
   _contactPos.resize(POS_SIZE);
   _contactOrient.resize(ORIENT_SIZE);
   _homePos.resize(POS_SIZE);
@@ -37,6 +38,14 @@ bool objectExploration::ApproachObject::updateHomePose(Vector& pos, Vector& orie
   return true;
 }
 
+bool objectExploration::ApproachObject::setEndPose(Vector& pos, Vector& orient)
+{
+  _endPos = pos;
+  _endOrient = orient;
+  printf("End pose set %s : %s\n", _endPos.toString().c_str(), _endOrient.toString().c_str());
+  _endPose_isValid = true;
+}
+
 
 bool objectExploration::ApproachObject::goToHomepose(yarp::dev::ICartesianControl& armController)
 {
@@ -49,5 +58,17 @@ bool objectExploration::ApproachObject::goToHomepose(yarp::dev::ICartesianContro
   armController.goToPoseSync(_homePos, _homeOrient);
   armController.waitMotionDone(0.04);
   return true;
+}
+
+bool objectExploration::ApproachObject::goToEndPose(yarp::dev::ICartesianControl& armController)
+{
+
+  if(!_endPose_isValid)
+  {
+    cerr << "Error, end-pose is not initialised" << endl;
+    return false;
+  }
+   armController.goToPoseSync(_endPos, _endOrient);
+   return true;
 }
 
