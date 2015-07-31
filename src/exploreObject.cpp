@@ -29,6 +29,10 @@ objectExploration::ExploreObject::ExploreObject(yarp::dev::PolyDriver* deviceCon
    printf("The device driver is not valid. Aborting!\n");
    failed = true;
   }
+  
+  // configure the cartesian controller 
+  _armCartesianController->setTrajTime(4);
+  
   _approachObjectCntrl = new ApproachObjectManual; 
   
   ///////////// Use the the resourcr finder to configure ///////////
@@ -101,6 +105,21 @@ objectExploration::ExploreObject::~ExploreObject()
   
 }
 
+bool objectExploration::ExploreObject::goToStartingPose()
+{
+  Vector pos, orient;
+  pos.resize(3);
+  orient.resize(4);
+  if(_objectFeaturesThread->getStartingPose(pos, orient))
+  {
+    _armCartesianController->goToPoseSync(pos, orient);
+    return true;
+  }
+  
+  return false;
+  
+}
+
 bool objectExploration::ExploreObject::approach()
 {
   
@@ -115,7 +134,17 @@ bool objectExploration::ExploreObject::goToHomePose()
 
 bool objectExploration::ExploreObject::goToEndPose()
 {
-  return _approachObjectCntrl->goToEndPose(*_armCartesianController);
+  Vector pos, orient;
+  pos.resize(3); // x,y,z position 
+  orient.resize(4); // x,y,z,w prientation
+  if(_objectFeaturesThread->getDesiredEndPose(pos, orient))
+  {
+   _armCartesianController->goToPoseSync(pos, orient); 
+   return true;
+  }
+  return false;
+  
+  //return _approachObjectCntrl->goToEndPose(*_armCartesianController);
 }
 
 bool objectExploration::ExploreObject::updateContactPose()
@@ -186,6 +215,8 @@ bool objectExploration::ExploreObject::exploreObject(bool onOff)
     _maintainContactThread->stop();
      
     _exploreObjectThread->stop();
+    
+    
     
     cout << "Stopped the exploration" << endl;
     _exploreObjectOnOff = true;

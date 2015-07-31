@@ -36,7 +36,7 @@ return _exploreObject->updateContactPose();
 
 bool robotControlServer::goToStartingPose()
 {
- return _exploreObject->approach();
+ return _exploreObject->goToStartingPose();
 }
 
 

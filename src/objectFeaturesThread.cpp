@@ -44,17 +44,20 @@ void objectExploration::ObjectFeaturesThread::run()
   
   _tactileMutex.lock();
   // The first 12 are for the index finger, I am only using the 4 on the tip
-  _tactileSum = tactileData->get(1).asDouble();
-  _tactileSum += tactileData->get(2).asDouble();
-  _tactileSum += tactileData->get(10).asDouble();
-  _tactileSum += tactileData->get(11).asDouble();
+  _tactileSum = tactileData->get(12).asDouble();
+  _tactileSum += tactileData->get(13).asDouble();
+  _tactileSum += tactileData->get(21).asDouble();
+  _tactileSum += tactileData->get(22).asDouble();
   _tactileSum  /= 4;
   _tactileMutex.unlock();
   
-  //cout << "Buffer size:" << tactileData->size() << endl;
-  //cout << "Tactile data:" << endl;
-  //cout << tactileData->toString() << endl;
-  //cout << "Tactile sum: " << _tactileSum << endl;
+ /* cout << "Buffer size:" << tactileData->size() << endl;
+  cout << "Tactile data:" << endl;
+  for (int i = 12; i < 24; i++)
+    cout << tactileData->get(i).toString() << " ";
+  cout << endl;
+  cout << "Tactile average: " << _tactileSum << endl;
+  */
 }
 
 
@@ -67,20 +70,56 @@ bool objectExploration::ObjectFeaturesThread::threadInit()
   // TODO: This one definitely needs finger data, like whic finger
  
   Bottle &armConfig = _rf.findGroup("Arm");
+  Bottle* startingPose;
   if(!armConfig.isNull()){
    // Read the arm configuration
     _arm = armConfig.check("arm", Value("left")).asString();
     _robotName = armConfig.check("robotName", Value("icubSim")).asString();
     _controller = armConfig.check("controller", Value("Error")).asString();
-    _controllerName = armConfig.check("controllerName", Value("Error")).asString();
-   
+    _controllerName = armConfig.check("controllerName", Value("Error")).asString(); 
+    startingPose = armConfig.find("startingPose").asList();
+  
+  }
+  
+  //////// Initialise the startingPose //////
+  if(startingPose->size() < 7)
+    cout << "startingPose is invalid" << endl;
+  else
+  {
+   for(int i = 0; i < 3; i++)
+     _desiredStartingPosition[i] = startingPose->get(i).asDouble();
+   for(int i = 3; i < 7; i++)
+     _desiredStartingOrientation[i-3] = startingPose->get(i).asDouble();
+   _desiredStartingPose_isValid = true;
+  }
+  
    cout << "Configuring the objectFeaturesThread:" << endl;
    cout << "Robot name: " << _robotName << endl;
    cout << "Arm: " << _arm << endl;
    cout << "Controller: " << _controller << endl;
    cout << "Controller name: " << _controllerName << endl;
+   if(_desiredStartingPose_isValid)
+   {
+    cout << "Starting position: " << _desiredStartingPosition.toString() << endl;
+    cout << "Starting orientation: " << _desiredStartingOrientation.toString() << endl;
+   }
    cout << endl;
-  }
+   
+   //-0.249457	-0.138679	 0.160771 :
+   //0.073738	-0.049514	 0.996048	 2.517341
+   _desiredEndPosition.resize(3);
+   _desiredEndPosition[0] = -0.249457;
+   _desiredEndPosition[1] = -0.138679;
+   _desiredEndPosition[2] = 0.160771;
+   
+   _desiredEndOrientation.resize(4);
+   _desiredEndOrientation[0] = 0.073738;
+   _desiredEndOrientation[1] = -0.049514;
+   _desiredEndOrientation[2] = 0.996048;
+   _desiredEndOrientation[3] = 2.517341;
+   
+   _desiredEndPose_isValid = true;
+  
   
   
   /////////////////// Connect to the tactile sensor port /////////////////
@@ -121,6 +160,12 @@ void objectExploration::ObjectFeaturesThread::threadRelease()
 {
 yarp::os::RateThread::threadRelease();
 
-_tactilePort.close();
+
 }
 
+objectExploration::ObjectFeaturesThread::~ObjectFeaturesThread()
+{
+  
+  _tactilePort.close();
+  _armPositionPort.close();
+}

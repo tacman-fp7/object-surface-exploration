@@ -32,8 +32,8 @@ void objectExploration::MaintainContactThread::run()
   
   // Introduce a new waypoint 
   // currently hacking it to an increase in the height
-  px[2] += 0.001;
-  _objectFeatures->setWayPoint(px, po);
+  //px[2] += 0.001;
+  //_objectFeatures->setWayPoint(px, po);
   
   
 }

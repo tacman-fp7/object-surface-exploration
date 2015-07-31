@@ -8,6 +8,7 @@
 #include <yarp/sig/Vector.h>
 #include <yarp/os/ResourceFinder.h>
 #include <yarp/dev/CartesianControl.h>
+#include <objectFeaturesThread.h>
 
 using  yarp::sig::Vector;
 using yarp::os::ResourceFinder;
@@ -33,6 +34,8 @@ class ApproachObject{
     virtual bool setEndPose(Vector& pos, Vector& orient);
     virtual bool goToEndPose(yarp::dev::ICartesianControl& armController);
     
+private:
+  ObjectFeaturesThread* objectFeatures;
   protected: 
     // Starting pose
     Vector _contactPos; 

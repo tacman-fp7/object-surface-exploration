@@ -44,6 +44,7 @@ namespace objectExploration
       _desiredStartingOrientation.resize(4);
       _desiredStartingPosition.resize(3);
     };
+   ~ObjectFeaturesThread();
     double getFingerForce(int nFinger){ return _tactileSum;};
     void run();
     bool threadInit();
@@ -92,6 +93,16 @@ namespace objectExploration
        return _desiredEndPose_isValid;
     };
     
+    bool getStartingPose(Vector& pos, Vector& orient)
+    {
+      if(_desiredStartingPose_isValid)
+      {
+	pos = _desiredStartingPosition;
+	orient = _desiredStartingOrientation;
+      }
+      return _desiredStartingPose_isValid;
+      
+    }
     void setWayPoint(Vector pos, Vector orient)
     {
 	_wayPointPos = pos;

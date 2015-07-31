@@ -19,6 +19,7 @@ namespace objectExploration
   public:
     ExploreObject(yarp::dev::PolyDriver* deviceController, yarp::os::ResourceFinder& rf);
     ~ExploreObject();
+    bool goToStartingPose();
     bool approach();
     bool goToHomePose();
     bool updateHomePose();
