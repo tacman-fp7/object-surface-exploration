@@ -5,8 +5,6 @@
 #include <objectFeaturesThread.h>
 #include <objectClassifierThread.h>
 #include <yarp/dev/CartesianControl.h>
-#include <approachObject.h>
-#include <approachObjectManual.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/os/ResourceFinder.h>
 

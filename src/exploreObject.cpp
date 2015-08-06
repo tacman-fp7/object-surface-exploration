@@ -1,5 +1,4 @@
 #include <exploreObject.h>
-#include <approachObjectManual.h>
 #include <yarp/sig/Vector.h>
 #include <signal.h>
 #include <yarp/os/Bottle.h>
