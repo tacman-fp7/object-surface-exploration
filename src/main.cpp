@@ -2,25 +2,25 @@
  * Author: Nawid Jamali
  * Project: TACMAN
  */
-#include <stdio.h>
-#include <yarp/os/Time.h>
+
+//#include <yarp/os/Time.h>
 #include <iostream>
 #include <yarp/os/Network.h>
 #include <yarp/os/ResourceFinder.h>
-#include <yarp/sig/Image.h>
-#include <robotControlServer.h>
+#include <exploreObject.h>
 
-using namespace std;
+
 using namespace yarp::os;
-
+using namespace std;
 
 int main(int argc, char *argv[])
 {	
   Network yarp;
   if (!yarp.checkNetwork())
   {
-    printf("Could not contact yarp server, quitting.\n");
-    return false;
+	  
+	  cout << "Could not contact the Yarp server, quitting." << endl;
+	  return false;
   }
   
   yarp::os::ResourceFinder rf;
@@ -29,12 +29,12 @@ int main(int argc, char *argv[])
   rf.configure(argc, argv);
     
   // Create a robot control server
-  robotControlServer robotControllerModule;
+  objectExploration::ExploreObject objectExplorationModule(rf);
   
-  if(!robotControllerModule.configure(rf))
+  if(!objectExplorationModule.configure(rf))
     return 1;
+ 
+  return objectExplorationModule.runModule();
   
-  return robotControllerModule.runModule();
   
-  return 0;
 }

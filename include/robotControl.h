@@ -16,14 +16,10 @@ public:
   virtual bool setHomePose();
   virtual bool goToHomePose();
   virtual bool setStartingPose();
-  virtual bool setEndPose();
   virtual bool goToStartingPose();
+  virtual bool setEndPose();
   virtual bool goToEndPose();
-  virtual bool explore(const bool onOff);
-  virtual bool updateHomePose();
-  virtual bool updateContactPose();
-  virtual bool approach();
-  virtual bool contact();
+  virtual bool exploreObject(const bool onOff);
   virtual bool quit();
   virtual bool read(yarp::os::ConnectionReader& connection);
   virtual std::vector<std::string> help(const std::string& functionName="--all");

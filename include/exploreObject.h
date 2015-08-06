@@ -1,5 +1,5 @@
 #pragma once
-#include <approachObject.h>
+//#include <approachObject.h>
 #include <maintainContactThread.h>
 #include <explorationStrategyThread.h>
 #include <objectFeaturesThread.h>
@@ -10,39 +10,56 @@
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/os/ResourceFinder.h>
 
+#include <yarp/os/RFModule.h>
+#include <robotControl.h>
+
+using yarp::os::RFModule;
+
 // Explore object interface for various object exploration strategies
 
 namespace objectExploration
 {
-  class ExploreObject
+  class ExploreObject: public robotControl, public RFModule
   {
   public:
-    ExploreObject(yarp::dev::PolyDriver* deviceController, yarp::os::ResourceFinder& rf);
+    ExploreObject(yarp::os::ResourceFinder& rf);
     ~ExploreObject();
-    bool goToStartingPose();
-    bool approach();
+
+  
+  public: // Methods related to the robot control
+    
+    bool setHomePose();
     bool goToHomePose();
-    bool updateHomePose();
-    bool updateContactPose();
+    bool setStartingPose();
+    bool goToStartingPose();
     bool setEndPose();
     bool goToEndPose();
-  
-    //bool approachObject(){/*do nothing at the moment.*/ };
-    bool maintainContact(bool onOff){return false;/*do nothing at the moment.*/ };
-    bool exploreObject(bool onOff);
+    bool exploreObject(const bool onOff);
+    bool quit();
     
-  private:
+  public: // Methods related to the RF module
+    bool attach(yarp::os::Port &source);
+    bool configure( yarp::os::ResourceFinder &rf );
+    bool updateModule();
+    bool close();
+
+    
+  private: // members related to the rf module
+    // The port for the robot control server
+    yarp::os::Port _robotControl_port;
+    
+  private: // Private members
     // It has to be instantiated with the desired approachObject instance
-    ApproachObject* _approachObjectCntrl; // Approach the object
+    //ApproachObject* _approachObjectCntrl; // Approach the object
     MaintainContactThread* _maintainContactThread; // maintain contact
     ExplorationStrategyThread* _exploreObjectThread; // run appropriate exploration strategy
     ObjectClassifierThread* _objectClassifierThread; // run appropriate classifier
     yarp::os::ResourceFinder _rf;
-    
-  private:
     ObjectFeaturesThread* _objectFeaturesThread; // This is shared between threads. Must have sync
-    yarp::dev::PolyDriver* _deviceController; // The view depends on the use
+    yarp::dev::PolyDriver _deviceController; // The view depends on the use
     yarp::dev::ICartesianControl* _armCartesianController;
     bool _exploreObjectOnOff;
+    
+    bool _stopModule;
   };
 } // End of namespace

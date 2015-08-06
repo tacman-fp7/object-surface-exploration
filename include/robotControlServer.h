@@ -14,10 +14,7 @@ using yarp::os::RFModule;
 
 struct robotControlData
 {
-  //std::string device;
-  //std::string local;
-  //std::string remote;
-  //std::string remoteTactile;
+
   std::string arm;
   std::string robotName;
   std::string controller;
@@ -26,7 +23,7 @@ struct robotControlData
 
 typedef struct robotControlData t_robotControlData ;
 
-class robotControlServer: public robotControl, public yarp::os::RFModule
+class robotControlServer: public robotControl, public RFModule
 {
 public:
   robotControlServer();
@@ -59,19 +56,22 @@ public:
 
   
 private:
-  yarp::os::Port _port;
+  
+  // The port for the robot control server
+  yarp::os::Port _robotControl_port;
+  
+  // Flag to allow remote killing of the module
   bool _stopModule;
-  objectExploration::ExploreObject* _exploreObject; //Not doing anything with it yet
   
-  //objectExploration::ApproachObject* _approachObjectCntrl; 
-  t_robotControlData _robotcontrolData;
+  // All functions are delegated to this
+  objectExploration::ExploreObject* _exploreObject; 
+  
+
   yarp::dev::PolyDriver _deviceController;
-  //yarp::dev::ICartesianControl* _armCartesianController;
-    
-  yarp::sig::Vector xd, od; // Testing only
-  double t; // Testing only
   
+  t_robotControlData _robotcontrolData;
   
+
   
 };
 

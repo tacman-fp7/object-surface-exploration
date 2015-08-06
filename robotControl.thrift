@@ -3,14 +3,10 @@ service robotControl {
 	bool setHomePose();
 	bool goToHomePose();
 	bool setStartingPose();
-	bool setEndPose();
 	bool goToStartingPose();
+	bool setEndPose();
 	bool goToEndPose();
-	bool explore(1: bool onOff);
-	bool updateHomePose();
-	bool updateContactPose();
-  	bool approach();
-	bool contact();
+	bool exploreObject(1: bool onOff);
 	bool quit();
 	
 }
