@@ -13,7 +13,7 @@ namespace objectExploration
   public:
     ExplorationStrategyThread(int period, ICartesianControl* robotCartesianController,
 			      ObjectFeaturesThread* objectFeatures):RateThread(period),
-    _objectFeatures(objectFeatures), _robotCartesianController(robotCartesianController){};
+    _objectFeatures(objectFeatures), _robotCartesianController(robotCartesianController){}
     
   protected:
     ObjectFeaturesThread* _objectFeatures;

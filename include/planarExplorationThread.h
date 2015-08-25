@@ -10,7 +10,7 @@ namespace objectExploration
 PlanarExplorationThread(int period, ICartesianControl* robotCartesianController,
 			ObjectFeaturesThread* objectFeatures):
 			ExplorationStrategyThread(period, robotCartesianController, 
-						  objectFeatures){};
+                          objectFeatures){}
     void run();
     bool threadInit();
     void threadRelease();

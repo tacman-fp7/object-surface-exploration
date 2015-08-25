@@ -8,7 +8,7 @@ find_package(YARP REQUIRED)
 include_directories(${YARP_INCLUDE_DIRS} ./include/)
 
 
-set(HEADERS  include/robotControl.h  include/explorationStrategyThread.h include/planarExplorationThread.h
+set(HEADERS  include/robotControl.h include/exploreObject.h include/explorationStrategyThread.h include/planarExplorationThread.h
 include/maintainContactThread.h include/objectClassifierThread.h include/objectFeaturesThread.h)
 
 set(SOURCES src/main.cpp src/robotControl.cpp src/exploreObject.cpp
