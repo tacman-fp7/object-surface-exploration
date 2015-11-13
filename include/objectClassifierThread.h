@@ -4,16 +4,16 @@
 
 namespace objectExploration
 {
-  class ObjectClassifierThread: public yarp::os::RateThread
-  {
-  public:
-  
+class ObjectClassifierThread: public yarp::os::RateThread
+{
+public:
+
     ObjectClassifierThread(int period):RateThread(period){};
     bool update(){/*Do nothing at the moment*/};
     void rund(){};
-  private:
+private:
     // A container for the features
     ObjectFeaturesThread* _objectFeatures;
-  };
-  
-} // End of namespace
+};
+
+} // namespace objectExploration

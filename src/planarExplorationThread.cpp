@@ -2,11 +2,15 @@
 #include <iostream>
 #include <yarp/sig/Vector.h>
 
+namespace objectExploration
+{
+
+
 using std::cout;
 using std::endl;
 using yarp::sig::Vector;
 
-void objectExploration::PlanarExplorationThread::run()
+void PlanarExplorationThread::run()
 {
   //cout << "Running the PlanarExplorationThread" << endl;
   Vector px, ox;
@@ -15,14 +19,15 @@ void objectExploration::PlanarExplorationThread::run()
 }
 
 
-bool objectExploration::PlanarExplorationThread::threadInit()
+bool PlanarExplorationThread::threadInit()
 {
   return true;
 }
 
 
-void objectExploration::PlanarExplorationThread::threadRelease()
+void PlanarExplorationThread::threadRelease()
 {
   
 }
 
+} // namespace objectExploration

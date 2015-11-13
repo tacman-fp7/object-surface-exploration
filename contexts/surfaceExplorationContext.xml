@@ -10,14 +10,6 @@
 
 	<!-- Required modules -->
 	<module>
-		<name>object-surface-exploration</name>
-		<parameters>--context object-surface-exploration</parameters>
-		<node>localhost</node>
-		<display></display>
-		<stdio></stdio>
-	</module>
-
-	<module>
 	  <name>iCub_SIM</name>
 	  <node>localhost</node>
 	</module>

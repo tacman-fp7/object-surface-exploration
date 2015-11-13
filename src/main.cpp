@@ -25,6 +25,7 @@ int main(int argc, char *argv[])
   
   yarp::os::ResourceFinder rf;
   rf.setVerbose(true);
+  rf.setDefaultContext("object-surface-exploration");
   rf.setDefaultConfigFile("objectExplorationConfig.ini");
   rf.configure(argc, argv);
     

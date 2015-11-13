@@ -6,7 +6,8 @@ service robotControl {
 	bool goToStartingPose();
 	bool setEndPose();
 	bool goToEndPose();
-	bool exploreObject(1: bool onOff);
+	bool startExploring();
+	bool stopExploring();
 	bool quit();
 	
 }

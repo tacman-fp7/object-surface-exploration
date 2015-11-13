@@ -1,24 +1,25 @@
 #pragma once
 #include <yarp/os/RateThread.h>
 #include <objectFeaturesThread.h>
-
+#include <pidController.h>
 
 namespace objectExploration
 {
-  class MaintainContactThread: public yarp::os::RateThread
-  {
-  public:
+class MaintainContactThread: public yarp::os::RateThread
+{
+public:
 
     MaintainContactThread(int period, ObjectFeaturesThread* objectFeatures):RateThread(period), _desiredForce(0),
-    _objectFeatures(objectFeatures){};
+        _objectFeatures(objectFeatures){}
     bool setDesiredForce(double desiredForce);
     void run();
     bool threadInit();
     void threadRelease();
-  private:
+private:
     // things
     double _desiredForce;
     ObjectFeaturesThread* _objectFeatures;
-  };
-  
-} // End of namespace
+    PidController _positionPID;
+};
+
+} // namespace objectExploration

@@ -54,11 +54,18 @@ public:
   virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
-class robotControl_exploreObject : public yarp::os::Portable {
+class robotControl_startExploring : public yarp::os::Portable {
 public:
-  bool onOff;
   bool _return;
-  void init(const bool onOff);
+  void init();
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
+};
+
+class robotControl_stopExploring : public yarp::os::Portable {
+public:
+  bool _return;
+  void init();
   virtual bool write(yarp::os::ConnectionWriter& connection);
   virtual bool read(yarp::os::ConnectionReader& connection);
 };
@@ -197,15 +204,14 @@ void robotControl_goToEndPose::init() {
   _return = false;
 }
 
-bool robotControl_exploreObject::write(yarp::os::ConnectionWriter& connection) {
+bool robotControl_startExploring::write(yarp::os::ConnectionWriter& connection) {
   yarp::os::idl::WireWriter writer(connection);
-  if (!writer.writeListHeader(2)) return false;
-  if (!writer.writeTag("exploreObject",1,1)) return false;
-  if (!writer.writeBool(onOff)) return false;
+  if (!writer.writeListHeader(1)) return false;
+  if (!writer.writeTag("startExploring",1,1)) return false;
   return true;
 }
 
-bool robotControl_exploreObject::read(yarp::os::ConnectionReader& connection) {
+bool robotControl_startExploring::read(yarp::os::ConnectionReader& connection) {
   yarp::os::idl::WireReader reader(connection);
   if (!reader.readListReturn()) return false;
   if (!reader.readBool(_return)) {
@@ -215,9 +221,29 @@ bool robotControl_exploreObject::read(yarp::os::ConnectionReader& connection) {
   return true;
 }
 
-void robotControl_exploreObject::init(const bool onOff) {
+void robotControl_startExploring::init() {
   _return = false;
-  this->onOff = onOff;
+}
+
+bool robotControl_stopExploring::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(1)) return false;
+  if (!writer.writeTag("stopExploring",1,1)) return false;
+  return true;
+}
+
+bool robotControl_stopExploring::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void robotControl_stopExploring::init() {
+  _return = false;
 }
 
 bool robotControl_quit::write(yarp::os::ConnectionWriter& connection) {
@@ -304,12 +330,22 @@ bool robotControl::goToEndPose() {
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-bool robotControl::exploreObject(const bool onOff) {
+bool robotControl::startExploring() {
   bool _return = false;
-  robotControl_exploreObject helper;
-  helper.init(onOff);
+  robotControl_startExploring helper;
+  helper.init();
   if (!yarp().canWrite()) {
-    yError("Missing server method '%s'?","bool robotControl::exploreObject(const bool onOff)");
+    yError("Missing server method '%s'?","bool robotControl::startExploring()");
+  }
+  bool ok = yarp().write(helper,helper);
+  return ok?helper._return:_return;
+}
+bool robotControl::stopExploring() {
+  bool _return = false;
+  robotControl_stopExploring helper;
+  helper.init();
+  if (!yarp().canWrite()) {
+    yError("Missing server method '%s'?","bool robotControl::stopExploring()");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
@@ -400,14 +436,20 @@ bool robotControl::read(yarp::os::ConnectionReader& connection) {
       reader.accept();
       return true;
     }
-    if (tag == "exploreObject") {
-      bool onOff;
-      if (!reader.readBool(onOff)) {
-        reader.fail();
-        return false;
-      }
+    if (tag == "startExploring") {
       bool _return;
-      _return = exploreObject(onOff);
+      _return = startExploring();
+      yarp::os::idl::WireWriter writer(reader);
+      if (!writer.isNull()) {
+        if (!writer.writeListHeader(1)) return false;
+        if (!writer.writeBool(_return)) return false;
+      }
+      reader.accept();
+      return true;
+    }
+    if (tag == "stopExploring") {
+      bool _return;
+      _return = stopExploring();
       yarp::os::idl::WireWriter writer(reader);
       if (!writer.isNull()) {
         if (!writer.writeListHeader(1)) return false;
@@ -467,7 +509,8 @@ std::vector<std::string> robotControl::help(const std::string& functionName) {
     helpString.push_back("goToStartingPose");
     helpString.push_back("setEndPose");
     helpString.push_back("goToEndPose");
-    helpString.push_back("exploreObject");
+    helpString.push_back("startExploring");
+    helpString.push_back("stopExploring");
     helpString.push_back("quit");
     helpString.push_back("help");
   }
@@ -490,8 +533,11 @@ std::vector<std::string> robotControl::help(const std::string& functionName) {
     if (functionName=="goToEndPose") {
       helpString.push_back("bool goToEndPose() ");
     }
-    if (functionName=="exploreObject") {
-      helpString.push_back("bool exploreObject(const bool onOff) ");
+    if (functionName=="startExploring") {
+      helpString.push_back("bool startExploring() ");
+    }
+    if (functionName=="stopExploring") {
+      helpString.push_back("bool stopExploring() ");
     }
     if (functionName=="quit") {
       helpString.push_back("bool quit() ");

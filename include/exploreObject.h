@@ -17,14 +17,14 @@ using yarp::os::RFModule;
 
 namespace objectExploration
 {
-  class ExploreObject: public robotControl, public RFModule
-  {
-  public:
+class ExploreObject: public robotControl, public RFModule
+{
+public:
     ExploreObject(yarp::os::ResourceFinder& rf);
     ~ExploreObject();
 
-  
-  public: // Methods related to the robot control
+
+public: // Methods related to the robot control
     
     bool setHomePose();
     bool goToHomePose();
@@ -32,21 +32,22 @@ namespace objectExploration
     bool goToStartingPose();
     bool setEndPose();
     bool goToEndPose();
-    bool exploreObject(const bool onOff);
+    bool startExploring();
+    bool stopExploring();
     bool quit();
     
-  public: // Methods related to the RF module
+public: // Methods related to the RF module
     bool attach(yarp::os::Port &source);
     bool configure( yarp::os::ResourceFinder &rf );
     bool updateModule();
     bool close();
 
     
-  private: // members related to the rf module
+private: // members related to the rf module
     // The port for the robot control server
     yarp::os::Port _robotControl_port;
     
-  private: // Private members
+private: // Private members
     // It has to be instantiated with the desired approachObject instance
     //ApproachObject* _approachObjectCntrl; // Approach the object
     MaintainContactThread* _maintainContactThread; // maintain contact
@@ -59,5 +60,5 @@ namespace objectExploration
     bool _exploreObjectOnOff;
     
     bool _stopModule;
-  };
-} // End of namespace
+};
+} // namespace objectExploration
