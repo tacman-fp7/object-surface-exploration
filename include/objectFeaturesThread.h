@@ -7,6 +7,7 @@
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Image.h>
 #include <yarp/os/Mutex.h>
+#include <yarp/os/RpcClient.h>
 
 // This object is used to update features which will be shared between object objectExploraton
 // and object classification threads
@@ -22,7 +23,7 @@ using yarp::os::ResourceFinder;
 using yarp::sig::Vector;
 using yarp::os::Mutex;
 using std::string;
-
+using yarp::os::RpcClient;
 
 namespace objectExploration
 {
@@ -58,6 +59,7 @@ public:
     const int& getMaintainContactPeriod();
     const int& getExplorationThreadPeriod();
     const double& getDesiredForce();
+    void writeToFingerController(std::string command);
 
 private:
     void printPose(Vector& pos, Vector& prient);
@@ -100,6 +102,11 @@ protected:
     BufferedPort<Bottle> _contactForceCoPPort;
     double _contactForce;
 
+
+    /// Using Massimo's controller to maintainContact
+    //RpcClient _fingerController_RPC;
+    BufferedPort<Bottle> _fingerController_port;
+    string _fingerControllerPortName;
 
     /// Clean them a little later /////
 

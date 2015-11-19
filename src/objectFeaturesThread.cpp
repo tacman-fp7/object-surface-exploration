@@ -55,6 +55,20 @@ void ObjectFeaturesThread::run()
 }
 
 
+/// Urgh
+
+void ObjectFeaturesThread::writeToFingerController(std::string command)
+{
+    //Bottle rpcCommand, rpcResponse;
+    //rpcCommand.addString(command);
+
+    Bottle &cmd = _fingerController_port.prepare();
+    cmd.clear();
+    cmd.addString(command);
+    //cmd.addString("add task appr");
+    _fingerController_port.writeStrict();
+
+}
 
 /////////// Accessor and mutators ///////////
 
@@ -199,6 +213,15 @@ bool ObjectFeaturesThread::threadInit()
     Network::connect("/force-reconstruction/left_index/force-CoP",
                      "/objectExploration/tactileSensors/" + _arm + "_hand");
 
+    /// Connect to the finger controller RPC port
+
+    if(!_fingerController_port.open("/objectExploration/fingerController:o"))
+    {
+        ret = false;
+        printf("Failed to open local fingerController rpc port\n");
+    }
+
+    Network::connect("/objectExploration/fingerController:o", _fingerControllerPortName);
 
 
 
@@ -291,6 +314,9 @@ bool ObjectFeaturesThread::readParameters()
         _controller = robotParameters.check("controller", Value("Error")).asString();
         _controllerName = robotParameters.check("controllerName", Value("Error")).asString();
         _trajectoryTime = robotParameters.check("_trajectoryTime", Value(5)).asInt();
+        _fingerControllerPortName = robotParameters.check("fingerControllerPortName",
+                                                          Value("/plantIdentification/cmd:i")).asString();
+
     }
 
 

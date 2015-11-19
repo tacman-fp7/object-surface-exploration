@@ -2,7 +2,7 @@
 #include <yarp/sig/Vector.h>
 #include <signal.h>
 #include <yarp/os/Bottle.h>
-#include <planarExplorationThread.h>
+#include <tappingExplorationthread.h>
 
 
 namespace objectExploration {
@@ -159,8 +159,8 @@ bool ExploreObject::startExploring()
         _armCartesianController->waitMotionDone();
 
         // Then explore the object
-        if(!_maintainContactThread->start())
-            ret = false;
+        //if(!_maintainContactThread->start())
+        //    ret = false;
 
         if(!_exploreObjectThread->start())
             ret = false;
@@ -194,7 +194,7 @@ bool ExploreObject::stopExploring()
         if(!this->goToStartingPose())
             ret = false;
 
-        _maintainContactThread->stop();
+        //_maintainContactThread->stop();
 
         _exploreObjectThread->stop();
 
@@ -261,7 +261,7 @@ bool ExploreObject::configure(yarp::os::ResourceFinder& rf )
                                                        _objectFeaturesThread);
     _maintainContactThread->setDesiredForce(systemParameters.getDesiredForce());
 
-    _exploreObjectThread = new PlanarExplorationThread(systemParameters.getExplorationThreadPeriod(),
+    _exploreObjectThread = new TappingExplorationThread(systemParameters.getExplorationThreadPeriod(),
                                                        _armCartesianController,_objectFeaturesThread);
 
 
