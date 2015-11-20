@@ -2,6 +2,7 @@
 #include <yarp/os/Network.h>
 #include <yarp/os/Value.h>
 #include <yarp/os/Bottle.h>
+#include <vector>
 
 
 namespace objectExploration
@@ -62,10 +63,32 @@ void ObjectFeaturesThread::writeToFingerController(std::string command)
     //Bottle rpcCommand, rpcResponse;
     //rpcCommand.addString(command);
 
-    Bottle &cmd = _fingerController_port.prepare();
-    cmd.clear();
-    cmd.addString(command);
-    //cmd.addString("add task appr");
+    Bottle &message = _fingerController_port.prepare();
+    message.clear();
+
+    message.clear();
+
+    //// Copied from Massimo
+    if (!command.empty()){
+
+        char *commandChar = new char[command.length() + 1];
+        strcpy(commandChar,command.c_str());
+        std::vector<string> wordList;
+        char *target;
+
+        target = strtok(commandChar," ");
+        while(target != NULL){
+            wordList.push_back(target);
+            target = strtok(NULL," ");
+        }
+
+        for(size_t i = 0; i < wordList.size(); i++){
+            message.add(yarp::os::Value(wordList[i]));
+        }
+
+    }
+
+
     _fingerController_port.writeStrict();
 
 }
@@ -195,7 +218,7 @@ bool ObjectFeaturesThread::threadInit()
 
 
 
- /*   /////////////////// Connect to the tactile sensor port /////////////////
+    /*   /////////////////// Connect to the tactile sensor port /////////////////
     if(!_tactilePort.open("/objectExploration/tactileSensors/" + _arm + "_hand")){
         ret = false;
         printf("Failed to open local tactile port\n");
