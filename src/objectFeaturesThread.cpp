@@ -23,6 +23,7 @@ using yarp::os::Mutex;
 void ObjectFeaturesThread::run()
 {
 
+    //cout << _dbgtag << "Still running!" << endl;
     ///// Read the tactile data ///////
     //Bottle* tactileData = _tactilePort.read(true); // Wait for data
     Bottle* contactForceCoP = _contactForceCoPPort.read(true); // Wait for data
@@ -31,6 +32,12 @@ void ObjectFeaturesThread::run()
     ///  TODO: this should be changed to the fingertip position ///
     Bottle* armPose = _armPositionPort.read(true);
 
+    if(contactForceCoP == NULL || armPose == NULL)
+    {
+        // TODO: figure out why it gets run when deleting the thread
+        cerr << _dbgtag << "Run: Null pointers!" << endl;
+        return;
+    }
     if(contactForceCoP->isNull() || armPose->isNull())
     {
         cerr << "Did not receive tactile or arm data" << endl;
@@ -161,6 +168,7 @@ void ObjectFeaturesThread::setWayPoint ( Vector pos, Vector orient )
     //printPose(pos, orient);
 }
 
+
 bool ObjectFeaturesThread::getWayPoint ( Vector& pos, Vector& orient, bool invalidateWayPoint )
 {
     if(_wayPoint_isValid)
@@ -216,7 +224,7 @@ bool ObjectFeaturesThread::threadInit()
 
     bool ret = true;
 
-
+  _dbgtag = "objectFeaturesThread.cpp: ";
 
     /*   /////////////////// Connect to the tactile sensor port /////////////////
     if(!_tactilePort.open("/objectExploration/tactileSensors/" + _arm + "_hand")){
@@ -275,13 +283,12 @@ bool ObjectFeaturesThread::threadInit()
 void ObjectFeaturesThread::threadRelease()
 {
 
-    _contactForceCoPPort.close();
-    _armPositionPort.close();
-
 }
 
 ObjectFeaturesThread::~ObjectFeaturesThread()
 {
+    _contactForceCoPPort.close();
+    _armPositionPort.close();
 
 }
 

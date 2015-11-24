@@ -25,6 +25,8 @@ ExploreObject::ExploreObject(yarp::os::ResourceFinder& rf)
     _stopModule = false;
     _rf = rf;
 
+    _maintainContactThread = NULL;
+
     int readTactilePeriod;
     Bottle& explorationParameters = _rf.findGroup("ExplorationParameters");
     if(!explorationParameters.isNull())
@@ -38,22 +40,24 @@ ExploreObject::ExploreObject(yarp::os::ResourceFinder& rf)
 
 ExploreObject::~ExploreObject()
 {
+
     //cout << "Here" << endl;
 
     if(_maintainContactThread != NULL)
     {
-        _maintainContactThread->stop();
+
         delete(_maintainContactThread);
         _maintainContactThread = NULL;
     }
     //cout << "Here2" << endl;
     if(_objectFeaturesThread != NULL)
     {
-        _objectFeaturesThread->stop();
+
         delete(_objectFeaturesThread);
         _objectFeaturesThread = NULL;
     }
     //cout << "Here3" << endl;
+
 
 }
 
@@ -225,45 +229,6 @@ bool ExploreObject::configure(yarp::os::ResourceFinder& rf )
 
 
     bool ret = true;
-    ObjectFeaturesThread& systemParameters = *_objectFeaturesThread; // Just for better naming
-
-    /////////////////////////////// Configure the controller //////////////////////////////////
-    yarp::os::Property deviceOptions;
-    deviceOptions.put("device", systemParameters.getControllerType());
-    deviceOptions.put("local", "/client_controller/" + systemParameters.getArm() + "_arm");
-    deviceOptions.put("remote", "/" + systemParameters.getRobotName()
-                      + "/" + systemParameters.getControllerName() + "/" + systemParameters.getArm() + "_arm");
-
-    cout << "Device options: " << deviceOptions.toString() << endl;
-
-    if(!_deviceController.open(deviceOptions))
-    {
-        cerr << "Failed to open the device: " << systemParameters.getControllerType() << endl;
-        return false;
-    }
-
-    /////// Open a Cartesian controller ////////
-
-    if(!_deviceController.view(_armCartesianController))
-    {
-        cerr << "Failed to get a Cartesian view" << endl;
-        return false;
-    }
-
-    //////////////// Configure the Cartesian driver //////////////
-    _armCartesianController->setTrajTime(systemParameters.getTrajectoryTime());
-
-    ////////// Setting up the tactile data reading thread ////////////
-    _objectFeaturesThread->start();
-
-    ////////// Setting up the MaintainContactThread ///////////////////////
-    _maintainContactThread = new MaintainContactThread(systemParameters.getMaintainContactPeriod(),
-                                                       _objectFeaturesThread);
-    _maintainContactThread->setDesiredForce(systemParameters.getDesiredForce());
-
-    _exploreObjectThread = new TappingExplorationThread(systemParameters.getExplorationThreadPeriod(),
-                                                       _armCartesianController,_objectFeaturesThread);
-
 
     // Check if in the config file we have a name for the server
     string moduleName = rf.check("moduleName", Value("robotControlServer"),
@@ -271,13 +236,76 @@ bool ExploreObject::configure(yarp::os::ResourceFinder& rf )
 
     setName(moduleName.c_str());
 
+    _dbgtag = "exploreObject.cpp: ";
+
+
+
+    ObjectFeaturesThread& systemParameters = *_objectFeaturesThread; // Just for better naming
+
+    ///////////////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////// Configure the controller //////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////
+
+    yarp::os::Property deviceOptions;
+    deviceOptions.put("device", systemParameters.getControllerType());
+    deviceOptions.put("local", "/client_controller/" + systemParameters.getArm() + "_arm");
+    deviceOptions.put("remote", "/" + systemParameters.getRobotName()
+                      + "/" + systemParameters.getControllerName() + "/" + systemParameters.getArm() + "_arm");
+
+    cout << _dbgtag << "Device options: " << deviceOptions.toString() << endl;
+
+    if(!_deviceController.open(deviceOptions))
+    {
+        cerr << _dbgtag << "Failed to open the device: " << systemParameters.getControllerType() << endl;
+        return false;
+    }
+
+    // Open a Cartesian controller
+
+    if(!_deviceController.view(_armCartesianController))
+    {
+        cerr << _dbgtag << "Failed to get a Cartesian view" << endl;
+        return false;
+    }
+
+    // Remember the contorller context ID, restore when closing the port
+    _armCartesianController->storeContext(&_cartCtrlStartupIDstartupID);
+
+    // Set the trajectory time
+    _armCartesianController->setTrajTime(systemParameters.getTrajectoryTime());
+
+
+    // Open an encoder view
+    if(!_deviceController.view(_armEncoders))
+    {
+        cerr << _dbgtag << "Failed to open Encoder view" << endl;
+    }
+    ////////////////////////////////////////////////////////////////////////////////////////
+    ////////// Setting up the tactile data reading thread //////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////
+    _objectFeaturesThread->start();
+
+    ////////////////////////////////////////////////////////////////////////////////////////
+    ////////// Setting up the MaintainContactThread ////////////////////////////////////////
+    ////////// at the meoment it is achieved using Massimo's code //////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////
+    _maintainContactThread = new MaintainContactThread(systemParameters.getMaintainContactPeriod(),
+                                                       _objectFeaturesThread);
+    _maintainContactThread->setDesiredForce(systemParameters.getDesiredForce());
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////// Setting up the exploration strategy thread ///////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    _exploreObjectThread = new TappingExplorationThread(systemParameters.getExplorationThreadPeriod(),
+                                                       _armCartesianController,_objectFeaturesThread);
+
 
 
 
     std::string portName= "/";
-    portName+= getName();
+    portName+= getName() +"/rpc:i";
     if (!_robotControl_port.open(portName.c_str())) {
-        cout << getName() << ": Unable to open port " << portName << endl;
+        cerr << _dbgtag << ": Unable to open port " << portName << endl;
         return false;
     }
 
@@ -292,9 +320,28 @@ bool ExploreObject::close()
 {
 
 
+    ////
+    if(_objectFeaturesThread != NULL)
+        _objectFeaturesThread->askToStop();
+
+
+
+
+    ////
+
+
+
     // Close neatly, this function is called when Ctl+C is registered
+    /// To be safe, stop the control
+    _armCartesianController->stopControl();
+
+    /// Store the old context to return the robot to the settings before
+    /// this module
+    _armCartesianController->restoreContext(_cartCtrlStartupIDstartupID);
+    _deviceController.close();
+
     _robotControl_port.close();
-    _deviceController.close();                                // Close the device controller
+                                  // Close the device controller
 
 
     return true;

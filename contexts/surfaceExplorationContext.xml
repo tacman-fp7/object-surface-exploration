@@ -26,6 +26,12 @@
 	  <node>localhost</node>
 	</module>
   
+        <module>
+		<name>plantIdentification</name>
+		<parameters>--from confFCObjectExploration.ini --whichHand right --headEnabled false</parameters>
+		<node>icub15</node>
+	</module>
+
   
   
 	<!--<connection> 

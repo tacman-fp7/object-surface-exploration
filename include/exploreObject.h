@@ -7,6 +7,7 @@
 #include <yarp/dev/CartesianControl.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/os/ResourceFinder.h>
+#include <yarp/dev/IEncoders.h>
 
 #include <yarp/os/RFModule.h>
 #include <robotControl.h>
@@ -57,8 +58,15 @@ private: // Private members
     ObjectFeaturesThread* _objectFeaturesThread; // This is shared between threads. Must have sync
     yarp::dev::PolyDriver _deviceController; // The view depends on the use
     yarp::dev::ICartesianControl* _armCartesianController;
+
+    yarp::dev::IEncoders* _armEncoders;
+
+    int _cartCtrlStartupIDstartupID; // Context ID of the controller at the start
+
     bool _exploreObjectOnOff;
     
     bool _stopModule;
+
+    std::string _dbgtag;
 };
 } // namespace objectExploration

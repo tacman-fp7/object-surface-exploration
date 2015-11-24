@@ -8,6 +8,7 @@
 #include <yarp/sig/Image.h>
 #include <yarp/os/Mutex.h>
 #include <yarp/os/RpcClient.h>
+#include <string>
 
 // This object is used to update features which will be shared between object objectExploraton
 // and object classification threads
@@ -118,6 +119,7 @@ protected:
     Vector _wayPointPos;
     Vector _wayPointOrient;
 
+    std::string _dbgtag;// = "objectFeaturesThread.cpp: ";
 
 };
 
