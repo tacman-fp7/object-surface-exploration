@@ -18,25 +18,31 @@ void TappingExplorationThread::run()
 
     /// Position the hand at the waypoint
     Vector px, ox;
-    _objectFeatures->getWayPoint(px, ox);
-    _robotCartesianController->goToPoseSync(px, ox);
-    _robotCartesianController->waitMotionDone();
-
+    if(_objectFeatures->getWayPoint(px, ox))
+    {
+        // Go to the wayPoint if only it is a valid wayPoint.
+        _robotCartesianController->goToPoseSync(px, ox);
+        _robotCartesianController->waitMotionDone();
+    }
 
     /// Tell the finger controller to approach the object
 
     //_objectFeatures->writeToFingerController("task add open");
-    _objectFeatures->writeToFingerController("task add appr");
-    _objectFeatures->writeToFingerController("task add ctrl 30");
+ /*   _objectFeatures->writeToFingerController("task add appr");
+    _objectFeatures->writeToFingerController("task add ctrl 20");
     _objectFeatures->writeToFingerController("start");
+*/
+
+    //yarp::os::Time::delay(10);
+
+   // _objectFeatures->writeToFingerController("open");
 
 
-     yarp::os::Time::delay(10);
+     _objectFeatures->writeToFingerController("task add appr");
+     _objectFeatures->writeToFingerController("start");
 
-     _objectFeatures->writeToFingerController("open");
 
-    // If there is no contact move further down, esle
-    // activate the maintain contact
+
 
     // Wait for a short period
 

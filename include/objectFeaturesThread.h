@@ -9,6 +9,9 @@
 #include <yarp/os/Mutex.h>
 #include <yarp/os/RpcClient.h>
 #include <string>
+#include <yarp/dev/CartesianControl.h>
+#include <yarp/dev/IEncoders.h>
+
 
 // This object is used to update features which will be shared between object objectExploraton
 // and object classification threads
@@ -61,6 +64,8 @@ public:
     const int& getExplorationThreadPeriod();
     const double& getDesiredForce();
     void writeToFingerController(std::string command);
+    void setArmController_jnt(yarp::dev::IEncoders *jointCtrl);
+    void setArmController_cart(yarp::dev::ICartesianControl * cartesianCtrl);
 
 private:
     void printPose(Vector& pos, Vector& prient);
@@ -72,6 +77,9 @@ protected:
     string _robotName;
     string _controller;
     string _controllerName;
+    string _moduleName;
+    string _whichFinger;
+
     int _trajectoryTime;
 
     ////// Exploration parameters ///////
@@ -97,7 +105,7 @@ protected:
 
     //////// Object Features ////////////
     //BufferedPort<Bottle> _tactilePort;
-    BufferedPort<Bottle> _armPositionPort;
+   // BufferedPort<Bottle> _armPositionPort;
     Mutex _tactileMutex;
     //double _tactileSum;
     BufferedPort<Bottle> _contactForceCoPPort;
@@ -120,6 +128,16 @@ protected:
     Vector _wayPointOrient;
 
     std::string _dbgtag;// = "objectFeaturesThread.cpp: ";
+
+    //// The port to read the joint information
+
+    yarp::dev::IEncoders *_armJointCtrl;
+    yarp::dev::ICartesianControl *_armCartesianCtrl;
+
+    double _proximalJointAngle;
+    int _proximalJoint_index;
+
+    //BufferedPort<Bottle> _armJointPort_in;
 
 };
 

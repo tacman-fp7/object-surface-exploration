@@ -29,27 +29,33 @@ void ObjectFeaturesThread::run()
     Bottle* contactForceCoP = _contactForceCoPPort.read(true); // Wait for data
 
     //// Read the corresponding arm position. //////
-    ///  TODO: this should be changed to the fingertip position ///
-    Bottle* armPose = _armPositionPort.read(true);
+    //Bottle* armPose = _armPositionPort.read(true);
 
-    if(contactForceCoP == NULL || armPose == NULL)
+    if(contactForceCoP == NULL )
     {
-        // TODO: figure out why it gets run when deleting the thread
+        // TODO: figure out why it gets run when deleting the thread  <--- becuase it is was waiting for the tactile data
         cerr << _dbgtag << "Run: Null pointers!" << endl;
         return;
     }
-    if(contactForceCoP->isNull() || armPose->isNull())
+    if(contactForceCoP->isNull())
     {
         cerr << "Did not receive tactile or arm data" << endl;
         return;
     }
 
+    double encoderValue;
     _armPoseMutex.lock();
-    for (int i = 0; i < 3; i++)
+    _armCartesianCtrl->getPose(_armPosition, _armOrientation);
+    /*for (int i = 0; i < 3; i++)
         _armPosition[i] = armPose->get(i).asDouble();
     for (int i = 3; i < 7; i++)
-        _armOrientation[i-3] = armPose->get(i).asDouble();
+        _armOrientation[i-3] = armPose->get(i).asDouble();*/
+
+    _armJointCtrl->getEncoder(_proximalJoint_index, &encoderValue);
+
     _armPoseMutex.unlock();
+
+    cout << _armPosition.toString() << " : " << _proximalJoint_index << " : " << encoderValue << endl;
 
     //cout << armPose->toString() << endl << endl;
     //cout << _armPosition.toString() << endl;
@@ -236,46 +242,69 @@ bool ObjectFeaturesThread::threadInit()
                      "/objectExploration/tactileSensors/" + _arm + "_hand");
 */
     ////////////////// Connect to the forceCoP port ///////////////////////
-    if(!_contactForceCoPPort.open("/objectExploration/tactileSensors/" + _arm + "_hand")){
+    if(!_contactForceCoPPort.open("/" + _moduleName + "/skin/" + _arm + "_hand/" + _whichFinger + "/force-CoP:i"))
+    {
         ret = false;
-        printf("Failed to open local tactile port\n");
+        cerr << _dbgtag << "Failed to open " << "/" << _moduleName << "/skin" << _arm << "_hand/" <<
+                _whichFinger << "/force-CoP:i" << endl;
+//        printf("Failed to open local tactile port\n");
     }
 
-    Network::connect("/force-reconstruction/left_index/force-CoP",
-                     "/objectExploration/tactileSensors/" + _arm + "_hand");
+    ///////////////////////////////////////
+    //TODO: Change the incoming port!
+    ////////////////////////////////////////
+    Network::connect("/force-reconstruction/right_index/force-CoP",
+                     "/" + _moduleName + "/skin/" + _arm + "_hand/" + _whichFinger + "/force-CoP:i");
 
     /// Connect to the finger controller RPC port
 
-    if(!_fingerController_port.open("/objectExploration/fingerController:o"))
+    if(!_fingerController_port.open("/" + _moduleName + "/" + _arm + "_hand/" + _whichFinger + "/command:o"))
     {
         ret = false;
-        printf("Failed to open local fingerController rpc port\n");
+        cerr << _dbgtag << "Failed to open local fingerController port" << endl;
     }
 
-    Network::connect("/objectExploration/fingerController:o", _fingerControllerPortName);
+    Network::connect("/" + _moduleName + "/" + _arm + "_hand/" + _whichFinger + "/command:o",
+                     _fingerControllerPortName);
 
 
 
-    /////////////// Opening amr pose port and connecting to it //////////////
-    if(!_armPositionPort.open("/objectExploration/" + _arm + "_arm/pose"))
+    /////////////// Opening arm pose port and connecting to it //////////////
+  /*  if(!_armPositionPort.open("/" + _moduleName + "/" + _controllerName + "/" + _arm + "_arm/pose:i"))
     {
         ret = false;
         cout << "Failed to open local arm pose port" << endl;
     }
     //icubSim/cartesianController/left_arm/state:o
-    if(!Network::connect("/" + _robotName + "/" + _controllerName + "/" + _arm + "_arm/state:o",
-                         "/objectExploration/" + _arm + "_arm/pose"))
+    if(!Network::connect("/" + _robotName  + "/" + _controllerName + "/" + _arm + "_arm/state:o",
+                         "/" + _moduleName + "/" + _controllerName + "/" + _arm + "_arm/pose:i"))
     {
         ret = false;
-        cerr << "Failed to connect to the arm pose port" << endl;
+        cerr << _dbgtag << "Failed to connect to the arm pose port" << endl;
     }
+*/
+    ///////////////////////////////////////////////////////////////////////////////
+    ///// Open the joint port and connect to it ///////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////
+    /*if(!_armJointPort_in.open("/" + _moduleName + "/" + _arm + "_arm/state:i" ))
+    {
+        ret = false;
+        cerr << _dbgtag << "Failed to open local arm state port" << endl;
+    }
+
+
+    if(!Network::connect("/" + _robotName + "/" + _arm + "_arm/state:o", "/" + _moduleName + "/" + _arm + "_arm/state:i"))
+    {
+        ret = false;
+        cerr << _dbgtag << "Failed to connect to the arm state port" << endl;
+    }*/
 
     // TODO: figure out why removing this crashes the application
     // is it because the the network connection needs time?
     if(ret)
         cout << "Object features thread configured" << endl;
     else
-        cerr << "Error, object features thread failed during configuration" << endl;
+        cerr << _dbgtag << "Error, object features thread failed during configuration" << endl;
 
     return ret;
 }
@@ -288,8 +317,18 @@ void ObjectFeaturesThread::threadRelease()
 ObjectFeaturesThread::~ObjectFeaturesThread()
 {
     _contactForceCoPPort.close();
-    _armPositionPort.close();
+    //_armPositionPort.close();
 
+}
+
+void ObjectFeaturesThread::setArmController_cart(yarp::dev::ICartesianControl *cartesianCtrl)
+{
+    _armCartesianCtrl = cartesianCtrl;
+}
+
+void ObjectFeaturesThread::setArmController_jnt(yarp::dev::IEncoders *jointCtrl)
+{
+    _armJointCtrl = jointCtrl;
 }
 
 ObjectFeaturesThread::ObjectFeaturesThread ( int period, ResourceFinder rf ) : RateThread ( period )
@@ -327,6 +366,12 @@ ObjectFeaturesThread::ObjectFeaturesThread ( int period, ResourceFinder rf ) : R
     _contactForce = 0;
     _rf = rf;
 
+    _armCartesianCtrl = NULL;
+    _armJointCtrl = NULL;
+
+    _proximalJointAngle = 0;
+    _proximalJoint_index = 0;
+
     ////////////// read the parameters from the config file ///////////////
     this->readParameters();
 }
@@ -334,6 +379,8 @@ ObjectFeaturesThread::ObjectFeaturesThread ( int period, ResourceFinder rf ) : R
 bool ObjectFeaturesThread::readParameters()
 {
 
+    _moduleName = _rf.check("moduleName", Value("object-exploration-server"),
+                                 "module name (string)").asString().c_str();
 
 
     Bottle &robotParameters = _rf.findGroup("RobotParameters");
@@ -346,6 +393,7 @@ bool ObjectFeaturesThread::readParameters()
         _trajectoryTime = robotParameters.check("_trajectoryTime", Value(5)).asInt();
         _fingerControllerPortName = robotParameters.check("fingerControllerPortName",
                                                           Value("/plantIdentification/cmd:i")).asString();
+        _whichFinger = robotParameters.check("whichFinger", Value("left_index")).asString();
 
     }
 
@@ -411,6 +459,11 @@ bool ObjectFeaturesThread::readParameters()
     cout << "Read tactile sensors thread period: " << _readTactilePeriod << endl;
     cout << "Exploration thread period: " << _explorationThreadPeriod << endl;
     cout << endl;
+
+    if(_whichFinger.compare(_whichFinger.size()-5, 5, "index")==0)
+        _proximalJoint_index = 11;
+    else
+        _proximalJoint_index = 9;
 
 }
 

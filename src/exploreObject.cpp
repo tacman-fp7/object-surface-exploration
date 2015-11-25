@@ -27,6 +27,9 @@ ExploreObject::ExploreObject(yarp::os::ResourceFinder& rf)
 
     _maintainContactThread = NULL;
 
+
+    //// TODO: I save system parameters here that I use in this module.
+    /// This is not a good idea. I should change it.
     int readTactilePeriod;
     Bottle& explorationParameters = _rf.findGroup("ExplorationParameters");
     if(!explorationParameters.isNull())
@@ -231,7 +234,7 @@ bool ExploreObject::configure(yarp::os::ResourceFinder& rf )
     bool ret = true;
 
     // Check if in the config file we have a name for the server
-    string moduleName = rf.check("moduleName", Value("robotControlServer"),
+    string moduleName = rf.check("moduleName", Value("object-exploration-server"),
                                  "module name (string)").asString().c_str();
 
     setName(moduleName.c_str());
@@ -242,13 +245,15 @@ bool ExploreObject::configure(yarp::os::ResourceFinder& rf )
 
     ObjectFeaturesThread& systemParameters = *_objectFeaturesThread; // Just for better naming
 
+
     ///////////////////////////////////////////////////////////////////////////////////////////
     /////////////////////////////// Configure the controller //////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////
 
     yarp::os::Property deviceOptions;
     deviceOptions.put("device", systemParameters.getControllerType());
-    deviceOptions.put("local", "/client_controller/" + systemParameters.getArm() + "_arm");
+    deviceOptions.put("local", "/" + moduleName
+                      + "/" + systemParameters.getControllerName() + "/" + systemParameters.getArm() + "_arm");
     deviceOptions.put("remote", "/" + systemParameters.getRobotName()
                       + "/" + systemParameters.getControllerName() + "/" + systemParameters.getArm() + "_arm");
 
@@ -275,14 +280,42 @@ bool ExploreObject::configure(yarp::os::ResourceFinder& rf )
     _armCartesianController->setTrajTime(systemParameters.getTrajectoryTime());
 
 
+    //////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////        Joint Control                     /////////////////
+    //////////////////////////////////////////////////////////////////////////////////////
+
+    yarp::os::Property optionsJnt;
+    optionsJnt.put("device", "remote_controlboard");
+    optionsJnt.put("local", "/" + moduleName + "/" + systemParameters.getArm() + "_arm/joint");                 //local port names
+    optionsJnt.put("remote", "/" + systemParameters.getRobotName()
+                    + "/" + systemParameters.getArm() + "_arm");
+
+    //"/icubSim/right_arm");
+
+    cout << _dbgtag << "Device options: " << optionsJnt.toString() << endl;
+
+    if(!_deviceController_joint.open(optionsJnt))
+    {
+        cerr << _dbgtag << "Failed to open the device: " << "urgh" << endl; //systemParameters.getControllerType() << endl;
+        return false;
+    }
+
+
     // Open an encoder view
-    if(!_deviceController.view(_armEncoders))
+    if(!_deviceController_joint.view(_armEncoders))
     {
         cerr << _dbgtag << "Failed to open Encoder view" << endl;
     }
+
+    //_armCartesianController->getPose()
     ////////////////////////////////////////////////////////////////////////////////////////
     ////////// Setting up the tactile data reading thread //////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////
+
+
+    _objectFeaturesThread->setArmController_cart(_armCartesianController);
+    _objectFeaturesThread->setArmController_jnt(_armEncoders);
+
     _objectFeaturesThread->start();
 
     ////////////////////////////////////////////////////////////////////////////////////////
@@ -298,6 +331,7 @@ bool ExploreObject::configure(yarp::os::ResourceFinder& rf )
     //////////////////////////////////////////////////////////////////////////////////////////////////
     _exploreObjectThread = new TappingExplorationThread(systemParameters.getExplorationThreadPeriod(),
                                                        _armCartesianController,_objectFeaturesThread);
+
 
 
 
@@ -339,6 +373,9 @@ bool ExploreObject::close()
     /// this module
     _armCartesianController->restoreContext(_cartCtrlStartupIDstartupID);
     _deviceController.close();
+
+
+    _deviceController_joint.close();
 
     _robotControl_port.close();
                                   // Close the device controller

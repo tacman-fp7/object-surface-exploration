@@ -58,7 +58,7 @@ private: // Private members
     ObjectFeaturesThread* _objectFeaturesThread; // This is shared between threads. Must have sync
     yarp::dev::PolyDriver _deviceController; // The view depends on the use
     yarp::dev::ICartesianControl* _armCartesianController;
-
+    yarp::dev::PolyDriver _deviceController_joint;
     yarp::dev::IEncoders* _armEncoders;
 
     int _cartCtrlStartupIDstartupID; // Context ID of the controller at the start
