@@ -22,7 +22,7 @@ void MaintainContactThread::run()
 {
 
     // Read the tactile data
-    double force = _objectFeatures->getForce();
+    double force = _objectFeatures->getContactForce();
 
     // Read the corresponding robot positon
     //TODO: Gotta make sure there is deep copy constructor

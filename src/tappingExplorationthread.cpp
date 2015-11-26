@@ -14,6 +14,12 @@ using yarp::sig::Vector;
 void TappingExplorationThread::run()
 {
 
+    while(true)
+    {
+
+        if(isStopping())
+            break;
+
     cout << "Tapping away!" << endl;
 
     /// Position the hand at the waypoint
@@ -28,23 +34,45 @@ void TappingExplorationThread::run()
     /// Tell the finger controller to approach the object
 
     //_objectFeatures->writeToFingerController("task add open");
- /*   _objectFeatures->writeToFingerController("task add appr");
+    /*   _objectFeatures->writeToFingerController("task add appr");
     _objectFeatures->writeToFingerController("task add ctrl 20");
     _objectFeatures->writeToFingerController("start");
 */
 
     //yarp::os::Time::delay(10);
 
-   // _objectFeatures->writeToFingerController("open");
+    // _objectFeatures->writeToFingerController("open");
 
 
-     _objectFeatures->writeToFingerController("task add appr");
-     _objectFeatures->writeToFingerController("start");
+    _objectFeatures->writeToFingerController("task add appr");
+    _objectFeatures->writeToFingerController("start");
 
 
 
 
-    // Wait for a short period
+    // Wait for a contact or the distal angle being beyond certain limit
+    bool inContact = true;
+ /*   while(_objectFeatures->getContactForce() < 1)
+    {
+        if(_objectFeatures->getProximalJointAngle() > 60)
+        {
+            inContact = false;
+            break;
+        }
+    }
+*/
+
+
+    // Check if we are in contact with the object
+    if(inContact)
+    {
+        cout << "We have contact!" << endl;
+
+        _objectFeatures->writeToFingerController("task add ctrl 20");
+        _objectFeatures->writeToFingerController("start");
+    }
+
+
 
     // Move the finger to open postion
 
@@ -55,7 +83,12 @@ void TappingExplorationThread::run()
     //while(true)
     //    ;
 
+    yarp::os::Time::delay(3);
 
+    _objectFeatures->writeToFingerController("stop");
+
+
+}
 
 }
 

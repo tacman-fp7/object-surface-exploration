@@ -29,10 +29,21 @@
         <module>
 		<name>plantIdentification</name>
 		<parameters>--from confFCObjectExploration.ini --whichHand right --headEnabled false</parameters>
-		<node>icub15</node>
+		<node>localhost</node>
 	</module>
 
   
+        <module>
+		<name>force-reconstruction</name>
+		<parameters>--from forceReconstruction_fr100.ini</parameters>
+		<node>localhost</node>
+	</module>
+
+	<module>
+		<name>object-surface-exploration</name>
+		<parameters>--from objectExplorationConfig.ini</parameters>
+		<node>localhost</node>
+	</module>
   
 	<!--<connection> 
 		<from>/cam/right</from> 

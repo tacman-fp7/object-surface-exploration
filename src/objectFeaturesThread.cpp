@@ -23,7 +23,8 @@ using yarp::os::Mutex;
 void ObjectFeaturesThread::run()
 {
 
-    //cout << _dbgtag << "Still running!" << endl;
+
+    cout << _dbgtag << "Still running!" << endl;
     ///// Read the tactile data ///////
     //Bottle* tactileData = _tactilePort.read(true); // Wait for data
     Bottle* contactForceCoP = _contactForceCoPPort.read(true); // Wait for data
@@ -204,7 +205,7 @@ void ObjectFeaturesThread::printPose ( Vector& pos, Vector& orient )
     cout << "Orientation: " << orient.toString() << endl;
 }
 
-double ObjectFeaturesThread::getForce()
+double ObjectFeaturesThread::getContactForce()
 {
     _tactileMutex.lock();
     double temp = _contactForce;
@@ -247,14 +248,18 @@ bool ObjectFeaturesThread::threadInit()
         ret = false;
         cerr << _dbgtag << "Failed to open " << "/" << _moduleName << "/skin" << _arm << "_hand/" <<
                 _whichFinger << "/force-CoP:i" << endl;
+        _isExplorationValid = false;
 //        printf("Failed to open local tactile port\n");
     }
 
     ///////////////////////////////////////
     //TODO: Change the incoming port!
     ////////////////////////////////////////
-    Network::connect("/force-reconstruction/right_index/force-CoP",
-                     "/" + _moduleName + "/skin/" + _arm + "_hand/" + _whichFinger + "/force-CoP:i");
+    if(!Network::connect("/force-reconstruction/right_index/force-CoP",
+                     "/" + _moduleName + "/skin/" + _arm + "_hand/" + _whichFinger + "/force-CoP:i"))
+    {
+        _isExplorationValid = false;
+    }
 
     /// Connect to the finger controller RPC port
 
@@ -262,45 +267,17 @@ bool ObjectFeaturesThread::threadInit()
     {
         ret = false;
         cerr << _dbgtag << "Failed to open local fingerController port" << endl;
+         _isExplorationValid = false;
     }
 
-    Network::connect("/" + _moduleName + "/" + _arm + "_hand/" + _whichFinger + "/command:o",
-                     _fingerControllerPortName);
-
-
-
-    /////////////// Opening arm pose port and connecting to it //////////////
-  /*  if(!_armPositionPort.open("/" + _moduleName + "/" + _controllerName + "/" + _arm + "_arm/pose:i"))
+    if(!Network::connect("/" + _moduleName + "/" + _arm + "_hand/" + _whichFinger + "/command:o",
+                     _fingerControllerPortName))
     {
-        ret = false;
-        cout << "Failed to open local arm pose port" << endl;
-    }
-    //icubSim/cartesianController/left_arm/state:o
-    if(!Network::connect("/" + _robotName  + "/" + _controllerName + "/" + _arm + "_arm/state:o",
-                         "/" + _moduleName + "/" + _controllerName + "/" + _arm + "_arm/pose:i"))
-    {
-        ret = false;
-        cerr << _dbgtag << "Failed to connect to the arm pose port" << endl;
-    }
-*/
-    ///////////////////////////////////////////////////////////////////////////////
-    ///// Open the joint port and connect to it ///////////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////////
-    /*if(!_armJointPort_in.open("/" + _moduleName + "/" + _arm + "_arm/state:i" ))
-    {
-        ret = false;
-        cerr << _dbgtag << "Failed to open local arm state port" << endl;
+         _isExplorationValid = false;
     }
 
 
-    if(!Network::connect("/" + _robotName + "/" + _arm + "_arm/state:o", "/" + _moduleName + "/" + _arm + "_arm/state:i"))
-    {
-        ret = false;
-        cerr << _dbgtag << "Failed to connect to the arm state port" << endl;
-    }*/
 
-    // TODO: figure out why removing this crashes the application
-    // is it because the the network connection needs time?
     if(ret)
         cout << "Object features thread configured" << endl;
     else
@@ -339,6 +316,7 @@ ObjectFeaturesThread::ObjectFeaturesThread ( int period, ResourceFinder rf ) : R
     _maintainContactPeriod = 20;
     _readTactilePeriod = 20;
     _explorationThreadPeriod = 20;
+    _isExplorationValid = true; // assume true,
 
     _desiredFroce = 0;
 

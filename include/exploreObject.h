@@ -64,7 +64,7 @@ private: // Private members
     int _cartCtrlStartupIDstartupID; // Context ID of the controller at the start
 
     bool _exploreObjectOnOff;
-    
+    bool _exploreObjectValid;
     bool _stopModule;
 
     std::string _dbgtag;

@@ -22,11 +22,12 @@ ExploreObject::ExploreObject(yarp::os::ResourceFinder& rf)
 
     bool failed = false;
     _exploreObjectOnOff = true;
+    _exploreObjectValid = true; // Assume it is true, set it to false when something fails
     _stopModule = false;
     _rf = rf;
 
     _maintainContactThread = NULL;
-
+    _exploreObjectThread = NULL;
 
     //// TODO: I save system parameters here that I use in this module.
     /// This is not a good idea. I should change it.
@@ -46,6 +47,14 @@ ExploreObject::~ExploreObject()
 
     //cout << "Here" << endl;
 
+    if(_exploreObjectThread != NULL)
+    {
+        if(_exploreObjectThread->isRunning())
+            _exploreObjectThread->stop();
+
+        delete(_exploreObjectThread);
+        _exploreObjectThread = NULL;
+    }
     if(_maintainContactThread != NULL)
     {
 
@@ -55,6 +64,9 @@ ExploreObject::~ExploreObject()
     //cout << "Here2" << endl;
     if(_objectFeaturesThread != NULL)
     {
+
+        if(_objectFeaturesThread->isRunning())
+            _objectFeaturesThread->askToStop();
 
         delete(_objectFeaturesThread);
         _objectFeaturesThread = NULL;
@@ -157,6 +169,12 @@ bool ExploreObject::startExploring()
 
     cout << "Explore object starting" << endl;
 
+    if(!_exploreObjectValid || !_objectFeaturesThread->isExplorationValid())
+    {
+        cerr << _dbgtag << "Cannot start exploring, one or more of the dependencies have not been met" << endl;
+        return false;
+    }
+
     if(_exploreObjectOnOff)
     {
         //TODO: do some checks if the thread is running on so on
@@ -195,6 +213,11 @@ bool ExploreObject::stopExploring()
     }
     else
     {
+
+
+        _exploreObjectThread->stop();
+
+        cout << "stopped" << endl;
        // if(!this->goToHomePose())
        //     ret = false;
 
@@ -203,7 +226,7 @@ bool ExploreObject::stopExploring()
 
         //_maintainContactThread->stop();
 
-        _exploreObjectThread->stop();
+
 
 
 
@@ -262,6 +285,8 @@ bool ExploreObject::configure(yarp::os::ResourceFinder& rf )
     if(!_deviceController.open(deviceOptions))
     {
         cerr << _dbgtag << "Failed to open the device: " << systemParameters.getControllerType() << endl;
+        // cannot explore
+        _exploreObjectValid = false;
         return false;
     }
 
@@ -270,6 +295,8 @@ bool ExploreObject::configure(yarp::os::ResourceFinder& rf )
     if(!_deviceController.view(_armCartesianController))
     {
         cerr << _dbgtag << "Failed to get a Cartesian view" << endl;
+        // Cannot explore,
+        _exploreObjectValid = false;
         return false;
     }
 
@@ -290,13 +317,15 @@ bool ExploreObject::configure(yarp::os::ResourceFinder& rf )
     optionsJnt.put("remote", "/" + systemParameters.getRobotName()
                     + "/" + systemParameters.getArm() + "_arm");
 
-    //"/icubSim/right_arm");
+
 
     cout << _dbgtag << "Device options: " << optionsJnt.toString() << endl;
 
     if(!_deviceController_joint.open(optionsJnt))
     {
         cerr << _dbgtag << "Failed to open the device: " << "urgh" << endl; //systemParameters.getControllerType() << endl;
+        // Cannot explore
+        _exploreObjectValid = false;
         return false;
     }
 
@@ -305,6 +334,9 @@ bool ExploreObject::configure(yarp::os::ResourceFinder& rf )
     if(!_deviceController_joint.view(_armEncoders))
     {
         cerr << _dbgtag << "Failed to open Encoder view" << endl;
+        // Cannot explore
+        _exploreObjectValid = false;
+        return false;
     }
 
     //_armCartesianController->getPose()

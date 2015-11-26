@@ -38,14 +38,14 @@ class ObjectFeaturesThread: public RateThread
 public:
     ObjectFeaturesThread(int period, ResourceFinder rf);
     ~ObjectFeaturesThread();
-    double getFingerForce(int nFinger){ return _contactForce;};
+    //double getFingerForce(int nFinger){ return _contactForce;}
     void run();
     bool threadInit();
     void threadRelease();
     //////// accessros and mutators ////
     Vector getPosition();
     Vector getOrientation();
-    double getForce();
+    double getContactForce();
     void setEndPose(Vector& pos, Vector& orient);
     void setStartingPose(Vector& pos, Vector& orient);
     bool getDesiredEndPose(Vector& pos, Vector& orient);
@@ -66,6 +66,8 @@ public:
     void writeToFingerController(std::string command);
     void setArmController_jnt(yarp::dev::IEncoders *jointCtrl);
     void setArmController_cart(yarp::dev::ICartesianControl * cartesianCtrl);
+    bool isExplorationValid(){return _isExplorationValid;}
+    double getProximalJointAngle(){return _proximalJointAngle;}
 
 private:
     void printPose(Vector& pos, Vector& prient);
@@ -86,6 +88,7 @@ protected:
     int _maintainContactPeriod;
     int _readTactilePeriod;
     int _explorationThreadPeriod;
+    bool _isExplorationValid;
 
     double _desiredFroce;
     Mutex _desiredForceMutex;
