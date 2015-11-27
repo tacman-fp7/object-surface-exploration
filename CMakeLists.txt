@@ -4,6 +4,7 @@ set(PROJECTNAME object-surface-exploration)
 project(${PROJECTNAME})
 
 find_package(YARP REQUIRED)
+find_package(iCub REQUIRED)
 
 include_directories(${YARP_INCLUDE_DIRS} ./include/)
 
@@ -32,7 +33,7 @@ include(robotControl_thrift.cmake)
 
 add_executable(${PROJECTNAME} ${SOURCES})
 
-target_link_libraries(${PROJECTNAME} ${YARP_LIBRARIES})
+target_link_libraries(${PROJECTNAME} ${YARP_LIBRARIES} ${ICUB_LIBRARIES})
 
 install(TARGETS ${PROJECTNAME} DESTINATION ./bin)
 

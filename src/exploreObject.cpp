@@ -262,7 +262,7 @@ bool ExploreObject::configure(yarp::os::ResourceFinder& rf )
 
     setName(moduleName.c_str());
 
-    _dbgtag = "exploreObject.cpp: ";
+    _dbgtag = "\n\nexploreObject.cpp: ";
 
 
 
@@ -280,7 +280,7 @@ bool ExploreObject::configure(yarp::os::ResourceFinder& rf )
     deviceOptions.put("remote", "/" + systemParameters.getRobotName()
                       + "/" + systemParameters.getControllerName() + "/" + systemParameters.getArm() + "_arm");
 
-    cout << _dbgtag << "Device options: " << deviceOptions.toString() << endl;
+    cout << "Device options: " << deviceOptions.toString() << endl;
 
     if(!_deviceController.open(deviceOptions))
     {
@@ -319,7 +319,7 @@ bool ExploreObject::configure(yarp::os::ResourceFinder& rf )
 
 
 
-    cout << _dbgtag << "Device options: " << optionsJnt.toString() << endl;
+    cout << "Device options: " << optionsJnt.toString() << endl;
 
     if(!_deviceController_joint.open(optionsJnt))
     {

@@ -3,7 +3,9 @@
 #include <yarp/os/Value.h>
 #include <yarp/os/Bottle.h>
 #include <vector>
-
+#include <iCub/iKin/iKinFwd.h>
+#include <yarp/sig/Matrix.h>
+#include <yarp/math/Math.h>
 
 namespace objectExploration
 {
@@ -24,7 +26,7 @@ void ObjectFeaturesThread::run()
 {
 
 
-    cout << _dbgtag << "Still running!" << endl;
+    //cout << _dbgtag << "Still running!" << endl;
     ///// Read the tactile data ///////
     //Bottle* tactileData = _tactilePort.read(true); // Wait for data
     Bottle* contactForceCoP = _contactForceCoPPort.read(true); // Wait for data
@@ -56,7 +58,7 @@ void ObjectFeaturesThread::run()
 
     _armPoseMutex.unlock();
 
-    cout << _armPosition.toString() << " : " << _proximalJoint_index << " : " << encoderValue << endl;
+    //cout << _armPosition.toString() << " : " << _proximalJoint_index << " : " << encoderValue << endl;
 
     //cout << armPose->toString() << endl << endl;
     //cout << _armPosition.toString() << endl;
@@ -69,6 +71,39 @@ void ObjectFeaturesThread::run()
 
 }
 
+
+bool ObjectFeaturesThread::getFingertipPose(yarp::sig::Vector &pos, yarp::sig::Vector &orient)
+{
+    bool ret = true;
+
+    int nEncs;
+    _armJointCtrl->getAxes(&nEncs);
+    Vector encs(nEncs);
+    _armJointCtrl->getEncoders(encs.data());
+
+    Vector joints;
+    iCub::iKin::iCubFinger finger(_whichFinger);
+    finger.getChainJoints(encs, joints);
+    yarp::sig::Matrix tipFrame = finger.getH(joints); //getH((M_PI/180.0)*joints);
+
+    Vector tip_x = tipFrame.getCol(3);
+    Vector tip_o = yarp::math::dcm2axis(tipFrame);
+
+    // I should have a mutex here specsific for the carteria view!
+    _armPoseMutex.lock();
+
+   if(!_armCartesianCtrl->attachTipFrame(tip_x, tip_o))
+       ret = false;
+
+    if(!_armCartesianCtrl->getPose(pos, orient))
+        ret = false;
+
+    if(!_armCartesianCtrl->removeTipFrame())
+        ret = false;
+
+    _armPoseMutex.unlock();
+    return ret;
+}
 
 /// Urgh
 
@@ -231,7 +266,7 @@ bool ObjectFeaturesThread::threadInit()
 
     bool ret = true;
 
-  _dbgtag = "objectFeaturesThread.cpp: ";
+  _dbgtag = "\n\nObjectFeaturesThread.cpp: ";
 
     /*   /////////////////// Connect to the tactile sensor port /////////////////
     if(!_tactilePort.open("/objectExploration/tactileSensors/" + _arm + "_hand")){
@@ -255,10 +290,13 @@ bool ObjectFeaturesThread::threadInit()
     ///////////////////////////////////////
     //TODO: Change the incoming port!
     ////////////////////////////////////////
-    if(!Network::connect("/force-reconstruction/right_index/force-CoP",
+    if(!Network::connect("/force-reconstruction/" + _arm + "_index/force-CoP",
                      "/" + _moduleName + "/skin/" + _arm + "_hand/" + _whichFinger + "/force-CoP:i"))
     {
         _isExplorationValid = false;
+        cerr << _dbgtag << "Failed to connect:" << endl;
+        cerr << "/force-reconstruction/" + _arm + "_index/force-CoP" << " and" << endl;
+        cerr << "/" + _moduleName + "/skin/" + _arm + "_hand/" + _whichFinger + "/force-CoP:i" << endl << endl;
     }
 
     /// Connect to the finger controller RPC port
@@ -273,6 +311,9 @@ bool ObjectFeaturesThread::threadInit()
     if(!Network::connect("/" + _moduleName + "/" + _arm + "_hand/" + _whichFinger + "/command:o",
                      _fingerControllerPortName))
     {
+        cerr << _dbgtag << "Failed to connect" << endl;
+        cerr << "/" + _moduleName + "/" + _arm + "_hand/" + _whichFinger + "/command:o" << endl;
+        cerr << _fingerControllerPortName << endl << endl;
          _isExplorationValid = false;
     }
 

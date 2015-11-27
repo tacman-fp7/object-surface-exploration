@@ -68,6 +68,9 @@ public:
     void setArmController_cart(yarp::dev::ICartesianControl * cartesianCtrl);
     bool isExplorationValid(){return _isExplorationValid;}
     double getProximalJointAngle(){return _proximalJointAngle;}
+    bool setProximalAngle(double angle){
+        _armJointCtrl->setEncoder(_proximalJoint_index, angle);}
+    bool getFingertipPose(Vector& pos, Vector& orient);
 
 private:
     void printPose(Vector& pos, Vector& prient);
