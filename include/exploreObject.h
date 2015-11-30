@@ -8,7 +8,7 @@
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/os/ResourceFinder.h>
 #include <yarp/dev/IEncoders.h>
-
+#include <yarp/dev/IPositionControl.h>
 #include <yarp/os/RFModule.h>
 #include <robotControl.h>
 
@@ -35,6 +35,7 @@ public: // Methods related to the robot control
     bool goToEndPose();
     bool startExploring();
     bool stopExploring();
+    bool fingerSetAngle(const double angle);
     bool quit();
     
 public: // Methods related to the RF module
@@ -60,6 +61,7 @@ private: // Private members
     yarp::dev::ICartesianControl* _armCartesianController;
     yarp::dev::PolyDriver _deviceController_joint;
     yarp::dev::IEncoders* _armEncoders;
+    yarp::dev::IPositionControl *_armJointPositionController;
 
     int _cartCtrlStartupIDstartupID; // Context ID of the controller at the start
 

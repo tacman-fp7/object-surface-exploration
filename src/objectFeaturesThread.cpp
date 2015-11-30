@@ -54,7 +54,7 @@ void ObjectFeaturesThread::run()
     for (int i = 3; i < 7; i++)
         _armOrientation[i-3] = armPose->get(i).asDouble();*/
 
-    _armJointCtrl->getEncoder(_proximalJoint_index, &encoderValue);
+    _armEncoder->getEncoder(_proximalJoint_index, &encoderValue);
 
     _armPoseMutex.unlock();
 
@@ -77,14 +77,22 @@ bool ObjectFeaturesThread::getFingertipPose(yarp::sig::Vector &pos, yarp::sig::V
     bool ret = true;
 
     int nEncs;
-    _armJointCtrl->getAxes(&nEncs);
+
+    _armEncoder->getAxes(&nEncs);
     Vector encs(nEncs);
-    _armJointCtrl->getEncoders(encs.data());
+    _armEncoder->getEncoders(encs.data());
 
     Vector joints;
     iCub::iKin::iCubFinger finger(_whichFinger);
+    cout << _whichFinger << endl;
     finger.getChainJoints(encs, joints);
+
+    //Convert the joints to radians.
+    for (int j = 0; j < joints.size(); j++)
+        joints[j] *= M_PI/180;
+
     yarp::sig::Matrix tipFrame = finger.getH(joints); //getH((M_PI/180.0)*joints);
+
 
     Vector tip_x = tipFrame.getCol(3);
     Vector tip_o = yarp::math::dcm2axis(tipFrame);
@@ -204,6 +212,12 @@ bool ObjectFeaturesThread::getDesiredEndPose ( Vector& pos, Vector& orient )
 
 void ObjectFeaturesThread::setWayPoint ( Vector pos, Vector orient )
 {
+
+    if(pos[0] > 0)
+        return;
+    if(pos[2] < 0)
+        pos[2] = 0;
+
     _wayPointPos = pos;
     _wayPointOrient = orient;
     _wayPoint_isValid = true;
@@ -344,9 +358,11 @@ void ObjectFeaturesThread::setArmController_cart(yarp::dev::ICartesianControl *c
     _armCartesianCtrl = cartesianCtrl;
 }
 
-void ObjectFeaturesThread::setArmController_jnt(yarp::dev::IEncoders *jointCtrl)
+void ObjectFeaturesThread::setArmController_jnt(yarp::dev::IEncoders *encoder, yarp::dev::IPositionControl *jointCtrl)
 {
-    _armJointCtrl = jointCtrl;
+
+    _armEncoder = encoder;
+    _armJointPositionCtrl = jointCtrl;
 }
 
 ObjectFeaturesThread::ObjectFeaturesThread ( int period, ResourceFinder rf ) : RateThread ( period )
@@ -386,7 +402,8 @@ ObjectFeaturesThread::ObjectFeaturesThread ( int period, ResourceFinder rf ) : R
     _rf = rf;
 
     _armCartesianCtrl = NULL;
-    _armJointCtrl = NULL;
+    _armEncoder = NULL;
+    _armJointPositionCtrl = NULL;
 
     _proximalJointAngle = 0;
     _proximalJoint_index = 0;

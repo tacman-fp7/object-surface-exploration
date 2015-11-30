@@ -70,6 +70,15 @@ public:
   virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
+class robotControl_fingerSetAngle : public yarp::os::Portable {
+public:
+  double angle;
+  bool _return;
+  void init(const double angle);
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
+};
+
 class robotControl_quit : public yarp::os::Portable {
 public:
   bool _return;
@@ -246,6 +255,29 @@ void robotControl_stopExploring::init() {
   _return = false;
 }
 
+bool robotControl_fingerSetAngle::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(2)) return false;
+  if (!writer.writeTag("fingerSetAngle",1,1)) return false;
+  if (!writer.writeDouble(angle)) return false;
+  return true;
+}
+
+bool robotControl_fingerSetAngle::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void robotControl_fingerSetAngle::init(const double angle) {
+  _return = false;
+  this->angle = angle;
+}
+
 bool robotControl_quit::write(yarp::os::ConnectionWriter& connection) {
   yarp::os::idl::WireWriter writer(connection);
   if (!writer.writeListHeader(1)) return false;
@@ -346,6 +378,16 @@ bool robotControl::stopExploring() {
   helper.init();
   if (!yarp().canWrite()) {
     yError("Missing server method '%s'?","bool robotControl::stopExploring()");
+  }
+  bool ok = yarp().write(helper,helper);
+  return ok?helper._return:_return;
+}
+bool robotControl::fingerSetAngle(const double angle) {
+  bool _return = false;
+  robotControl_fingerSetAngle helper;
+  helper.init(angle);
+  if (!yarp().canWrite()) {
+    yError("Missing server method '%s'?","bool robotControl::fingerSetAngle(const double angle)");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
@@ -458,6 +500,22 @@ bool robotControl::read(yarp::os::ConnectionReader& connection) {
       reader.accept();
       return true;
     }
+    if (tag == "fingerSetAngle") {
+      double angle;
+      if (!reader.readDouble(angle)) {
+        reader.fail();
+        return false;
+      }
+      bool _return;
+      _return = fingerSetAngle(angle);
+      yarp::os::idl::WireWriter writer(reader);
+      if (!writer.isNull()) {
+        if (!writer.writeListHeader(1)) return false;
+        if (!writer.writeBool(_return)) return false;
+      }
+      reader.accept();
+      return true;
+    }
     if (tag == "quit") {
       bool _return;
       _return = quit();
@@ -511,6 +569,7 @@ std::vector<std::string> robotControl::help(const std::string& functionName) {
     helpString.push_back("goToEndPose");
     helpString.push_back("startExploring");
     helpString.push_back("stopExploring");
+    helpString.push_back("fingerSetAngle");
     helpString.push_back("quit");
     helpString.push_back("help");
   }
@@ -538,6 +597,9 @@ std::vector<std::string> robotControl::help(const std::string& functionName) {
     }
     if (functionName=="stopExploring") {
       helpString.push_back("bool stopExploring() ");
+    }
+    if (functionName=="fingerSetAngle") {
+      helpString.push_back("bool fingerSetAngle(const double angle) ");
     }
     if (functionName=="quit") {
       helpString.push_back("bool quit() ");

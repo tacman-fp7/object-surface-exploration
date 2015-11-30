@@ -11,7 +11,7 @@
 #include <string>
 #include <yarp/dev/CartesianControl.h>
 #include <yarp/dev/IEncoders.h>
-
+#include <yarp/dev/IPositionControl.h>
 
 // This object is used to update features which will be shared between object objectExploraton
 // and object classification threads
@@ -64,12 +64,26 @@ public:
     const int& getExplorationThreadPeriod();
     const double& getDesiredForce();
     void writeToFingerController(std::string command);
-    void setArmController_jnt(yarp::dev::IEncoders *jointCtrl);
+    void setArmController_jnt(yarp::dev::IEncoders *encoder, yarp::dev::IPositionControl *jointCtrl);
     void setArmController_cart(yarp::dev::ICartesianControl * cartesianCtrl);
     bool isExplorationValid(){return _isExplorationValid;}
     double getProximalJointAngle(){return _proximalJointAngle;}
     bool setProximalAngle(double angle){
-        _armJointCtrl->setEncoder(_proximalJoint_index, angle);}
+        if(_armJointPositionCtrl != NULL || _armEncoder !=NULL)
+        {
+
+            double encVal;
+            _armEncoder->getEncoder(_proximalJoint_index,&encVal);
+
+            std::cout << "Encoder: "  << encVal << std::endl;
+
+
+            return (_armJointPositionCtrl->positionMove(_proximalJoint_index, angle));
+
+        }
+        std::cerr << _dbgtag << "The joint controller is not initialised" << std::endl;
+        return false;
+    }
     bool getFingertipPose(Vector& pos, Vector& orient);
 
 private:
@@ -137,8 +151,9 @@ protected:
 
     //// The port to read the joint information
 
-    yarp::dev::IEncoders *_armJointCtrl;
+    yarp::dev::IEncoders *_armEncoder;
     yarp::dev::ICartesianControl *_armCartesianCtrl;
+    yarp::dev::IPositionControl *_armJointPositionCtrl;
 
     double _proximalJointAngle;
     int _proximalJoint_index;

@@ -78,7 +78,7 @@ void TappingExplorationThread::run()
             _objectFeatures->getFingertipPose(finger_pos, finger_orient);
 
             //Open the finger
-             _objectFeatures->writeToFingerController("open");
+             _objectFeatures->setProximalAngle(0);
 
              //Wait until it is greater than 10 degress
              while(_objectFeatures->getProximalJointAngle() > 10)
@@ -87,6 +87,10 @@ void TappingExplorationThread::run()
              // Move lower the hand
 
              cout << "Finger position: " << finger_pos.toString() << endl;
+
+             px[2] = finger_pos[2];
+
+             _objectFeatures->setWayPoint(px, ox);
 
              continue;
 

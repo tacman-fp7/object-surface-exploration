@@ -16,6 +16,18 @@ using yarp::os::Value;
 
 
 
+bool ExploreObject::fingerSetAngle(const double angle)
+{
+
+    Vector finger_pos, finger_orient;
+    finger_pos.resize(3);
+    finger_orient.resize(4);
+
+    _objectFeaturesThread->getFingertipPose(finger_pos, finger_orient);
+
+    cout << "Finger: " << finger_pos.toString() << endl;
+return _objectFeaturesThread->setProximalAngle(angle);
+}
 
 ExploreObject::ExploreObject(yarp::os::ResourceFinder& rf)
 {
@@ -339,6 +351,23 @@ bool ExploreObject::configure(yarp::os::ResourceFinder& rf )
         return false;
     }
 
+    if(!_deviceController_joint.view(_armJointPositionController))
+    {
+        cerr << _dbgtag << "Failed to open joint position controller view" << endl;
+        _exploreObjectValid = false;
+        return false;
+    }
+
+    int armJointsNum;
+    _armJointPositionController->getAxes(&armJointsNum);
+    // Set reference speeds
+    std::vector<double> refSpeeds(armJointsNum, 0);
+    _armJointPositionController->getRefSpeeds(&refSpeeds[0]);
+    for (int i = 11; i < 15; ++i) {
+        refSpeeds[i] = 50;
+    }
+    _armJointPositionController->setRefSpeeds(&refSpeeds[0]);
+
     //_armCartesianController->getPose()
     ////////////////////////////////////////////////////////////////////////////////////////
     ////////// Setting up the tactile data reading thread //////////////////////////////////
@@ -346,7 +375,7 @@ bool ExploreObject::configure(yarp::os::ResourceFinder& rf )
 
 
     _objectFeaturesThread->setArmController_cart(_armCartesianController);
-    _objectFeaturesThread->setArmController_jnt(_armEncoders);
+    _objectFeaturesThread->setArmController_jnt(_armEncoders, _armJointPositionController);
 
     _objectFeaturesThread->start();
 

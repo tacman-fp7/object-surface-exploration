@@ -22,26 +22,26 @@
 
 	<module>
 	  <name>iKinCartesianSolver</name>
-	  <parameters>--context simCartesianControl --part left_arm</parameters>
+	  <parameters>--context simCartesianControl --part right_arm</parameters>
 	  <node>localhost</node>
 	</module>
   
         <module>
 		<name>plantIdentification</name>
-		<parameters>--from confFCObjectExploration.ini --whichHand right --headEnabled false</parameters>
+		<parameters>--from confFCObjectExploration.ini --whichHand right --headEnabled 0</parameters>
 		<node>localhost</node>
 	</module>
 
   
         <module>
 		<name>force-reconstruction</name>
-		<parameters>--from forceReconstruction_fr100.ini</parameters>
+		<parameters>--from icubSim_fr100.ini</parameters>
 		<node>localhost</node>
 	</module>
 
 	<module>
 		<name>object-surface-exploration</name>
-		<parameters>--from objectExplorationConfig.ini</parameters>
+		<parameters>--from simRight.ini</parameters>
 		<node>localhost</node>
 	</module>
   
