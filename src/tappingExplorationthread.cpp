@@ -31,6 +31,11 @@ void TappingExplorationThread::run()
 
         /// Position the hand at the waypoint
         Vector px, ox;
+        px.resize(3);
+        px.zero();
+        ox.resize(4);
+        ox.zero();
+
         if(_objectFeatures->getWayPoint(px, ox))
         {
             // Go to the wayPoint if only it is a valid wayPoint.
@@ -50,6 +55,7 @@ void TappingExplorationThread::run()
         bool inContact = true;
         while(_objectFeatures->getContactForce() < 3)
         {
+            //cout << "Joint angle: " << _objectFeatures->getProximalJointAngle() << endl;
             if(_objectFeatures->getProximalJointAngle() > 60 || isStopping())
             {
                 cout << "No contact detected" << endl;
@@ -62,6 +68,8 @@ void TappingExplorationThread::run()
         }
 
 
+        // Stop the approach
+        _objectFeatures->writeToFingerController("stop");
 
 
         if(inContact)  // Check if we are in contact with the object
@@ -74,24 +82,34 @@ void TappingExplorationThread::run()
         else
         {
 
+
+
             // Get the finger postion
             _objectFeatures->getFingertipPose(finger_pos, finger_orient);
 
             //Open the finger
-             _objectFeatures->setProximalAngle(0);
+             _objectFeatures->openHand();
 
              //Wait until it is greater than 10 degress
-             while(_objectFeatures->getProximalJointAngle() > 10)
-                 ;
+             while(_objectFeatures->getProximalJointAngle() > 10 && !isStopping())
+                 ;//cout << "Joint angle: " << _objectFeatures->getProximalJointAngle() << endl;;
 
              // Move lower the hand
 
              cout << "Finger position: " << finger_pos.toString() << endl;
 
-             px[2] = finger_pos[2];
+             // I should make sure this is safe
 
-             _objectFeatures->setWayPoint(px, ox);
+             if(px[0] != 0)
+             {
+                px[2] += finger_pos[2];
+                _objectFeatures->setWayPoint(px, ox);
 
+             }
+             else
+             {
+                 std::cerr << endl << "Got invalid waypoint" << endl;
+             }
              continue;
 
         }
@@ -109,13 +127,17 @@ void TappingExplorationThread::run()
 
         yarp::os::Time::delay(3);
 
-        _objectFeatures->setProximalAngle(0);
+        _objectFeatures->writeToFingerController("stop");
+        _objectFeatures->openHand();
+
         yarp::os::Time::delay(3);
 
 
     }
 
-    //_objectFeatures->writeToFingerController("open");
+
+    _objectFeatures->writeToFingerController("stop");
+
 }
 
 

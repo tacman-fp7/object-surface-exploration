@@ -22,6 +22,7 @@ public:
   virtual bool startExploring();
   virtual bool stopExploring();
   virtual bool fingerSetAngle(const double angle);
+  virtual bool openHand();
   virtual bool quit();
   virtual bool read(yarp::os::ConnectionReader& connection);
   virtual std::vector<std::string> help(const std::string& functionName="--all");

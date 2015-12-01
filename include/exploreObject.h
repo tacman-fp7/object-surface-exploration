@@ -36,6 +36,7 @@ public: // Methods related to the robot control
     bool startExploring();
     bool stopExploring();
     bool fingerSetAngle(const double angle);
+    bool openHand();
     bool quit();
     
 public: // Methods related to the RF module

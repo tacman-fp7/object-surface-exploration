@@ -15,6 +15,10 @@ using std::endl;
 using yarp::os::Value;
 
 
+bool ExploreObject::openHand()
+{
+    return _objectFeaturesThread->openHand();
+}
 
 bool ExploreObject::fingerSetAngle(const double angle)
 {
@@ -96,6 +100,8 @@ bool ExploreObject::goToStartingPose()
     if(_objectFeaturesThread->getStartingPose(pos, orient))
     {
 
+        // TODO: just a hack
+      // _objectFeaturesThread->setWayPoint(pos, orient);
         _armCartesianController->goToPoseSync(pos, orient);
         return true;
     }
@@ -194,6 +200,7 @@ bool ExploreObject::startExploring()
         if(!this->goToStartingPose())
             ret = false;
         _armCartesianController->waitMotionDone();
+
 
         // Then explore the object
         //if(!_maintainContactThread->start())
