@@ -37,6 +37,33 @@ void TappingExplorationThread::run()
 
         cout << "Tapping away!" << endl;
 
+
+        switch (contactState)
+        {
+
+        case UNDEFINED:
+            // This is the first round no approach has been made
+            // Get the waypoint and set the state to approaching
+
+            break;
+        case  APPROACHING:
+            // Aproach and wait for contact
+            // If contact set the state to contact
+            // If reach the limit set the state to MOVELOCATION
+            break;
+        case INCONTACT:
+            // Maintain contact for a couple of seconds
+            // Then set the state to move location
+            break;
+        case MOVELOCATION:
+            // Calculate the next waypoint
+            break;
+
+        }
+
+
+
+
         /// Position the hand at the waypoint
         Vector px, ox;
         px.resize(3);
@@ -61,7 +88,7 @@ void TappingExplorationThread::run()
         {
             cout << "the Waypoint is invalid." << endl;
             if(contactState != UNDEFINED)
-                contactState = MOVECONTACT;
+                contactState = MOVELOCATION;
 
         }
 
