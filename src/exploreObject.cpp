@@ -100,8 +100,22 @@ bool ExploreObject::goToStartingPose()
     if(_objectFeaturesThread->getStartingPose(pos, orient))
     {
 
-        // TODO: just a hack
-      // _objectFeaturesThread->setWayPoint(pos, orient);
+        // Quick test
+       double armJoints[16];
+       memset(armJoints, 0, sizeof(armJoints));
+       armJoints[0] = -20;
+       armJoints[1] = 29;
+       armJoints[2] = 42;
+       armJoints[3] = 46;
+       armJoints[4] = 57;
+       armJoints[5] = -14;
+       armJoints[6] = -7;
+       armJoints[7] = 39;
+       armJoints[8] = 11;
+
+       _armJointPositionController->positionMove(armJoints);
+
+
         _armCartesianController->goToPoseSync(pos, orient);
         return true;
     }
@@ -201,6 +215,19 @@ bool ExploreObject::startExploring()
             ret = false;
         _armCartesianController->waitMotionDone();
 
+        // Ge the current position of the arm.
+        Vector pos, orient;
+        pos.resize(3);
+        orient.resize(4);
+        if(!_objectFeaturesThread->getArmPose(pos, orient))
+        {
+            cerr << _dbgtag << "Could not read the arm position, cannot start exploration" << endl;
+            return false;
+        }
+
+        // Setting the way point to the start of the exploration
+        _objectFeaturesThread->setWayPoint(pos, orient);
+
 
         // Then explore the object
         //if(!_maintainContactThread->start())
@@ -240,8 +267,16 @@ bool ExploreObject::stopExploring()
        // if(!this->goToHomePose())
        //     ret = false;
 
-        if(!this->goToStartingPose())
+        openHand();
+        if(!goToStartingPose())
             ret = false;
+
+        _armCartesianController->waitMotionDone(0.1, 1);
+
+        // Try to go to home pose if available;
+        goToHomePose();
+
+        _armCartesianController->waitMotionDone(0.1, 1);
 
         //_maintainContactThread->stop();
 

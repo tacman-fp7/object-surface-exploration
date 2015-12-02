@@ -46,6 +46,7 @@ public:
     Vector getPosition();
     Vector getOrientation();
     double getContactForce();
+    bool getArmPose(Vector& pos, Vector& orient);
     void setEndPose(Vector& pos, Vector& orient);
     void setStartingPose(Vector& pos, Vector& orient);
     bool getDesiredEndPose(Vector& pos, Vector& orient);
@@ -69,6 +70,16 @@ public:
     bool isExplorationValid(){return _isExplorationValid;}
     double getProximalJointAngle(){return _proximalJointAngle;}
     bool openHand();
+
+    bool checkOpenHandDone()
+    {
+        bool ret;
+        if(!_armJointPositionCtrl->checkMotionDone(_proximalJoint_index, &ret))
+                ret = false;
+
+        return ret;
+    }
+
     bool setProximalAngle(double angle){
         if(_armJointPositionCtrl != NULL || _armEncoder !=NULL)
         {
@@ -140,6 +151,11 @@ protected:
 
     /// Clean them a little later /////
 
+    ///
+    Mutex _armJointMutex;
+    Vector _armJoints;
+
+    /// Arm pose and orient is actually gripper pose and orient!!!!
     Mutex _armPoseMutex;
     Vector _armPosition;
     Vector _armOrientation;

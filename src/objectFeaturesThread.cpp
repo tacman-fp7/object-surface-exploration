@@ -75,6 +75,18 @@ void ObjectFeaturesThread::run()
 
 }
 
+bool ObjectFeaturesThread::getArmPose(yarp::sig::Vector &pos, yarp::sig::Vector &orient)
+{
+
+    bool ret;
+    _armPoseMutex.lock();
+    ret = _armCartesianCtrl->getPose(_armPosition, _armOrientation);
+    pos = _armPosition;
+    orient = _armOrientation;
+    _armPoseMutex.unlock();
+
+    return ret;
+}
 
 bool ObjectFeaturesThread::openHand()
 {
@@ -275,21 +287,51 @@ void ObjectFeaturesThread::setWayPoint ( Vector pos, Vector orient )
 {
 
 
+    _wayPoint_isValid = true;
+
     if(pos[0] >= 0)
     {
         cerr << _dbgtag << "Cannot have positive x-axis value" << endl;
+        _wayPoint_isValid = false;
         return;
     }
-    if(pos[2] < 0)
+
+
+
+    // TODO: in a config file
+    double min = -0.03;
+    double max =  0.03;
+
+    //if(_wayPointPos[2] == max || _wayPointPos[2] == min)
+    //{
+    //    _wayPoint_isValid = false;
+    //    return;
+
+    //}
+
+    if(pos[2] < min)
     {
-        cerr << _dbgtag << "Exceeded the z-axis limi: " << pos[2] << endl;
-        pos[2] = 0;
+
+        cerr << _dbgtag << "Exceeded the z-axis limit ( " << min << " ): " << pos[2] << endl;
+        pos[2] = min;
+
+        if(_wayPointPos[2] == min)
+            _wayPoint_isValid = false;
     }
+
+    if(pos[2] > max)
+    {
+        cerr << _dbgtag << "Exceeded the z-axis limit ( " << max << " ): " << pos[2] << endl;
+        pos[2] = max;
+
+        if(_wayPointPos[2] == max)
+            _wayPoint_isValid = false;
+    }
+
 
     _wayPointPos = pos;
     _wayPointOrient = orient;
-    _wayPoint_isValid = true;
-    //printPose(pos, orient);
+
 }
 
 
@@ -299,7 +341,7 @@ bool ObjectFeaturesThread::getWayPoint ( Vector& pos, Vector& orient, bool inval
     {
         pos = _wayPointPos;
         orient = _wayPointOrient;
-        //_wayPoint_isValid = !invalidateWayPoint;
+        _wayPoint_isValid = !invalidateWayPoint;
         return true;
     }
     return false;

@@ -7,6 +7,7 @@ namespace objectExploration
 {
 
 
+
 using std::cout;
 using std::endl;
 using yarp::sig::Vector;
@@ -17,16 +18,23 @@ void TappingExplorationThread::run()
     Vector finger_pos, finger_orient;
     finger_pos.resize(3);
     finger_orient.resize(4);
+    enum State{
+        UNDEFINED,
+        APPROACHING,
+        INCONTACT,
+        MOVELOCATION
+    };
+
+    State contactState = UNDEFINED;
+
+
 
     while(!isStopping()) // Keep running this
     {
 
-      //  if(isStopping())
-     //   {
-            // Make sure we are not controlling the fingertip
-   //         _objectFeatures->writeToFingerController("open");
-   //         break;
-   //     }
+
+
+
         cout << "Tapping away!" << endl;
 
         /// Position the hand at the waypoint
@@ -36,29 +44,43 @@ void TappingExplorationThread::run()
         ox.resize(4);
         ox.zero();
 
+        cout << "Getting the next waypoint...";
         if(_objectFeatures->getWayPoint(px, ox))
         {
+            cout << "done!" << endl;
+
+            contactState = APPROACHING;
+
+            cout << "Moving to the waypoint...";
             // Go to the wayPoint if only it is a valid wayPoint.
             if(_robotCartesianController->goToPoseSync(px, ox))
-                _robotCartesianController->waitMotionDone();
+                _robotCartesianController->waitMotionDone(0.1, 2);
+            cout << "done!" << endl;
+        }
+        else
+        {
+            cout << "the Waypoint is invalid." << endl;
+            if(contactState != UNDEFINED)
+                contactState = MOVECONTACT;
+
         }
 
-        cout << "Approaching..." << endl;
+        cout << "Approaching...";
         /// Tell the finger controller to approach the object
         _objectFeatures->writeToFingerController("task add appr");
         _objectFeatures->writeToFingerController("start");
 
 
-
+        cout << "Waiting for contact ...";
 
         // Wait for a contact or the distal angle being beyond certain limit
         bool inContact = true;
         while(_objectFeatures->getContactForce() < 3)
         {
-            //cout << "Joint angle: " << _objectFeatures->getProximalJointAngle() << endl;
-            if(_objectFeatures->getProximalJointAngle() > 60 || isStopping())
+            // TODO: implement a timeout
+            if(_objectFeatures->getProximalJointAngle() > 50 || isStopping())
             {
-                cout << "No contact detected" << endl;
+                cout << "No contact detected." << endl;
 
                 inContact = false;
                 break;
@@ -72,71 +94,88 @@ void TappingExplorationThread::run()
         _objectFeatures->writeToFingerController("stop");
 
 
+
         if(inContact)  // Check if we are in contact with the object
         {
+            /////////////////////////////////////////////////////////////////////////
+            /////////////////////////// We Have Contact /////////////////////////////
+            /////////////////////////////////////////////////////////////////////////
             cout << "We have contact!" << endl;
 
-            _objectFeatures->writeToFingerController("task add ctrl 20");
+            contactState = INCONTACT;
+
+            _objectFeatures->writeToFingerController("task add ctrl 20");  // TODO: put it in the config file
             _objectFeatures->writeToFingerController("start");
         }
         else
         {
 
+            ////////////////////////////////////////////////////////////////////////
+            ////////////////////////// No contact //////////////////////////////////
+            ////////////////////////////////////////////////////////////////////////
 
+            // Stop the finger controller
+            cout << "Stopping the finger controller...";
+            _objectFeatures->writeToFingerController("stop");
+            cout << "Done!" << endl;
 
             // Get the finger postion
+            cout << "Reading the fingertip position...";
             _objectFeatures->getFingertipPose(finger_pos, finger_orient);
+            cout << "Done!" << endl;
+            cout << "Fingertip position: " << finger_pos.toString() << endl;
 
+            yarp::os::Time::delay(1);
+
+            cout << "Opening the hand...";
             //Open the finger
-             _objectFeatures->openHand();
+            _objectFeatures->openHand();
 
-             //Wait until it is greater than 10 degress
-             while(_objectFeatures->getProximalJointAngle() > 10 && !isStopping())
-                 ;//cout << "Joint angle: " << _objectFeatures->getProximalJointAngle() << endl;;
+            //Wait for the fingertip to open
+            while(!_objectFeatures->checkOpenHandDone() && !isStopping())
+                ;
+            cout << "Done!" << endl;
 
-             // Move lower the hand
 
-             cout << "Finger position: " << finger_pos.toString() << endl;
 
-             // I should make sure this is safe
 
-             if(px[0] != 0)
-             {
+            // Calculate new waypoint, I should also check whether the robot has reached the limit,
+
+            if(px[0] != 0) // This happens only when the waypoint is invalid
+            {
                 px[2] += finger_pos[2];
                 _objectFeatures->setWayPoint(px, ox);
 
-             }
-             else
-             {
-                 std::cerr << endl << "Got invalid waypoint" << endl;
-             }
-             continue;
+            }
+            else
+            {
+                std::cerr << endl << "Got invalid waypoint" << endl;
+            }
+
+
+
 
         }
 
 
 
-        // Move the finger to open postion
 
-        // Move the hand to the waypoint in the begenning of the run
 
-        // Decide what should be the next waypoint
 
-        //while(true)
-        //    ;
 
-        yarp::os::Time::delay(3);
 
-        _objectFeatures->writeToFingerController("stop");
-        _objectFeatures->openHand();
 
-        yarp::os::Time::delay(3);
 
 
     }
 
 
+    // Make sure nothing is conrolling the finger
     _objectFeatures->writeToFingerController("stop");
+    // Open the hand
+    _objectFeatures->openHand();
+
+
 
 }
 
