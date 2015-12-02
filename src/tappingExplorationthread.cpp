@@ -10,7 +10,11 @@ namespace objectExploration
 
 using std::cout;
 using std::endl;
+using std::cerr;
+
 using yarp::sig::Vector;
+
+
 
 void TappingExplorationThread::run()
 {
@@ -18,15 +22,10 @@ void TappingExplorationThread::run()
     Vector finger_pos, finger_orient;
     finger_pos.resize(3);
     finger_orient.resize(4);
-    enum State{
-        UNDEFINED,
-        APPROACHING,
-        INCONTACT,
-        MOVELOCATION
-    };
 
-    State contactState = UNDEFINED;
+    //State contactState = State::UNDEFINED;
 
+    _contactState = UNDEFINED;
 
 
     while(!isStopping()) // Keep running this
@@ -38,7 +37,7 @@ void TappingExplorationThread::run()
         cout << "Tapping away!" << endl;
 
 
-        switch (contactState)
+        switch (_contactState)
         {
 
         case UNDEFINED:
@@ -57,6 +56,7 @@ void TappingExplorationThread::run()
             break;
         case MOVELOCATION:
             // Calculate the next waypoint
+            moveToNewLocation();
             break;
 
         }
@@ -76,7 +76,7 @@ void TappingExplorationThread::run()
         {
             cout << "done!" << endl;
 
-            contactState = APPROACHING;
+            _contactState = APPROACHING;
 
             cout << "Moving to the waypoint...";
             // Go to the wayPoint if only it is a valid wayPoint.
@@ -87,8 +87,8 @@ void TappingExplorationThread::run()
         else
         {
             cout << "the Waypoint is invalid." << endl;
-            if(contactState != UNDEFINED)
-                contactState = MOVELOCATION;
+            if(_contactState != UNDEFINED)
+                _contactState = MOVELOCATION;
 
         }
 
@@ -129,7 +129,7 @@ void TappingExplorationThread::run()
             /////////////////////////////////////////////////////////////////////////
             cout << "We have contact!" << endl;
 
-            contactState = INCONTACT;
+            _contactState = INCONTACT;
 
             _objectFeatures->writeToFingerController("task add ctrl 20");  // TODO: put it in the config file
             _objectFeatures->writeToFingerController("start");
@@ -206,6 +206,55 @@ void TappingExplorationThread::run()
 
 }
 
+
+void TappingExplorationThread::moveToNewLocation()
+{
+
+    cout << "Calculating new waypoint" << endl;
+    Vector starting_pos, starting_orient;
+    Vector end_pos, end_orient;
+    Vector wayPoint_pos, wayPoint_orient;
+
+    starting_pos.resize(3);
+    starting_orient.resize(4);
+
+    end_pos.resize(3);
+    end_orient.resize(4);
+
+    wayPoint_pos.resize(3);
+    wayPoint_orient.resize(4);
+
+    if(!_objectFeatures->getStartingPose(starting_pos, starting_orient))
+    {
+       cerr << "Cannot set a new location. Starting point is invalid" << endl;
+       return;
+    }
+
+    if(!_objectFeatures->getDesiredEndPose(end_pos, end_orient))
+    {
+        cerr << "Cannot set a new location. Desired end-point is invalid" << endl;
+        return;
+    }
+
+
+    // Get the current wayPoint
+
+    _objectFeatures->getWayPoint(wayPoint_pos, wayPoint_orient);
+
+    if(wayPoint_pos[0] == 0)
+    {
+        cerr << "Cannot set new location, previous waypoint is invalid" << endl;
+    }
+
+    wayPoint_pos[1] += ((end_pos[1] - starting_pos[1]) * 0.1);
+    wayPoint_pos[2] = starting_pos[2];
+
+    _objectFeatures->setWayPoint(wayPoint_pos, wayPoint_orient);
+
+    _contactState = APPROACHING;
+
+
+}
 
 bool TappingExplorationThread::threadInit()
 {

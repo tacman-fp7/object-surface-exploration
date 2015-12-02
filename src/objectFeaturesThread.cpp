@@ -300,7 +300,7 @@ void ObjectFeaturesThread::setWayPoint ( Vector pos, Vector orient )
 
     // TODO: in a config file
     double min = -0.03;
-    double max =  0.03;
+    double max =  0.04;
 
     //if(_wayPointPos[2] == max || _wayPointPos[2] == min)
     //{
@@ -337,14 +337,16 @@ void ObjectFeaturesThread::setWayPoint ( Vector pos, Vector orient )
 
 bool ObjectFeaturesThread::getWayPoint ( Vector& pos, Vector& orient, bool invalidateWayPoint )
 {
-    if(_wayPoint_isValid)
-    {
+
+    bool ret = _wayPoint_isValid;
+    //if(_wayPoint_isValid)
+    //{
         pos = _wayPointPos;
         orient = _wayPointOrient;
         _wayPoint_isValid = !invalidateWayPoint;
-        return true;
-    }
-    return false;
+      //  return true;
+    //}
+    return ret;
 }
 
 bool ObjectFeaturesThread::getStartingPose ( Vector& pos, Vector& orient )

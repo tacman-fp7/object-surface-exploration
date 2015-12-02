@@ -6,6 +6,15 @@
 
 namespace objectExploration
 {
+
+
+enum State{
+    UNDEFINED,
+    APPROACHING,
+    INCONTACT,
+    MOVELOCATION
+};
+
 class TappingExplorationThread: public ExplorationStrategyThread
 {
 public:
@@ -18,7 +27,9 @@ public:
     void threadRelease();
 
 private:
-    // A container for the features
+    State _contactState;
+private:
+    void moveToNewLocation();
 };
 
 } // namespace objectExploration
