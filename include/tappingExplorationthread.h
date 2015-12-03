@@ -10,10 +10,12 @@ namespace objectExploration
 
 enum State{
     UNDEFINED,
-    APPROACHING,
-    INCONTACT,
-    MOVELOCATION,
-    FINISHED
+    APPROACH_OBJECT,
+    CALCULATE_NEWWAYPONT,
+    MAINTAIN_CONTACT,
+    MOVE_LOCATION,
+    FINISHED,
+    STOP
 };
 
 class TappingExplorationThread: public ExplorationStrategyThread
@@ -31,6 +33,11 @@ private:
     State _contactState;
 private:
     void moveToNewLocation();
+    void approachObject();
+    void calculateNewWaypoint();
+    void maintainContact();
+    void finshExploration();
+
 };
 
 } // namespace objectExploration

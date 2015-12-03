@@ -449,6 +449,8 @@ bool ExploreObject::configure(yarp::os::ResourceFinder& rf )
 
     this->attach(_robotControl_port);
 
+    setHomePose();
+
     return ret;
 }
 

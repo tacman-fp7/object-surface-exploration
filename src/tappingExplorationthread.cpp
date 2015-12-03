@@ -26,10 +26,10 @@ void TappingExplorationThread::run()
 
     //State contactState = State::UNDEFINED;
 
-    _contactState = UNDEFINED;
+    _contactState = APPROACH_OBJECT;
 
 
-    while(!isStopping()) // Keep running this
+    while(!isStopping() && !(_contactState == STOP)) // Keep running this
     {
 
 
@@ -41,62 +41,182 @@ void TappingExplorationThread::run()
         switch (_contactState)
         {
 
-        case FINISHED:
-            cout << "Exploration completed" << endl;
-            // I have to implement exit the thread procedure here
-            break;
         case UNDEFINED:
             // This is the first round no approach has been made
             // Get the waypoint and set the state to approaching
 
             break;
-        case  APPROACHING:
+        case  APPROACH_OBJECT:
             // Aproach and wait for contact
             // If contact set the state to contact
             // If reach the limit set the state to MOVELOCATION
+            cout << "Contact state is: approach" << endl;
+            approachObject();
             break;
-        case INCONTACT:
+        case CALCULATE_NEWWAYPONT:
+             cout << "Contact state is: new waypoint" << endl;
+            calculateNewWaypoint();
+            break;
+        case MAINTAIN_CONTACT:
+             cout << "Contact state is: maintain contact" << endl;
             // Maintain contact for a couple of seconds
             // Then set the state to move location
+            maintainContact();
             break;
-        case MOVELOCATION:
+        case MOVE_LOCATION:
+             cout << "Contact state is: move location" << endl;
             // Calculate the next waypoint
             moveToNewLocation();
-            continue; // Just for now, before I clean the code
+            //continue; // Just for now, before I clean the code
             break;
-
+        case FINISHED:
+             cout << "Contact state is: finished" << endl;
+            cout << "Exploration completed" << endl;
+            // I have to implement exit the thread procedure here
+            finshExploration();
+            break;
         }
 
 
+    }
 
 
-        /// Position the hand at the waypoint
-        Vector px, ox;
-        px.resize(3);
-        px.zero();
-        ox.resize(4);
-        ox.zero();
+    // Make sure nothing is conrolling the finger
+    _objectFeatures->writeToFingerController("stop");
 
-        cout << "Getting the next waypoint...";
-        if(_objectFeatures->getWayPoint(px, ox))
-        {
-            cout << "done!" << endl;
+    yarp::os::Time::delay(1);
 
-            _contactState = APPROACHING;
 
-            cout << "Moving to the waypoint...";
-            // Go to the wayPoint if only it is a valid wayPoint.
-            if(_robotCartesianController->goToPoseSync(px, ox))
-                _robotCartesianController->waitMotionDone(0.1, 2);
-            cout << "done!" << endl;
-        }
-        else
-        {
-            cout << "the Waypoint is invalid." << endl;
-            if(_contactState != UNDEFINED)
-                _contactState = MOVELOCATION;
 
-        }
+
+
+}
+
+void TappingExplorationThread::finshExploration()
+{
+    Vector starting_pos, starting_orient;
+    starting_pos.resize(3);
+    starting_orient.resize(4);
+
+    // Open the hand
+    _objectFeatures->openHand();
+
+    // Wait for the hand to open;
+    while(!_objectFeatures->checkOpenHandDone() && !isStopping())
+        ;
+
+    if(_objectFeatures->getStartingPose(starting_pos, starting_orient))
+    {
+        //
+        _robotCartesianController->goToPoseSync(starting_pos, starting_orient);
+        _robotCartesianController->waitMotionDone();
+    }
+
+    _contactState = STOP;
+
+}
+
+void TappingExplorationThread::maintainContact()
+{
+    _objectFeatures->writeToFingerController("task add ctrl 20");  // TODO: put it in the config file
+    _objectFeatures->writeToFingerController("start");
+    yarp::os::Time::delay(2);
+    _contactState = MOVE_LOCATION;
+}
+
+void TappingExplorationThread::calculateNewWaypoint()
+{
+
+    Vector finger_pos, finger_orient;
+    finger_pos.resize(3);
+    finger_orient.resize(4);
+    finger_pos.zero();
+    finger_orient.zero();
+
+    Vector px, ox;
+    px.resize(3);
+    px.zero();
+    ox.resize(4);
+    ox.zero();
+
+
+    if(_objectFeatures->getWayPoint(px, ox))
+    {
+        // Stop the finger controller
+        cout << "Stopping the finger controller...";
+        _objectFeatures->writeToFingerController("stop");
+        cout << "Done!" << endl;
+
+
+        // Get the finger postion
+        cout << "Reading the fingertip position...";
+        _objectFeatures->getFingertipPose(finger_pos, finger_orient);
+        cout << "Done!" << endl;
+        cout << "Fingertip position: " << finger_pos.toString() << endl;
+
+        //yarp::os::Time::delay(1);
+
+        cout << "Opening the hand...";
+        //Open the finger
+        _objectFeatures->openHand();
+
+        //Wait for the fingertip to open
+        while(!_objectFeatures->checkOpenHandDone() && !isStopping())
+            ;
+        cout << "Done!" << endl;
+
+
+
+
+        px[2] -= 0.02; // finger_pos[2]; // Hack, until I figure out why the finger position is not correct
+        _objectFeatures->setWayPoint(px, ox);
+
+        _contactState = APPROACH_OBJECT;
+
+    }
+    else
+    {
+        std::cerr << endl << "Got invalid waypoint" << endl;
+    }
+
+
+
+
+}
+
+void TappingExplorationThread::approachObject()
+{
+
+    cout << "Approaching the object" << endl;
+
+    /// Position the hand at the waypoint
+    Vector px, ox;
+    px.resize(3);
+    px.zero();
+    ox.resize(4);
+    ox.zero();
+
+    cout << "Getting the next waypoint...";
+    if(_objectFeatures->getWayPoint(px, ox, false))
+    {
+        cout << "done!" << endl;
+        cout << "Moving to the waypoint...";
+        // Go to the wayPoint if only it is a valid wayPoint.
+        if(_robotCartesianController->goToPoseSync(px, ox))
+            _robotCartesianController->waitMotionDone(0.1, 2);
+        cout << "done!" << endl;
+    }else if(_contactState != UNDEFINED)
+    {
+        cout << "the Waypoint is invalid." << endl;
+        _contactState = MOVE_LOCATION;
+    }
+
+
+
+    if(_contactState == APPROACH_OBJECT)
+    {
+
+
 
         cout << "Approaching...";
         /// Tell the finger controller to approach the object
@@ -107,112 +227,30 @@ void TappingExplorationThread::run()
         cout << "Waiting for contact ...";
 
         // Wait for a contact or the distal angle being beyond certain limit
-        bool inContact = true;
+        // bool inContact = true;
         while(_objectFeatures->getContactForce() < 3)
         {
-            // TODO: implement a timeout
-            if(_objectFeatures->getProximalJointAngle() > 50 || isStopping())
-            {
-                cout << "No contact detected." << endl;
 
-                inContact = false;
+            if(isStopping())
+            {
                 break;
             }
-
-
-        }
-
-
-        // Stop the approach
-        _objectFeatures->writeToFingerController("stop");
-
-
-
-        if(inContact)  // Check if we are in contact with the object
-        {
-            /////////////////////////////////////////////////////////////////////////
-            /////////////////////////// We Have Contact /////////////////////////////
-            /////////////////////////////////////////////////////////////////////////
-            cout << "We have contact!" << endl;
-
-            _contactState = INCONTACT;
-
-            _objectFeatures->writeToFingerController("task add ctrl 20");  // TODO: put it in the config file
-            _objectFeatures->writeToFingerController("start");
-        }
-        else
-        {
-
-            ////////////////////////////////////////////////////////////////////////
-            ////////////////////////// No contact //////////////////////////////////
-            ////////////////////////////////////////////////////////////////////////
-
-            // Stop the finger controller
-            cout << "Stopping the finger controller...";
-            _objectFeatures->writeToFingerController("stop");
-            cout << "Done!" << endl;
-
-            //yarp::os::Time::delay(2);
-            // Get the finger postion
-            cout << "Reading the fingertip position...";
-            _objectFeatures->getFingertipPose(finger_pos, finger_orient);
-            cout << "Done!" << endl;
-            cout << "Fingertip position: " << finger_pos.toString() << endl;
-
-            yarp::os::Time::delay(1);
-
-            cout << "Opening the hand...";
-            //Open the finger
-            _objectFeatures->openHand();
-
-            //Wait for the fingertip to open
-            while(!_objectFeatures->checkOpenHandDone() && !isStopping())
-                ;
-            cout << "Done!" << endl;
-
-
-
-
-            // Calculate new waypoint, I should also check whether the robot has reached the limit,
-
-            if(px[0] != 0) // This happens only when the waypoint is invalid
+            else if(_objectFeatures->getProximalJointAngle() > 50) // TODO: implement a timeout
             {
-                px[2] -= 0.02; // finger_pos[2]; // Hack, until I figure out why the finger position is not correct
-                _objectFeatures->setWayPoint(px, ox);
-
+                cout << "No contact detected." << endl;
+                _contactState = CALCULATE_NEWWAYPONT;
+                break;
             }
-            else
-            {
-                std::cerr << endl << "Got invalid waypoint" << endl;
-            }
-
-
-
-
         }
 
-
-
-
-
-
-
-
-
-
-
+        if(_contactState != CALCULATE_NEWWAYPONT)
+        {
+            cout << "We have detected contact" << endl;
+            _contactState = MAINTAIN_CONTACT;
+        }
     }
 
-
-    // Make sure nothing is conrolling the finger
-    _objectFeatures->writeToFingerController("stop");
-    // Open the hand
-    _objectFeatures->openHand();
-
-
-
 }
-
 
 void TappingExplorationThread::moveToNewLocation()
 {
@@ -233,8 +271,8 @@ void TappingExplorationThread::moveToNewLocation()
 
     if(!_objectFeatures->getStartingPose(starting_pos, starting_orient))
     {
-       cerr << "Cannot set a new location. Starting point is invalid" << endl;
-       return;
+        cerr << "Cannot set a new location. Starting point is invalid" << endl;
+        return;
     }
 
     if(!_objectFeatures->getDesiredEndPose(end_pos, end_orient))
@@ -262,7 +300,7 @@ void TappingExplorationThread::moveToNewLocation()
 
     cout << "WayPoint: " << fabs(wayPoint_pos[1]) << " " << "EndPos: " << fabs(end_pos[1]) << endl;
     if(fabs(wayPoint_pos[1]) > fabs(end_pos[1]))
-        _contactState = APPROACHING;
+        _contactState = APPROACH_OBJECT;
     else
     {
         cout << "State set to finished" << endl;
