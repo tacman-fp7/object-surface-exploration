@@ -84,12 +84,14 @@ public:
         if(_armJointPositionCtrl != NULL || _armEncoder !=NULL)
         {
 
-            double encVal;
+           /* double encVal;
             _armEncoder->getEncoder(_proximalJoint_index,&encVal);
 
             std::cout << "Encoder: "  << encVal << std::endl;
+            */
 
-
+            // Make sure the control is in position mode
+            _armJointPositionCtrl->setPositionMode();
             return (_armJointPositionCtrl->positionMove(_proximalJoint_index, angle));
 
         }

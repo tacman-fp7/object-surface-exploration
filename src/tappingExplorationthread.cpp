@@ -2,6 +2,7 @@
 #include <iostream>
 #include <yarp/sig/Vector.h>
 #include <yarp/os/Time.h>
+#include <cmath>
 
 namespace objectExploration
 {
@@ -40,6 +41,10 @@ void TappingExplorationThread::run()
         switch (_contactState)
         {
 
+        case FINISHED:
+            cout << "Exploration completed" << endl;
+            // I have to implement exit the thread procedure here
+            break;
         case UNDEFINED:
             // This is the first round no approach has been made
             // Get the waypoint and set the state to approaching
@@ -57,6 +62,7 @@ void TappingExplorationThread::run()
         case MOVELOCATION:
             // Calculate the next waypoint
             moveToNewLocation();
+            continue; // Just for now, before I clean the code
             break;
 
         }
@@ -146,6 +152,7 @@ void TappingExplorationThread::run()
             _objectFeatures->writeToFingerController("stop");
             cout << "Done!" << endl;
 
+            //yarp::os::Time::delay(2);
             // Get the finger postion
             cout << "Reading the fingertip position...";
             _objectFeatures->getFingertipPose(finger_pos, finger_orient);
@@ -170,7 +177,7 @@ void TappingExplorationThread::run()
 
             if(px[0] != 0) // This happens only when the waypoint is invalid
             {
-                px[2] += finger_pos[2];
+                px[2] -= 0.02; // finger_pos[2]; // Hack, until I figure out why the finger position is not correct
                 _objectFeatures->setWayPoint(px, ox);
 
             }
@@ -246,12 +253,21 @@ void TappingExplorationThread::moveToNewLocation()
         cerr << "Cannot set new location, previous waypoint is invalid" << endl;
     }
 
-    wayPoint_pos[1] += ((end_pos[1] - starting_pos[1]) * 0.1);
+    //////////////// Calculating a new waypoint for the travaersal /////////////////
+    wayPoint_pos[1] += ((end_pos[1] - starting_pos[1]) * 0.9);
     wayPoint_pos[2] = starting_pos[2];
 
     _objectFeatures->setWayPoint(wayPoint_pos, wayPoint_orient);
 
-    _contactState = APPROACHING;
+
+    cout << "WayPoint: " << fabs(wayPoint_pos[1]) << " " << "EndPos: " << fabs(end_pos[1]) << endl;
+    if(fabs(wayPoint_pos[1]) > fabs(end_pos[1]))
+        _contactState = APPROACHING;
+    else
+    {
+        cout << "State set to finished" << endl;
+        _contactState = FINISHED;
+    }
 
 
 }

@@ -12,7 +12,8 @@ enum State{
     UNDEFINED,
     APPROACHING,
     INCONTACT,
-    MOVELOCATION
+    MOVELOCATION,
+    FINISHED
 };
 
 class TappingExplorationThread: public ExplorationStrategyThread

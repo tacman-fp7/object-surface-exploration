@@ -100,7 +100,7 @@ bool ExploreObject::goToStartingPose()
     if(_objectFeaturesThread->getStartingPose(pos, orient))
     {
 
-        // Quick test
+/*        // Quick test
        double armJoints[16];
        memset(armJoints, 0, sizeof(armJoints));
        armJoints[0] = -20;
@@ -115,7 +115,7 @@ bool ExploreObject::goToStartingPose()
 
        _armJointPositionController->positionMove(armJoints);
 
-
+*/
         _armCartesianController->goToPoseSync(pos, orient);
         return true;
     }

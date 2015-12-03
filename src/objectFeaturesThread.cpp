@@ -128,6 +128,7 @@ bool ObjectFeaturesThread::openHand()
     axesAngles[8] = 10;*/
 
 
+    _armJointPositionCtrl->setPositionMode();
     if(!_armJointPositionCtrl->positionMove(8, 10))
     {
         cerr << _dbgtag << "Falied to move to the requsted positions." << endl;
@@ -151,9 +152,16 @@ bool ObjectFeaturesThread::getFingertipPose(yarp::sig::Vector &pos, yarp::sig::V
 
     int nEncs;
 
+
     _armEncoder->getAxes(&nEncs);
     Vector encs(nEncs);
-    _armEncoder->getEncoders(encs.data());
+    if(! (ret = _armEncoder->getEncoders(encs.data())))
+    {
+        cerr << _dbgtag << "Failed to read arm encoder data" << endl;
+    }
+
+
+//    cout << "Encoder data" << encs.toString() << endl;
 
     Vector joints;
     iCub::iKin::iCubFinger finger(_whichFinger);
@@ -164,8 +172,7 @@ bool ObjectFeaturesThread::getFingertipPose(yarp::sig::Vector &pos, yarp::sig::V
     for (int j = 0; j < joints.size(); j++)
         joints[j] *= M_PI/180;
 
-    yarp::sig::Matrix tipFrame = finger.getH(joints); //getH((M_PI/180.0)*joints);
-
+    yarp::sig::Matrix tipFrame = finger.getH(joints);
 
     Vector tip_x = tipFrame.getCol(3);
     Vector tip_o = yarp::math::dcm2axis(tipFrame);
@@ -177,7 +184,10 @@ bool ObjectFeaturesThread::getFingertipPose(yarp::sig::Vector &pos, yarp::sig::V
        ret = false;
 
     if(!_armCartesianCtrl->getPose(pos, orient))
+    {
+        cerr << _dbgtag << "Failed to read the fingertip pose" << endl;
         ret = false;
+    }
 
     if(!_armCartesianCtrl->removeTipFrame())
         ret = false;
@@ -518,7 +528,7 @@ ObjectFeaturesThread::ObjectFeaturesThread ( int period, ResourceFinder rf ) : R
     _armJointPositionCtrl = NULL;
 
     _proximalJointAngle = 0;
-    _proximalJoint_index = 0;
+    _proximalJoint_index = 11;
 
     ////////////// read the parameters from the config file ///////////////
     this->readParameters();
