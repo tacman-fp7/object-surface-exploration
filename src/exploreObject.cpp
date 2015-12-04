@@ -18,6 +18,8 @@ using yarp::os::Value;
 bool ExploreObject::openHand()
 {
     return _objectFeaturesThread->openHand();
+    while (!_objectFeaturesThread->checkOpenHandDone() && !isStopping())
+        ;
 }
 
 bool ExploreObject::fingerSetAngle(const double angle)
@@ -211,9 +213,10 @@ bool ExploreObject::startExploring()
     {
         //TODO: do some checks if the thread is running on so on
         // First step is to reach the pre-contact location
+        openHand();
         if(!this->goToStartingPose())
             ret = false;
-        _armCartesianController->waitMotionDone();
+        _armCartesianController->waitMotionDone(0.1, 20);
 
         // Ge the current position of the arm.
         Vector pos, orient;
@@ -268,15 +271,16 @@ bool ExploreObject::stopExploring()
        //     ret = false;
 
         openHand();
+
         if(!goToStartingPose())
             ret = false;
 
-        _armCartesianController->waitMotionDone(0.1, 1);
+        _armCartesianController->waitMotionDone(0.1, 20);
 
         // Try to go to home pose if available;
         goToHomePose();
 
-        _armCartesianController->waitMotionDone(0.1, 1);
+        _armCartesianController->waitMotionDone(0.1, 20);
 
         //_maintainContactThread->stop();
 
