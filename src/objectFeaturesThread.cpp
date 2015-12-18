@@ -276,8 +276,13 @@ void ObjectFeaturesThread::setEndPose ( Vector& pos, Vector& orient )
 
 void ObjectFeaturesThread::setStartingPose ( Vector& pos, Vector& orient )
 {
+    cout << "Starting pose set" << endl;
     _desiredStartingPosition = pos;
     _desiredStartingOrientation = orient;
+    _zMax = pos[2] + 0.05;
+    _zMin = pos[2] - 0.05;
+    cout << "Max: " << _zMax << " Min: " << _zMin << endl;
+
     _desiredStartingPose_isValid = true;
     printPose(pos, orient);
 
@@ -309,8 +314,8 @@ void ObjectFeaturesThread::setWayPoint ( Vector pos, Vector orient )
 
 
     // TODO: in a config file
-    double min = -0.03;
-    double max =  0.04;
+    double min = _zMin;
+    double max =  _zMax;
 
     //if(_wayPointPos[2] == max || _wayPointPos[2] == min)
     //{
@@ -530,6 +535,8 @@ ObjectFeaturesThread::ObjectFeaturesThread ( int period, ResourceFinder rf ) : R
     _proximalJointAngle = 0;
     _proximalJoint_index = 11;
 
+    _zMin = 0;
+    _zMax = 0;
     ////////////// read the parameters from the config file ///////////////
     this->readParameters();
 }
@@ -575,11 +582,18 @@ bool ObjectFeaturesThread::readParameters()
         cout << "startingPose is invalid" << endl;
     else
     {
+        Vector pos, orient;
+        pos.resize(3);
+        orient.resize(4);
+
         for(int i = 0; i < 3; i++)
-            _desiredStartingPosition[i] = startingPose->get(i).asDouble();
+            pos[i] = startingPose->get(i).asDouble();
         for(int i = 3; i < 7; i++)
-            _desiredStartingOrientation[i-3] = startingPose->get(i).asDouble();
-        _desiredStartingPose_isValid = true;
+            orient[i-3] = startingPose->get(i).asDouble();
+
+        setStartingPose(pos, orient);
+
+        //_desiredStartingPose_isValid = true;
     }
 
     if(endPose->size() < 7)

@@ -128,6 +128,8 @@ protected:
     bool _desiredStartingPose_isValid;
     Vector _desiredStartingPosition;
     Vector _desiredStartingOrientation;
+    double _zMax;
+    double _zMin;
 
     bool _desiredEndPose_isValid;
     Vector _desiredEndPosition;
