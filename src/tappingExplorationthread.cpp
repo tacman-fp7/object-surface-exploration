@@ -53,19 +53,19 @@ void TappingExplorationThread::run()
             // Aproach and wait for contact
             // If contact set the state to contact
             // If reach the limit set the state to MOVELOCATION
-#if DEBUG_LEVEL==1
+#if DEBUG_LEVEL>=1
             cout << "Contact state is: approach" << endl;
 #endif
             approachObject();
             break;
         case CALCULATE_NEWWAYPONT:
-#if DEBUG_LEVEL==1
+#if DEBUG_LEVEL>=1
             cout << "Contact state is: new waypoint" << endl;
 #endif
             calculateNewWaypoint();
             break;
         case MAINTAIN_CONTACT:
-#if DEBUG_LEVEL==1
+#if DEBUG_LEVEL>=1
             cout << "Contact state is: maintain contact" << endl;
 #endif
             // Maintain contact for a couple of seconds
@@ -73,7 +73,7 @@ void TappingExplorationThread::run()
             maintainContact();
             break;
         case MOVE_LOCATION:
-#if DEBUG_LEVEL==1
+#if DEBUG_LEVEL>=1
             cout << "Contact state is: move location" << endl;
 #endif
             // Calculate the next waypoint
@@ -81,7 +81,7 @@ void TappingExplorationThread::run()
             //continue; // Just for now, before I clean the code
             break;
         case FINISHED:
-#if DEBUG_LEVEL==1
+#if DEBUG_LEVEL>=1
             cout << "Contact state is: finished" << endl;
 #endif
             // I have to implement exit the thread procedure here
@@ -144,14 +144,25 @@ void TappingExplorationThread::maintainContact()
 {
     _objectFeatures->writeToFingerController("task add ctrl 20");  // TODO: put it in the config file
     _objectFeatures->writeToFingerController("start");
-    yarp::os::Time::delay(5);
+    yarp::os::Time::delay(5); //TODO: config file or some other type of criterion
+
+    // Stop the maintain contact task
+    _objectFeatures->writeToFingerController("stop");
+    yarp::os::Time::delay(1);
+    _objectFeatures->openHand();
+
+
+    //Wait for the hand to go to open positon
+    while(!_objectFeatures->checkOpenHandDone() && !isStopping())
+        ;
+
     _contactState = MOVE_LOCATION;
 }
 
 void TappingExplorationThread::calculateNewWaypoint()
 {
 
-#if DEBUG_LEVEL==2
+#if DEBUG_LEVEL>=2
     cout << "Calculating new waypoint" << endl;
 #endif
     Vector finger_pos, finger_orient;
@@ -170,28 +181,28 @@ void TappingExplorationThread::calculateNewWaypoint()
     if(_objectFeatures->getWayPoint(px, ox))
     {
         // Stop the finger controller
-#if DEBUG_LEVEL==2
+#if DEBUG_LEVEL>=2
         cout << "Stopping the finger controller...";
 #endif
         _objectFeatures->writeToFingerController("stop");
-#if DEBUG_LEVEL==2
+#if DEBUG_LEVEL>=2
         cout << "Done!" << endl;
 #endif
 
 
         // Get the finger postion
-#if DEBUG_LEVEL==2
+#if DEBUG_LEVEL>=2
         cout << "Reading the fingertip position...";
 #endif
         _objectFeatures->getFingertipPose(finger_pos, finger_orient);
-#if DEBUG_LEVEL==2
+#if DEBUG_LEVEL>=2
         cout << "Done!" << endl;
         cout << "Fingertip position: " << finger_pos.toString() << endl;
 #endif
 
 
 
-#if DEBUG_LEVEL==2
+#if DEBUG_LEVEL>=2
         cout << "Opening the hand...";
 #endif
         //Open the finger
@@ -201,7 +212,7 @@ void TappingExplorationThread::calculateNewWaypoint()
         while(!_objectFeatures->checkOpenHandDone() && !isStopping())
             ;
 
-#if DEBUG_LEVEL==2
+#if DEBUG_LEVEL>=2
         cout << "Done!" << endl;
 #endif
 
@@ -226,7 +237,7 @@ void TappingExplorationThread::calculateNewWaypoint()
 void TappingExplorationThread::approachObject()
 {
 
-#if DEBUG_LEVEL==2
+#if DEBUG_LEVEL>=2
     cout << "Approaching the object" << endl;
 #endif
 
@@ -238,24 +249,24 @@ void TappingExplorationThread::approachObject()
     ox.zero();
 
 
-#if DEBUG_LEVEL==2
+#if DEBUG_LEVEL>=2
     cout << "Getting the next waypoint...";
 #endif
     if(_objectFeatures->getWayPoint(px, ox, false))
     {
-#if DEBUG_LEVEL==2
+#if DEBUG_LEVEL>=2
         cout << "done!" << endl;
         cout << "Moving to the waypoint...";
 #endif
         // Go to the wayPoint if only it is a valid wayPoint.
         if(_robotCartesianController->goToPoseSync(px, ox))
             _robotCartesianController->waitMotionDone(0.1, 20);
-#if DEBUG_LEVEL==2
+#if DEBUG_LEVEL>=2
         cout << "done!" << endl;
 #endif
     }else if(_contactState != UNDEFINED)
     {
-#if DEBUG_LEVEL==2
+#if DEBUG_LEVEL>=2
         cout << "the Waypoint is invalid." << endl;
 #endif
         _contactState = MOVE_LOCATION;
@@ -267,14 +278,15 @@ void TappingExplorationThread::approachObject()
     {
 
 
-#if DEBUG_LEVEL==2
+#if DEBUG_LEVEL>=2
         cout << "Approaching...";
 #endif
         /// Tell the finger controller to approach the object
         _objectFeatures->writeToFingerController("task add appr");
         _objectFeatures->writeToFingerController("start");
+       // _objectFeatures->setProximalAngle(60);
 
-#if DEBUG_LEVEL==2
+#if DEBUG_LEVEL>=2
         cout << "Waiting for contact ...";
 #endif
 
@@ -285,21 +297,22 @@ void TappingExplorationThread::approachObject()
         while(_objectFeatures->getContactForce() < 3)
         {
 
+            //cout << "ContactForce: " << _objectFeatures->getContactForce() << endl;
             if(isStopping())
             {
                 break;
             }
-            else if(_objectFeatures->getProximalJointAngle() > 50) // TODO: implement a timeout
+            else if(_objectFeatures->getProximalJointAngle() > 35)
             {
-#if DEBUG_LEVEL==1
+#if DEBUG_LEVEL>=1
                 cout << "No contact detected." << endl;
 #endif
                 _contactState = CALCULATE_NEWWAYPONT;
                 break;
             }
-            else if( (std::clock() - time) / (double)(CLOCKS_PER_SEC) > 5)
+            else if( (std::clock() - time) / (double)(CLOCKS_PER_SEC) > 20)
             {
-#if DEBUG_LEVEL==1
+#if DEBUG_LEVEL>=1
                 cout << "No contact was detected -- timed out" << endl;
 #endif
                 _contactState = CALCULATE_NEWWAYPONT;
@@ -310,7 +323,7 @@ void TappingExplorationThread::approachObject()
 
         if(_contactState != CALCULATE_NEWWAYPONT)
         {
-#if DEBUG_LEVEL==1
+#if DEBUG_LEVEL>=1
             cout << "We have detected contact" << endl;
 #endif
             _contactState = MAINTAIN_CONTACT;
@@ -322,7 +335,7 @@ void TappingExplorationThread::approachObject()
 void TappingExplorationThread::moveToNewLocation()
 {
 
-#if DEBUG_LEVEL==2
+#if DEBUG_LEVEL>=2
     cout << "Moving to a new location" << endl;
 #endif
 
@@ -379,7 +392,7 @@ void TappingExplorationThread::moveToNewLocation()
         _contactState = APPROACH_OBJECT;
     else
     {
-#if DEBUG_LEVEL==2
+#if DEBUG_LEVEL>=2
         cout << "State set to finished" << endl;
 #endif
         _contactState = FINISHED;

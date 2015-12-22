@@ -129,7 +129,14 @@ bool ObjectFeaturesThread::openHand()
 
 
     _armJointPositionCtrl->setPositionMode();
-    if(!_armJointPositionCtrl->positionMove(8, 10))
+    ///// Quick fixe /////
+    if(!_armJointPositionCtrl->positionMove(7, 0)) //TODO: use the config file
+    {
+        cerr << _dbgtag << "Falied to move to the requsted positions." << endl;
+    }
+
+
+    if(!_armJointPositionCtrl->positionMove(8, 10)) //TODO: use the config file
     {
         cerr << _dbgtag << "Falied to move to the requsted positions." << endl;
     }
@@ -142,7 +149,25 @@ bool ObjectFeaturesThread::openHand()
         }
     }
 
+    if(!_armJointPositionCtrl->positionMove(13, 90)) //TODO: use the config file
+    {
+        cerr << _dbgtag << "Falied to move to the requsted positions." << endl;
+    }
 
+    if(!_armJointPositionCtrl->positionMove(14, 100)) //TODO: use the config file
+    {
+        cerr << _dbgtag << "Falied to move to the requsted positions." << endl;
+    }
+
+    if(!_armJointPositionCtrl->positionMove(15, 250)) //TODO: use the config file
+    {
+        cerr << _dbgtag << "Falied to move to the requsted positions." << endl;
+    }
+
+    if(!_armJointPositionCtrl->positionMove(10, 90)) //TODO: use the config file
+    {
+        cerr << _dbgtag << "Falied to move to the requsted positions." << endl;
+    }
    return true;
 }
 
@@ -496,7 +521,7 @@ ObjectFeaturesThread::ObjectFeaturesThread ( int period, ResourceFinder rf ) : R
 {
 
     // Some sane and safe default values
-    _trajectoryTime = 5; // By default take 5 seconds to complete a trajectory
+    _trajectoryTime = 1; // By default take 5 seconds to complete a trajectory
     _maintainContactPeriod = 20;
     _readTactilePeriod = 20;
     _explorationThreadPeriod = 20;
