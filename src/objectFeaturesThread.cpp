@@ -149,6 +149,11 @@ bool ObjectFeaturesThread::openHand()
         }
     }
 
+    if(!_armJointPositionCtrl->positionMove(12, 60)) //TODO: use the config file
+    {
+        cerr << _dbgtag << "Falied to move to the requsted positions." << endl;
+    }
+
     if(!_armJointPositionCtrl->positionMove(13, 90)) //TODO: use the config file
     {
         cerr << _dbgtag << "Falied to move to the requsted positions." << endl;
@@ -164,7 +169,7 @@ bool ObjectFeaturesThread::openHand()
         cerr << _dbgtag << "Falied to move to the requsted positions." << endl;
     }
 
-    if(!_armJointPositionCtrl->positionMove(10, 90)) //TODO: use the config file
+    if(!_armJointPositionCtrl->positionMove(10, 65)) //TODO: use the config file
     {
         cerr << _dbgtag << "Falied to move to the requsted positions." << endl;
     }
