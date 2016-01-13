@@ -8,6 +8,9 @@
 #include <yarp/math/Math.h>
 #include <new>
 
+#define M_PI   3.14159265358979323846264338328
+
+
 namespace objectExploration
 {
 
@@ -149,7 +152,7 @@ bool ObjectFeaturesThread::openHand()
         }
     }
 
-    if(!_armJointPositionCtrl->positionMove(12, 60)) //TODO: use the config file
+    if(!_armJointPositionCtrl->positionMove(12, 65)) //TODO: use the config file
     {
         cerr << _dbgtag << "Falied to move to the requsted positions." << endl;
     }
@@ -174,6 +177,19 @@ bool ObjectFeaturesThread::openHand()
         cerr << _dbgtag << "Falied to move to the requsted positions." << endl;
     }
    return true;
+}
+
+void ObjectFeaturesThread::adjustIndexFinger()
+{
+
+    _armPoseMutex.lock();
+    double tempProximalAngle = _proximalJointAngle;
+    _armPoseMutex.unlock();
+
+    if(!_armJointPositionCtrl->positionMove(12, 90 - tempProximalAngle)) //TODO: use the config file
+    {
+        cerr << _dbgtag << "Falied to move to the requsted positions." << endl;
+    }
 }
 
 bool ObjectFeaturesThread::getFingertipPose(yarp::sig::Vector &pos, yarp::sig::Vector &orient)

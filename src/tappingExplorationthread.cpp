@@ -298,11 +298,14 @@ void TappingExplorationThread::approachObject()
         {
 
             //cout << "ContactForce: " << _objectFeatures->getContactForce() << endl;
+
+            _objectFeatures->adjustIndexFinger();
+
             if(isStopping())
             {
                 break;
             }
-            else if(_objectFeatures->getProximalJointAngle() > 35)
+            else if(_objectFeatures->getProximalJointAngle() > 25)
             {
 #if DEBUG_LEVEL>=1
                 cout << "No contact detected." << endl;

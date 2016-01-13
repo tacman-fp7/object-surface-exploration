@@ -70,6 +70,7 @@ public:
     bool isExplorationValid(){return _isExplorationValid;}
     double getProximalJointAngle(){return _proximalJointAngle;}
     bool openHand();
+    void adjustIndexFinger();
 
     bool checkOpenHandDone()
     {
