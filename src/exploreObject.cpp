@@ -22,6 +22,13 @@ bool ExploreObject::openHand()
         ;
 }
 
+bool ExploreObject::prepHand()
+{
+    return _objectFeaturesThread->prepHand();
+    while (!_objectFeaturesThread->checkOpenHandDone() && !isStopping())
+        ;
+}
+
 bool ExploreObject::fingerSetAngle(const double angle)
 {
 
@@ -213,7 +220,7 @@ bool ExploreObject::startExploring()
     {
         //TODO: do some checks if the thread is running on so on
         // First step is to reach the pre-contact location
-        openHand();
+        prepHand();
         if(!this->goToStartingPose())
             ret = false;
         _armCartesianController->waitMotionDone(0.1, 20);
@@ -270,7 +277,7 @@ bool ExploreObject::stopExploring()
        // if(!this->goToHomePose())
        //     ret = false;
 
-        openHand();
+
 
         if(!goToStartingPose())
             ret = false;
@@ -281,6 +288,8 @@ bool ExploreObject::stopExploring()
         goToHomePose();
 
         _armCartesianController->waitMotionDone(0.1, 20);
+
+         openHand();
 
         //_maintainContactThread->stop();
 

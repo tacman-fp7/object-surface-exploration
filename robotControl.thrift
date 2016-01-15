@@ -8,8 +8,9 @@ service robotControl {
 	bool goToEndPose();
 	bool startExploring();
 	bool stopExploring();
-	bool fingerSetAngle(1: double angle)
-	bool openHand()
+	bool fingerSetAngle(1: double angle);
+	bool prepHand();
+	bool openHand();
 	bool quit();
 	
 }

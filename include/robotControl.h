@@ -22,6 +22,7 @@ public:
   virtual bool startExploring();
   virtual bool stopExploring();
   virtual bool fingerSetAngle(const double angle);
+  virtual bool prepHand();
   virtual bool openHand();
   virtual bool quit();
   virtual bool read(yarp::os::ConnectionReader& connection);

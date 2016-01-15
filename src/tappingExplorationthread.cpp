@@ -105,7 +105,7 @@ void TappingExplorationThread::finshExploration()
     starting_orient.resize(4);
 
     // Open the hand
-    _objectFeatures->openHand();
+    _objectFeatures->prepHand();
 
     // Wait for the hand to open;
     while(!_objectFeatures->checkOpenHandDone() && !isStopping())
@@ -149,7 +149,7 @@ void TappingExplorationThread::maintainContact()
     // Stop the maintain contact task
     _objectFeatures->writeToFingerController("stop");
     yarp::os::Time::delay(1);
-    _objectFeatures->openHand();
+    _objectFeatures->prepHand();
 
 
     //Wait for the hand to go to open positon
@@ -206,7 +206,7 @@ void TappingExplorationThread::calculateNewWaypoint()
         cout << "Opening the hand...";
 #endif
         //Open the finger
-        _objectFeatures->openHand();
+        _objectFeatures->prepHand();
 
         //Wait for the fingertip to open
         while(!_objectFeatures->checkOpenHandDone() && !isStopping())

@@ -91,7 +91,7 @@ bool ObjectFeaturesThread::getArmPose(yarp::sig::Vector &pos, yarp::sig::Vector 
     return ret;
 }
 
-bool ObjectFeaturesThread::openHand()
+bool ObjectFeaturesThread::prepHand()
 {
     int numAxes;
 
@@ -108,27 +108,6 @@ bool ObjectFeaturesThread::openHand()
         return false;
     }
 
-    // Read the axes vales
-   /* double *axesAngles = NULL;
-
-    axesAngles = new(std::nothrow) double[numAxes];
-    if(axesAngles == NULL)
-    {
-        cerr << _dbgtag << "Could not allocate memory." << endl;
-        return false;
-    }
-
-    if(!_armEncoder->getEncoders(axesAngles))
-    {
-        cerr << _dbgtag << "Could not read the encoder values." << endl;
-        delete[] axesAngles;
-        return false;
-    }
-
-    // We have successfully read the encoder values. I am assuming that the length of the
-    // array returned by the function matches the number of axes.
-
-    axesAngles[8] = 10;*/
 
 
     _armJointPositionCtrl->setPositionMode();
@@ -177,6 +156,52 @@ bool ObjectFeaturesThread::openHand()
         cerr << _dbgtag << "Falied to move to the requsted positions." << endl;
     }
    return true;
+
+}
+
+bool ObjectFeaturesThread::openHand()
+{
+    int numAxes;
+
+
+    if(!_armEncoder->getAxes( &numAxes))
+    {
+        cerr << _dbgtag << "Could not read the number available arm axes." << endl;
+        return false;
+    }
+
+    if(numAxes < 16)
+    {
+        cerr << _dbgtag << "Expected 16 axes, got" << numAxes << endl;
+        return false;
+    }
+
+
+
+
+    _armJointPositionCtrl->setPositionMode();
+    ///// Quick fix /////
+    if(!_armJointPositionCtrl->positionMove(7, 0)) //TODO: use the config file
+    {
+        cerr << _dbgtag << "Falied to move to the requsted positions." << endl;
+    }
+
+
+    if(!_armJointPositionCtrl->positionMove(8, 10)) //TODO: use the config file
+    {
+        cerr << _dbgtag << "Falied to move to the requsted positions." << endl;
+    }
+
+    for (int i=9; i < numAxes; i++)
+    {
+        if(!_armJointPositionCtrl->positionMove(i, 0))
+        {
+            cerr << _dbgtag << "Falied to move to the requsted positions." << endl;
+        }
+    }
+
+
+   return true;
 }
 
 void ObjectFeaturesThread::adjustIndexFinger()
@@ -211,8 +236,13 @@ bool ObjectFeaturesThread::getFingertipPose(yarp::sig::Vector &pos, yarp::sig::V
 
     Vector joints;
     iCub::iKin::iCubFinger finger(_whichFinger);
-    //cout << _whichFinger << endl;
+
+    //cout << "Finger: " << _whichFinger << endl;
+
+
     finger.getChainJoints(encs, joints);
+
+    cout << "Joints: " << joints.toString() << endl;
 
     //Convert the joints to radians.
     for (int j = 0; j < joints.size(); j++)
