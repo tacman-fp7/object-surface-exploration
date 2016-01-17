@@ -194,7 +194,7 @@ void TappingExplorationThread::calculateNewWaypoint()
 #if DEBUG_LEVEL>=2
         cout << "Reading the fingertip position...";
 #endif
-        _objectFeatures->getFingertipPose(finger_pos, finger_orient);
+       // _objectFeatures->getFingertipPose(finger_pos, finger_orient);
 #if DEBUG_LEVEL>=2
         cout << "Done!" << endl;
         cout << "Fingertip position: " << finger_pos.toString() << endl;
@@ -261,6 +261,9 @@ void TappingExplorationThread::approachObject()
         // Go to the wayPoint if only it is a valid wayPoint.
         if(_robotCartesianController->goToPoseSync(px, ox))
             _robotCartesianController->waitMotionDone(0.1, 20);
+
+
+
 #if DEBUG_LEVEL>=2
         cout << "done!" << endl;
 #endif
@@ -294,12 +297,12 @@ void TappingExplorationThread::approachObject()
         // bool inContact = true;
 
         std::clock_t time = std::clock();
-        while(_objectFeatures->getContactForce() < .5) // Write a proper contact detctor
+        while(_objectFeatures->getContactForce() < 2) // Write a proper contact detctor
         {
 
             //cout << "ContactForce: " << _objectFeatures->getContactForce() << endl;
 
-            _objectFeatures->adjustIndexFinger();
+            //_objectFeatures->adjustIndexFinger();
 
             if(isStopping())
             {
@@ -313,7 +316,7 @@ void TappingExplorationThread::approachObject()
                 _contactState = CALCULATE_NEWWAYPONT;
                 break;
             }
-            else if( (std::clock() - time) / (double)(CLOCKS_PER_SEC) > 20)
+            else if( (std::clock() - time) / (double)(CLOCKS_PER_SEC) > 5)
             {
 #if DEBUG_LEVEL>=1
                 cout << "No contact was detected -- timed out" << endl;
@@ -330,6 +333,14 @@ void TappingExplorationThread::approachObject()
             cout << "We have detected contact" << endl;
 #endif
             _contactState = MAINTAIN_CONTACT;
+        }
+        else if(_contactState == CALCULATE_NEWWAYPONT)
+        {
+            // No contact detected put the hand in prep position
+            _objectFeatures->prepHand();
+            // Wait for the hand to open;
+            while(!_objectFeatures->checkOpenHandDone() && !isStopping())
+                ;
         }
     }
 

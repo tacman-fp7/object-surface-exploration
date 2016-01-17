@@ -110,7 +110,7 @@ bool ObjectFeaturesThread::prepHand()
 
 
 
-    _armJointPositionCtrl->setPositionMode();
+    /////_armJointPositionCtrl->setPositionMode();
     ///// Quick fixe /////
 
     /*if(!_armJointPositionCtrl->positionMove(7, 0)) //TODO: use the config file
@@ -176,7 +176,7 @@ bool ObjectFeaturesThread::openHand()
 
 
 
-    _armJointPositionCtrl->setPositionMode();
+    ////_armJointPositionCtrl->setPositionMode();
     ///// Quick fix /////
    /* if(!_armJointPositionCtrl->positionMove(7, 0)) //TODO: use the config file
     {
@@ -217,6 +217,7 @@ void ObjectFeaturesThread::adjustIndexFinger()
 bool ObjectFeaturesThread::getFingertipPose(yarp::sig::Vector &pos, yarp::sig::Vector &orient)
 {
     bool ret = true;
+
 
     int nEncs;
 
