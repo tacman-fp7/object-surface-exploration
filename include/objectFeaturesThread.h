@@ -12,6 +12,7 @@
 #include <yarp/dev/CartesianControl.h>
 #include <yarp/dev/IEncoders.h>
 #include <yarp/dev/IPositionControl.h>
+#include <yarp/dev/IControlMode2.h>
 
 // This object is used to update features which will be shared between object objectExploraton
 // and object classification threads
@@ -67,6 +68,7 @@ public:
     void writeToFingerController(std::string command);
     void setArmController_jnt(yarp::dev::IEncoders *encoder, yarp::dev::IPositionControl *jointCtrl);
     void setArmController_cart(yarp::dev::ICartesianControl * cartesianCtrl);
+    void setArmController_mode(yarp::dev::IControlMode2 *armJointCtrlmode);
     bool isExplorationValid(){return _isExplorationValid;}
     double getProximalJointAngle(){return _proximalJointAngle;}
     bool openHand();
@@ -177,6 +179,7 @@ protected:
     yarp::dev::IEncoders *_armEncoder;
     yarp::dev::ICartesianControl *_armCartesianCtrl;
     yarp::dev::IPositionControl *_armJointPositionCtrl;
+    yarp::dev::IControlMode2 *_armJointModeCtrl;
 
     double _proximalJointAngle;
     int _proximalJoint_index;

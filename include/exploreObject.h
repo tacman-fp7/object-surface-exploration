@@ -9,6 +9,7 @@
 #include <yarp/os/ResourceFinder.h>
 #include <yarp/dev/IEncoders.h>
 #include <yarp/dev/IPositionControl.h>
+#include <yarp/dev/IControlMode2.h>
 #include <yarp/os/RFModule.h>
 #include <robotControl.h>
 
@@ -63,6 +64,7 @@ private: // Private members
     yarp::dev::ICartesianControl* _armCartesianController;
     yarp::dev::PolyDriver _deviceController_joint;
     yarp::dev::IEncoders* _armEncoders;
+    yarp::dev::IControlMode2* _armController_mode;
 
     yarp::dev::IPositionControl *_armJointPositionController;
 

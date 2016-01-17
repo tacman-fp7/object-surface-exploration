@@ -124,6 +124,7 @@ bool ObjectFeaturesThread::prepHand()
         cerr << _dbgtag << "Falied to move to the requsted positions." << endl;
     }*/
 
+    _armJointModeCtrl->setPositionMode(11); //TODO: make apply to app hand joins. quit hack
     for (int i=7; i < numAxes; i++)
     {
         if(!_armJointPositionCtrl->positionMove(i, 0))
@@ -137,12 +138,12 @@ bool ObjectFeaturesThread::prepHand()
         cerr << _dbgtag << "Falied to move to the requsted positions." << endl;
     }
 
-    if(!_armJointPositionCtrl->positionMove(13, 90)) //TODO: use the config file
+    if(!_armJointPositionCtrl->positionMove(13, 60)) //TODO: use the config file
     {
         cerr << _dbgtag << "Falied to move to the requsted positions." << endl;
     }
 
-    if(!_armJointPositionCtrl->positionMove(14, 100)) //TODO: use the config file
+    if(!_armJointPositionCtrl->positionMove(14, 150)) //TODO: use the config file
     {
         cerr << _dbgtag << "Falied to move to the requsted positions." << endl;
     }
@@ -564,6 +565,11 @@ void ObjectFeaturesThread::setArmController_jnt(yarp::dev::IEncoders *encoder, y
 
     _armEncoder = encoder;
     _armJointPositionCtrl = jointCtrl;
+}
+
+void ObjectFeaturesThread::setArmController_mode(yarp::dev::IControlMode2 *armJointCtrlmode)
+{
+    _armJointModeCtrl = armJointCtrlmode;
 }
 
 ObjectFeaturesThread::ObjectFeaturesThread ( int period, ResourceFinder rf ) : RateThread ( period )

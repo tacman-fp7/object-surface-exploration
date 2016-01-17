@@ -116,7 +116,7 @@ void TappingExplorationThread::finshExploration()
     // Get the current pose of the arm
     if(_robotCartesianController->getPose(starting_pos, starting_orient))
     {
-        starting_pos[2] = 0.05;
+        starting_pos[2] = 0.05; // TODO: remove the magic number
         _objectFeatures->setWayPoint(starting_pos, starting_orient);
 
         _objectFeatures->getWayPoint(starting_pos, starting_orient, false);
@@ -316,7 +316,7 @@ void TappingExplorationThread::approachObject()
                 _contactState = CALCULATE_NEWWAYPONT;
                 break;
             }
-            else if( (std::clock() - time) / (double)(CLOCKS_PER_SEC) > 5)
+            else if( (std::clock() - time) / (double)(CLOCKS_PER_SEC) > 10)
             {
 #if DEBUG_LEVEL>=1
                 cout << "No contact was detected -- timed out" << endl;

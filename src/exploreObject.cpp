@@ -17,6 +17,7 @@ using yarp::os::Value;
 
 bool ExploreObject::openHand()
 {
+
     return _objectFeaturesThread->openHand();
     while (!_objectFeaturesThread->checkOpenHandDone() && !isStopping())
         ;
@@ -279,7 +280,7 @@ bool ExploreObject::stopExploring()
 
 
 
-        if(!goToStartingPose())
+       /* if(!goToStartingPose())
             ret = false;
 
         _armCartesianController->waitMotionDone(0.1, 20);
@@ -289,8 +290,10 @@ bool ExploreObject::stopExploring()
 
         _armCartesianController->waitMotionDone(0.1, 20);
 
+
          openHand();
 
+         */
         //_maintainContactThread->stop();
 
 
@@ -396,6 +399,14 @@ bool ExploreObject::configure(yarp::os::ResourceFinder& rf )
         return false;
     }
 
+    //open an armcontroller_mode view
+    if(!_deviceController_joint.view(_armController_mode))
+    {
+        cerr << _dbgtag << "Failed to open control mode view" << endl;
+        // Cannot explore
+        _exploreObjectValid = false;
+        return false;
+    }
 
     // Open an encoder view
     if(!_deviceController_joint.view(_armEncoders))
@@ -431,6 +442,7 @@ bool ExploreObject::configure(yarp::os::ResourceFinder& rf )
 
     _objectFeaturesThread->setArmController_cart(_armCartesianController);
     _objectFeaturesThread->setArmController_jnt(_armEncoders, _armJointPositionController);
+    _objectFeaturesThread->setArmController_mode(_armController_mode);
 
     _objectFeaturesThread->start();
 
