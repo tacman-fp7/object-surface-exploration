@@ -112,7 +112,8 @@ bool ObjectFeaturesThread::prepHand()
 
     _armJointPositionCtrl->setPositionMode();
     ///// Quick fixe /////
-    if(!_armJointPositionCtrl->positionMove(7, 0)) //TODO: use the config file
+
+    /*if(!_armJointPositionCtrl->positionMove(7, 0)) //TODO: use the config file
     {
         cerr << _dbgtag << "Falied to move to the requsted positions." << endl;
     }
@@ -121,9 +122,9 @@ bool ObjectFeaturesThread::prepHand()
     if(!_armJointPositionCtrl->positionMove(8, 10)) //TODO: use the config file
     {
         cerr << _dbgtag << "Falied to move to the requsted positions." << endl;
-    }
+    }*/
 
-    for (int i=9; i < numAxes; i++)
+    for (int i=7; i < numAxes; i++)
     {
         if(!_armJointPositionCtrl->positionMove(i, 0))
         {
@@ -151,10 +152,6 @@ bool ObjectFeaturesThread::prepHand()
         cerr << _dbgtag << "Falied to move to the requsted positions." << endl;
     }
 
-    if(!_armJointPositionCtrl->positionMove(10, 65)) //TODO: use the config file
-    {
-        cerr << _dbgtag << "Falied to move to the requsted positions." << endl;
-    }
    return true;
 
 }
@@ -181,7 +178,7 @@ bool ObjectFeaturesThread::openHand()
 
     _armJointPositionCtrl->setPositionMode();
     ///// Quick fix /////
-    if(!_armJointPositionCtrl->positionMove(7, 0)) //TODO: use the config file
+   /* if(!_armJointPositionCtrl->positionMove(7, 0)) //TODO: use the config file
     {
         cerr << _dbgtag << "Falied to move to the requsted positions." << endl;
     }
@@ -190,9 +187,9 @@ bool ObjectFeaturesThread::openHand()
     if(!_armJointPositionCtrl->positionMove(8, 10)) //TODO: use the config file
     {
         cerr << _dbgtag << "Falied to move to the requsted positions." << endl;
-    }
+    }*/
 
-    for (int i=9; i < numAxes; i++)
+    for (int i=7; i < numAxes; i++)
     {
         if(!_armJointPositionCtrl->positionMove(i, 0))
         {

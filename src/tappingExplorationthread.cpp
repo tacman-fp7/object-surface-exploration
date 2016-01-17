@@ -294,7 +294,7 @@ void TappingExplorationThread::approachObject()
         // bool inContact = true;
 
         std::clock_t time = std::clock();
-        while(_objectFeatures->getContactForce() < 3)
+        while(_objectFeatures->getContactForce() < .5) // Write a proper contact detctor
         {
 
             //cout << "ContactForce: " << _objectFeatures->getContactForce() << endl;
