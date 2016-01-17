@@ -241,7 +241,7 @@ bool ObjectFeaturesThread::getFingertipPose(yarp::sig::Vector &pos, yarp::sig::V
 
     finger.getChainJoints(encs, joints);
 
-    cout << "Joints: " << joints.toString() << endl;
+    //cout << "Joints: " << joints.toString() << endl;
 
     //Convert the joints to radians.
     for (int j = 0; j < joints.size(); j++)
