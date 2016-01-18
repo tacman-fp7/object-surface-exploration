@@ -74,12 +74,17 @@ public:
     bool openHand();
     bool prepHand();
     void adjustIndexFinger();
+    bool getFingertipZ(double *zDisp);
 
     bool checkOpenHandDone()
     {
         bool ret;
         if(!_armJointPositionCtrl->checkMotionDone(_proximalJoint_index, &ret))
-                ret = false;
+        {
+            std::cerr << _dbgtag << "CheckMotionDone failed on network comms" << std::endl;
+            ret = true;
+        }
+                //ret = false;
 
         return ret;
     }

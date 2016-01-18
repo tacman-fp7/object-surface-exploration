@@ -144,7 +144,45 @@ void TappingExplorationThread::maintainContact()
 {
     _objectFeatures->writeToFingerController("task add ctrl 20");  // TODO: put it in the config file
     _objectFeatures->writeToFingerController("start");
-    yarp::os::Time::delay(5); //TODO: config file or some other type of criterion
+    yarp::os::Time::delay(3); //TODO: config file or some other type of criterion
+
+    // move sideways
+    //Get the current location and move it sideways
+
+    Vector current_pos, current_orient;
+    current_pos.resize(3);
+    current_orient.resize(4);
+
+
+
+ /*   if(_robotCartesianController->getPose(current_pos, current_orient))
+    {
+       cout << "Current pos: " << current_pos.toString() << endl;
+       double temp = current_pos[1];
+        current_pos[1] = temp + 0.005; // TODO: remove the magic number
+        double tempTraj;
+
+
+        _robotCartesianController->goToPoseSync(current_pos, current_orient);
+        _robotCartesianController->waitMotionDone(0.1, 1);
+
+        current_pos[1] = temp - 0.005; // TODO: remove the magic number
+
+
+        _robotCartesianController->goToPoseSync(current_pos, current_orient);
+        _robotCartesianController->waitMotionDone(0.1, 1);
+
+        current_pos[1] = temp ; // TODO: remove the magic number
+
+
+        _robotCartesianController->goToPoseSync(current_pos, current_orient);
+        _robotCartesianController->waitMotionDone(0.1, 20);
+
+
+    }
+
+    */
+
 
     // Stop the maintain contact task
     _objectFeatures->writeToFingerController("stop");
@@ -165,6 +203,9 @@ void TappingExplorationThread::calculateNewWaypoint()
 #if DEBUG_LEVEL>=2
     cout << "Calculating new waypoint" << endl;
 #endif
+
+    double fingertipZdisp = 0;
+
     Vector finger_pos, finger_orient;
     finger_pos.resize(3);
     finger_orient.resize(4);
@@ -195,6 +236,14 @@ void TappingExplorationThread::calculateNewWaypoint()
         cout << "Reading the fingertip position...";
 #endif
        // _objectFeatures->getFingertipPose(finger_pos, finger_orient);
+        if (!_objectFeatures->getFingertipZ(&fingertipZdisp))
+        {
+            cerr << "Invalid fingertip delta z, setting ot default value." << endl;
+            fingertipZdisp = 0; //TODO: file
+        }
+
+
+
 #if DEBUG_LEVEL>=2
         cout << "Done!" << endl;
         cout << "Fingertip position: " << finger_pos.toString() << endl;
@@ -212,13 +261,28 @@ void TappingExplorationThread::calculateNewWaypoint()
         while(!_objectFeatures->checkOpenHandDone() && !isStopping())
             ;
 
+        //cout << "motion done!" << endl;
+        yarp::os::Time::delay(1); //TODO: hack to make sure motion is done
+        double prepDeltaZ;
+        _objectFeatures->getFingertipZ(&prepDeltaZ);
+
+        fingertipZdisp -= prepDeltaZ; // Take the current delta z out
+
+        //cout << "Delta z: " << fingertipZdisp << endl;
+        if(fingertipZdisp > 0.02)
+        {
+            cerr << "Warning! Delta z too big, capping it at 0.02";
+            fingertipZdisp = 0.02;
+        }
+
+
 #if DEBUG_LEVEL>=2
         cout << "Done!" << endl;
 #endif
 
 
 
-        px[2] -= 0.02; // finger_pos[2]; // Hack, until I figure out why the finger position is not correct
+        px[2] -= fingertipZdisp;
         _objectFeatures->setWayPoint(px, ox);
 
         _contactState = APPROACH_OBJECT;

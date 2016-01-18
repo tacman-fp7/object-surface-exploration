@@ -7,8 +7,9 @@
 #include <yarp/sig/Matrix.h>
 #include <yarp/math/Math.h>
 #include <new>
+#include <math.h>
 
-#define M_PI   3.14159265358979323846264338328
+//#define M_PI   3.14159265358979323846264338328
 
 
 namespace objectExploration
@@ -21,6 +22,7 @@ using std::cout;
 using std::endl;
 using std::cerr;
 using yarp::os::Mutex;
+
 /*
  * 192 for hand data, where 1-60 are taxels of fingertips (12 each in this order:
  * index, middle, ring, little, thumb); 61-96 zeros; 97-144 palm taxels
@@ -215,11 +217,54 @@ void ObjectFeaturesThread::adjustIndexFinger()
     }
 }
 
+bool ObjectFeaturesThread::getFingertipZ(double *zDisp)
+{
+
+    int nEncs;
+    bool ret;
+
+    double l1, l2, l3;
+    l1 = 0.0259; l2 = 0.022; l3 = 0.023;
+
+    _armEncoder->getAxes(&nEncs);
+    Vector encs(nEncs);
+    if(! (ret = _armEncoder->getEncoders(encs.data())))
+    {
+        cerr << _dbgtag << "Failed to read arm encoder data" << endl;
+    }
+
+
+
+    //cout << "Encoder data" << encs.toString() << endl;
+
+    Vector joints;
+    iCub::iKin::iCubFinger finger(_whichFinger);
+
+    //cout << "Finger: " << _whichFinger << endl;
+
+
+    finger.getChainJoints(encs, joints);
+
+    //Convert the joints to radians.
+    for (int j = 0; j < joints.size(); j++)
+        joints[j] *= M_PI/180;
+
+
+    *zDisp = l1 * sin(joints[1]) + l2 * sin(joints[1]  + joints[2] * 1.5)  +
+            l3 *  sin(joints[1]  + joints[2] + joints[3] / 2);
+
+   // cout << "Z disp: " << *zDisp  << endl;
+
+    return ret;
+}
+
 bool ObjectFeaturesThread::getFingertipPose(yarp::sig::Vector &pos, yarp::sig::Vector &orient)
 {
     bool ret = true;
 
 
+    double zz;
+    getFingertipZ(&zz);
     int nEncs;
 
 
@@ -231,7 +276,8 @@ bool ObjectFeaturesThread::getFingertipPose(yarp::sig::Vector &pos, yarp::sig::V
     }
 
 
-//    cout << "Encoder data" << encs.toString() << endl;
+
+    //cout << "Encoder data" << encs.toString() << endl;
 
     Vector joints;
     iCub::iKin::iCubFinger finger(_whichFinger);
@@ -241,17 +287,20 @@ bool ObjectFeaturesThread::getFingertipPose(yarp::sig::Vector &pos, yarp::sig::V
 
     finger.getChainJoints(encs, joints);
 
-    //cout << "Joints: " << joints.toString() << endl;
+    cout << "Joints: " << joints.toString() << endl;
 
     //Convert the joints to radians.
     for (int j = 0; j < joints.size(); j++)
         joints[j] *= M_PI/180;
+
+
 
     yarp::sig::Matrix tipFrame = finger.getH(joints);
 
     Vector tip_x = tipFrame.getCol(3);
     Vector tip_o = yarp::math::dcm2axis(tipFrame);
 
+    cout << "Tip" << tip_x.toString() << endl;
     // I should have a mutex here specsific for the carteria view!
     _armPoseMutex.lock();
 
