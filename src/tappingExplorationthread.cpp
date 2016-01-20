@@ -142,9 +142,47 @@ void TappingExplorationThread::finshExploration()
 
 void TappingExplorationThread::maintainContact()
 {
+
+    //////////////////////////////////////////// Straighten the finger ////////////////////////
+
+
+    // Get the current z position of the fingertip
+
+   /* double deltaZ;
+    _objectFeatures->getFingertipZ(&deltaZ);
+
+    // Open the fingertip
+    _objectFeatures->openIndexFinger();
+
+    //move to the new position
+
+    Vector px, ox;
+    px.resize(3);
+    px.zero();
+    ox.resize(4);
+    ox.zero();
+
+
+    _objectFeatures->getWayPoint(px, ox, false);
+
+    px[2] -= deltaZ;
+
+
+    if(_robotCartesianController->goToPoseSync(px, ox))
+        _robotCartesianController->waitMotionDone(0.1, 5);
+
+        yarp::os::Time::delay(3);
+
+        //_objectFeatures->writeToFingerController("task appr");
+
+        _contactState = MOVE_LOCATION;
+
+        return;*/
+    /////////////////////////////////////////////////////////
+
     _objectFeatures->writeToFingerController("task add ctrl 20");  // TODO: put it in the config file
     _objectFeatures->writeToFingerController("start");
-    yarp::os::Time::delay(3); //TODO: config file or some other type of criterion
+    yarp::os::Time::delay(5); //TODO: config file or some other type of criterion
 
     // move sideways
     //Get the current location and move it sideways
@@ -225,7 +263,19 @@ void TappingExplorationThread::calculateNewWaypoint()
 #if DEBUG_LEVEL>=2
         cout << "Stopping the finger controller...";
 #endif
-        _objectFeatures->writeToFingerController("stop");
+
+
+
+         _objectFeatures->writeToFingerController("stop");
+         //_objectFeatures->setProximalAngle(_proximalAngle);
+        // while(!_objectFeatures->checkOpenHandDone() && !isStopping())
+        //     ;
+        // yarp::os::Time::delay(1);
+
+
+
+
+        //yarp::os::Time::delay(10);
 #if DEBUG_LEVEL>=2
         cout << "Done!" << endl;
 #endif
@@ -236,13 +286,11 @@ void TappingExplorationThread::calculateNewWaypoint()
         cout << "Reading the fingertip position...";
 #endif
        // _objectFeatures->getFingertipPose(finger_pos, finger_orient);
-        if (!_objectFeatures->getFingertipZ(&fingertipZdisp))
+        if (!_objectFeatures->getFingertipZ(&fingertipZdisp, _indexFingerEncoders))
         {
-            cerr << "Invalid fingertip delta z, setting ot default value." << endl;
+            cerr << "Invalid fingertip delta z, setting to default value." << endl;
             fingertipZdisp = 0; //TODO: file
         }
-
-
 
 #if DEBUG_LEVEL>=2
         cout << "Done!" << endl;
@@ -372,11 +420,13 @@ void TappingExplorationThread::approachObject()
             {
                 break;
             }
-            else if(_objectFeatures->getProximalJointAngle() > 25)
+            else if(_objectFeatures->getProximalJointAngle() > 20)
             {
 #if DEBUG_LEVEL>=1
                 cout << "No contact detected." << endl;
 #endif
+                _objectFeatures->getIndexFingerEncoder(_indexFingerEncoders);
+                //_proximalAngle = 20;
                 _contactState = CALCULATE_NEWWAYPONT;
                 break;
             }
@@ -385,6 +435,7 @@ void TappingExplorationThread::approachObject()
 #if DEBUG_LEVEL>=1
                 cout << "No contact was detected -- timed out" << endl;
 #endif
+                //_proximalAngle = _objectFeatures->getProximalJointAngle();
                 _contactState = CALCULATE_NEWWAYPONT;
                 break;
             }

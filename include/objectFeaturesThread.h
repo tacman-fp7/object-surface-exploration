@@ -36,6 +36,9 @@ namespace objectExploration
 
 class ObjectFeaturesThread: public RateThread
 {
+private:
+    void adjustMinMax(const double currentVal, double &min, double &max);
+
 public:
     ObjectFeaturesThread(int period, ResourceFinder rf);
     ~ObjectFeaturesThread();
@@ -75,11 +78,16 @@ public:
     bool prepHand();
     void adjustIndexFinger();
     bool getFingertipZ(double *zDisp);
+    bool getFingertipZ(double *zDisp, double proximalAngle);
+    bool getFingertipZ(double *zDisp, Vector &fingerEncoders);
+    void openIndexFinger();
+    void calibrateHand();
+    void getIndexFingerEncoder(Vector &encoderValues);
 
     bool checkOpenHandDone()
     {
         bool ret;
-        if(!_armJointPositionCtrl->checkMotionDone(_proximalJoint_index, &ret))
+        if(!_armJointPositionCtrl->checkMotionDone(&ret))
         {
             std::cerr << _dbgtag << "CheckMotionDone failed on network comms" << std::endl;
             ret = true;
@@ -99,8 +107,11 @@ public:
             std::cout << "Encoder: "  << encVal << std::endl;
             */
 
+            //double aa;
+            //getFingertipZ(&aa);
             // Make sure the control is in position mode
-            _armJointPositionCtrl->setPositionMode();
+            //_armJointPositionCtrl->setPositionMode();
+            _armJointModeCtrl->setPositionMode(11);
             return (_armJointPositionCtrl->positionMove(_proximalJoint_index, angle));
 
         }
@@ -123,6 +134,17 @@ protected:
     string _whichFinger;
 
     int _trajectoryTime;
+
+
+    //////// Finger encoders //////
+
+    BufferedPort<Bottle> _fingerEncoders;
+    double _maxIndexProximal;
+    double _minIndexProximal;
+    double _maxIndexMiddle;
+    double _minIndexMiddle;
+    double _maxIndexDistal;
+    double _minIndexDistal;
 
     ////// Exploration parameters ///////
     int _maintainContactPeriod;

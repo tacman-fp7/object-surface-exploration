@@ -11,6 +11,7 @@ service robotControl {
 	bool fingerSetAngle(1: double angle);
 	bool prepHand();
 	bool openHand();
+	bool calibrateHand();
 	bool quit();
 	
 }

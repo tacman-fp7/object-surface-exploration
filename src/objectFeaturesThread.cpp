@@ -8,6 +8,8 @@
 #include <yarp/math/Math.h>
 #include <new>
 #include <math.h>
+#include <yarp/os/Time.h>
+
 
 //#define M_PI   3.14159265358979323846264338328
 
@@ -217,43 +219,203 @@ void ObjectFeaturesThread::adjustIndexFinger()
     }
 }
 
-bool ObjectFeaturesThread::getFingertipZ(double *zDisp)
+void ObjectFeaturesThread::openIndexFinger()
+{
+    _armJointPositionCtrl->positionMove(12,0);
+    _armJointPositionCtrl->positionMove(11,0);
+}
+
+void ObjectFeaturesThread::calibrateHand()
 {
 
-    int nEncs;
-    bool ret;
+
+
+
+    _armJointPositionCtrl->positionMove(11,0);
+    _armJointPositionCtrl->positionMove(12, 180);
+    while(!checkOpenHandDone())
+        ;
+    yarp::os::Time::delay(5);
+    cout << "Motion done";
+
+    Bottle *fingerEnc;
+    for(int i = 0; i < _fingerEncoders.getPendingReads(); i++)
+        fingerEnc = _fingerEncoders.read();
+    _maxIndexProximal = fingerEnc->get(3).asDouble();
+    _minIndexMiddle = fingerEnc->get(4).asDouble();
+    _minIndexDistal = fingerEnc->get(5).asDouble();
+
+
+
+    _armJointPositionCtrl->positionMove(12, 0);
+    while(!checkOpenHandDone())
+        ;
+
+    _armJointPositionCtrl->positionMove(11,90);
+
+    while(!checkOpenHandDone())
+        ;
+    yarp::os::Time::delay(5);
+    cout << "Motion done";
+
+    for(int i = 0; i < _fingerEncoders.getPendingReads(); i++)
+        fingerEnc = _fingerEncoders.read();
+
+    _minIndexProximal = fingerEnc->get(3).asDouble();
+    _maxIndexMiddle = fingerEnc->get(4).asDouble();
+    _maxIndexDistal = fingerEnc->get(5).asDouble();
+
+    _armJointPositionCtrl->positionMove(11,0);
+    while(!checkOpenHandDone())
+        ;
+
+    cout << "Calibration mins:" <<
+            _minIndexProximal << "\t" <<
+            _minIndexMiddle << "\t" <<
+            _minIndexDistal << "\t" << endl;
+
+    cout << "Calibration maxes:" <<
+            _maxIndexProximal << "\t" <<
+            _maxIndexMiddle << "\t" <<
+            _maxIndexDistal << "\t" << endl;
+
+}
+
+void ObjectFeaturesThread::adjustMinMax(const double currentVal, double &min, double &max)
+{
+if(currentVal > max)
+    max = currentVal;
+if(currentVal < min)
+    min = currentVal;
+}
+
+void ObjectFeaturesThread::getIndexFingerEncoder(yarp::sig::Vector &encoderValues)
+{
+
+
+    encoderValues.clear();
+    encoderValues.resize(3);
+
+    Bottle *handEnc = _fingerEncoders.read();
+
+
+    encoderValues[0] = handEnc->get(3).asDouble();
+    encoderValues[1] = handEnc->get(4).asDouble();
+    encoderValues[2] = handEnc->get(5).asDouble();
+
+
+}
+
+bool ObjectFeaturesThread::getFingertipZ(double *zDisp, yarp::sig::Vector &fingerEncoders)
+{
 
     double l1, l2, l3;
-    l1 = 0.0259; l2 = 0.022; l3 = 0.023;
+    l1 = 0.022; l2 = 0.022; l3 = 0.023;
 
-    _armEncoder->getAxes(&nEncs);
-    Vector encs(nEncs);
-    if(! (ret = _armEncoder->getEncoders(encs.data())))
-    {
-        cerr << _dbgtag << "Failed to read arm encoder data" << endl;
-    }
-
-
-
-    //cout << "Encoder data" << encs.toString() << endl;
+    adjustMinMax(fingerEncoders[0], _minIndexProximal, _maxIndexProximal);
+    adjustMinMax(fingerEncoders[1], _minIndexMiddle, _maxIndexMiddle);
+    adjustMinMax(fingerEncoders[2], _minIndexDistal, _maxIndexDistal);
 
     Vector joints;
-    iCub::iKin::iCubFinger finger(_whichFinger);
+    joints.resize(4);
+    joints.zero();
 
-    //cout << "Finger: " << _whichFinger << endl;
+    joints[1] = 90 * (1 - (fingerEncoders[0] - _minIndexProximal) / (_maxIndexProximal - _minIndexProximal) );
+    joints[2] = 90 * (1 - (fingerEncoders[1] - _minIndexMiddle) / (_maxIndexMiddle - _minIndexMiddle) );
+    joints[3] = 90 * (1 - (fingerEncoders[2] - _minIndexDistal) / (_maxIndexDistal - _minIndexDistal) );
 
-
-    finger.getChainJoints(encs, joints);
+    cout << "Joints:" << joints.toString() << endl;
 
     //Convert the joints to radians.
     for (int j = 0; j < joints.size(); j++)
         joints[j] *= M_PI/180;
 
 
-    *zDisp = l1 * sin(joints[1]) + l2 * sin(joints[1]  + joints[2] * 1.5)  +
-            l3 *  sin(joints[1]  + joints[2] + joints[3] / 2);
 
-   // cout << "Z disp: " << *zDisp  << endl;
+    *zDisp = l1 * sin(joints[1]) + l2 * sin(joints[1]  + joints[2])  +
+            l3 *  sin(joints[1]  + joints[2] + joints[3]);
+
+    cout << "Z disp: " << *zDisp  << endl;
+
+
+
+    return true;
+}
+
+bool ObjectFeaturesThread::getFingertipZ(double *zDisp)
+{
+    Bottle *handEnc = _fingerEncoders.read(); // Decide if I want it to be blocking
+
+    double indexProximal = handEnc->get(3).asDouble();
+
+    adjustMinMax(indexProximal, _minIndexProximal, _maxIndexProximal);
+    double proximalAngle = 90 * (1 - (indexProximal - _minIndexProximal) / (_maxIndexProximal - _minIndexProximal) );
+
+    return(getFingertipZ(zDisp, proximalAngle ));
+}
+
+bool ObjectFeaturesThread::getFingertipZ(double *zDisp, double proximalAngle)
+{
+
+    //int nEncs;
+    bool ret = true;
+
+    double l1, l2, l3;
+    l1 = 0.022; l2 = 0.022; l3 = 0.023; //TODO: get it from a config file
+
+    Bottle *handEnc = _fingerEncoders.read(); // Decide if I want it to be blocking
+    //cout << "Hand encoder: " << handEnc->toString() << endl;
+
+    //double indexProximal = proximalAngle;
+    //double indexProximal = handEnc->get(3).asDouble();
+    double indexMiddle = handEnc->get(4).asDouble();
+    double indexDistal = handEnc->get(5).asDouble();
+
+//    cout << "Enc" << indexProximal << "\t" << indexDistal << endl;
+
+    //adjustMinMax(indexProximal, _minIndexProximal, _maxIndexProximal);
+    adjustMinMax(indexMiddle, _minIndexMiddle, _maxIndexMiddle);
+    adjustMinMax(indexDistal, _minIndexDistal, _maxIndexDistal);
+
+
+    //_armEncoder->getAxes(&nEncs);
+    //Vector encs(nEncs);
+    //if(! (ret = _armEncoder->getEncoders(encs.data())))
+    //{
+        //cerr << _dbgtag << "Failed to read arm encoder data" << endl;
+    //}
+
+
+
+    //cout << "Encoder:" << encs.toString() << endl;
+
+    Vector joints;
+    joints.resize(4);
+    joints.zero();
+    //iCub::iKin::iCubFinger finger(_whichFinger);
+
+    //cout << "Finger: " << _whichFinger << endl;
+
+
+    //finger.getChainJoints(encs, joints);
+
+
+    joints[1] = proximalAngle;
+    joints[2] = 90 * (1 - (indexMiddle - _minIndexMiddle) / (_maxIndexMiddle - _minIndexMiddle) );
+    joints[3] = 90 * (1 - (indexDistal - _minIndexDistal) / (_maxIndexDistal - _minIndexDistal) );
+
+    cout << "Joints:" << joints.toString() << endl;
+
+    //Convert the joints to radians.
+    for (int j = 0; j < joints.size(); j++)
+        joints[j] *= M_PI/180;
+
+
+
+    *zDisp = l1 * sin(joints[1]) + l2 * sin(joints[1]  + joints[2])  +
+            l3 *  sin(joints[1]  + joints[2] + joints[3]);
+
+    cout << "Z disp: " << *zDisp  << endl;
 
     return ret;
 }
@@ -265,6 +427,13 @@ bool ObjectFeaturesThread::getFingertipPose(yarp::sig::Vector &pos, yarp::sig::V
 
     double zz;
     getFingertipZ(&zz);
+
+    return true;
+
+    ////////////////// Fix it! /////////////////////////
+    /// \brief nEncs
+    ///
+
     int nEncs;
 
 
@@ -287,7 +456,7 @@ bool ObjectFeaturesThread::getFingertipPose(yarp::sig::Vector &pos, yarp::sig::V
 
     finger.getChainJoints(encs, joints);
 
-    cout << "Joints: " << joints.toString() << endl;
+    //cout << "Joints: " << joints.toString() << endl;
 
     //Convert the joints to radians.
     for (int j = 0; j < joints.size(); j++)
@@ -300,7 +469,7 @@ bool ObjectFeaturesThread::getFingertipPose(yarp::sig::Vector &pos, yarp::sig::V
     Vector tip_x = tipFrame.getCol(3);
     Vector tip_o = yarp::math::dcm2axis(tipFrame);
 
-    cout << "Tip" << tip_x.toString() << endl;
+    //cout << "Tip" << tip_x.toString() << endl;
     // I should have a mutex here specsific for the carteria view!
     _armPoseMutex.lock();
 
@@ -583,6 +752,17 @@ bool ObjectFeaturesThread::threadInit()
     }
 
 
+    /////////////////////////////////////////
+    if(_fingerEncoders.open("/" + _moduleName + "/" + _arm + "_hand/analog:i"))
+    {
+        Network::connect( "/" + _robotName + "/" + _arm + "_hand/analog:o",
+                          "/" + _moduleName + "/" + _arm + "_hand/analog:i");
+    }
+
+    //calibrateFinger();
+
+    ///////////////////////////////
+
 
     if(ret)
         cout << "Object features thread configured" << endl;
@@ -666,8 +846,19 @@ ObjectFeaturesThread::ObjectFeaturesThread ( int period, ResourceFinder rf ) : R
 
     _zMin = 0;
     _zMax = 0;
+
+    // TODO: Put it in a config file!
+    _maxIndexProximal = 235;
+    _minIndexProximal = 14;
+    _maxIndexMiddle = 215;
+    _minIndexMiddle = 20;
+    _maxIndexDistal = 250;
+    _minIndexDistal = 24;
+
     ////////////// read the parameters from the config file ///////////////
     this->readParameters();
+
+
 }
 
 bool ObjectFeaturesThread::readParameters()

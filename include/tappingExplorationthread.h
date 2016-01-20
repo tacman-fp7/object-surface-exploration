@@ -2,7 +2,7 @@
 #define TAPPINGEXPLORATIONTHREAD_H
 
 #include <explorationStrategyThread.h>
-
+#include <yarp/sig/Vector.h>
 
 namespace objectExploration
 {
@@ -31,6 +31,7 @@ public:
 
 private:
     State _contactState;
+    Vector _indexFingerEncoders;
 private:
     void moveToNewLocation();
     void approachObject();

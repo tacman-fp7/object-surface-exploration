@@ -30,6 +30,13 @@ bool ExploreObject::prepHand()
         ;
 }
 
+bool ExploreObject::calibrateHand()
+{
+    _objectFeaturesThread->calibrateHand();
+
+    return true;
+}
+
 bool ExploreObject::fingerSetAngle(const double angle)
 {
 
