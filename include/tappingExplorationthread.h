@@ -39,6 +39,7 @@ private:
     void maintainContact();
     void finshExploration();
 
+
 };
 
 } // namespace objectExploration

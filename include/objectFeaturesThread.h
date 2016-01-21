@@ -83,6 +83,7 @@ public:
     void openIndexFinger();
     void calibrateHand();
     void getIndexFingerEncoder(Vector &encoderValues);
+    bool fingerMovePosition(int joint, double angle, double speed = 10);
 
     bool checkOpenHandDone()
     {

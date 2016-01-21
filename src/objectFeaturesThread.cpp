@@ -95,6 +95,18 @@ bool ObjectFeaturesThread::getArmPose(yarp::sig::Vector &pos, yarp::sig::Vector 
     return ret;
 }
 
+bool ObjectFeaturesThread::fingerMovePosition(int joint, double angle, double speed)
+{
+    double dummy;
+    _armJointPositionCtrl->getRefSpeed(joint, &dummy);
+    cout << "Ref speed" << dummy << endl;
+    _armJointPositionCtrl->setRefSpeed(joint, speed);
+    if(!_armJointPositionCtrl->positionMove(joint, angle)) //TODO: use the config file
+    {
+        cerr << _dbgtag << "Falied to move to the requsted positions." << endl;
+    }
+}
+
 bool ObjectFeaturesThread::prepHand()
 {
     int numAxes;
@@ -152,7 +164,12 @@ bool ObjectFeaturesThread::prepHand()
         cerr << _dbgtag << "Falied to move to the requsted positions." << endl;
     }
 
-    if(!_armJointPositionCtrl->positionMove(15, 250)) //TODO: use the config file
+    if(!_armJointPositionCtrl->positionMove(15, 130)) //TODO: use the config file
+    {
+        cerr << _dbgtag << "Falied to move to the requsted positions." << endl;
+    }
+
+    if(!_armJointPositionCtrl->positionMove(7, 5)) //TODO: use the config file
     {
         cerr << _dbgtag << "Falied to move to the requsted positions." << endl;
     }

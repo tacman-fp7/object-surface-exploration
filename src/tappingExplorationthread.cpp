@@ -180,47 +180,17 @@ void TappingExplorationThread::maintainContact()
         return;*/
     /////////////////////////////////////////////////////////
 
-    _objectFeatures->writeToFingerController("task add ctrl 20");  // TODO: put it in the config file
+    _objectFeatures->writeToFingerController("task add ctrl 15");  // TODO: put it in the config file
     _objectFeatures->writeToFingerController("start");
-    yarp::os::Time::delay(5); //TODO: config file or some other type of criterion
+    yarp::os::Time::delay(2); //TODO: config file or some other type of criterion
 
-    // move sideways
-    //Get the current location and move it sideways
-
-    Vector current_pos, current_orient;
-    current_pos.resize(3);
-    current_orient.resize(4);
-
-
-
- /*   if(_robotCartesianController->getPose(current_pos, current_orient))
-    {
-       cout << "Current pos: " << current_pos.toString() << endl;
-       double temp = current_pos[1];
-        current_pos[1] = temp + 0.005; // TODO: remove the magic number
-        double tempTraj;
-
-
-        _robotCartesianController->goToPoseSync(current_pos, current_orient);
-        _robotCartesianController->waitMotionDone(0.1, 1);
-
-        current_pos[1] = temp - 0.005; // TODO: remove the magic number
-
-
-        _robotCartesianController->goToPoseSync(current_pos, current_orient);
-        _robotCartesianController->waitMotionDone(0.1, 1);
-
-        current_pos[1] = temp ; // TODO: remove the magic number
-
-
-        _robotCartesianController->goToPoseSync(current_pos, current_orient);
-        _robotCartesianController->waitMotionDone(0.1, 20);
-
-
-    }
-
-    */
-
+    _objectFeatures->fingerMovePosition(7, 10, 100);
+     yarp::os::Time::delay(2);
+    _objectFeatures->fingerMovePosition(7,0, 100);
+     yarp::os::Time::delay(2);
+    _objectFeatures->fingerMovePosition(7, 5, 100);
+     yarp::os::Time::delay(2);
+    _objectFeatures->fingerMovePosition(7,5,10);
 
     // Stop the maintain contact task
     _objectFeatures->writeToFingerController("stop");
@@ -234,6 +204,8 @@ void TappingExplorationThread::maintainContact()
 
     _contactState = MOVE_LOCATION;
 }
+
+
 
 void TappingExplorationThread::calculateNewWaypoint()
 {
