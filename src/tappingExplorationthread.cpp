@@ -321,6 +321,7 @@ void TappingExplorationThread::calculateNewWaypoint()
 void TappingExplorationThread::approachObject()
 {
 
+
 #if DEBUG_LEVEL>=2
     cout << "Approaching the object" << endl;
 #endif
@@ -332,6 +333,8 @@ void TappingExplorationThread::approachObject()
     ox.resize(4);
     ox.zero();
 
+    // Get the precontact force
+    _preContactForce = _objectFeatures->getContactForce();
 
 #if DEBUG_LEVEL>=2
     cout << "Getting the next waypoint...";
@@ -381,7 +384,7 @@ void TappingExplorationThread::approachObject()
         // bool inContact = true;
 
         std::clock_t time = std::clock();
-        while(_objectFeatures->getContactForce() < 2) // Write a proper contact detctor
+        while((_objectFeatures->getContactForce() - _preContactForce) < 2 ) // Write a proper contact detctor
         {
 
             //cout << "ContactForce: " << _objectFeatures->getContactForce() << endl;

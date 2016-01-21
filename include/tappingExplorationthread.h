@@ -24,7 +24,7 @@ public:
     TappingExplorationThread(int period, ICartesianControl* robotCartesianController,
                             ObjectFeaturesThread* objectFeatures):
         ExplorationStrategyThread(period, robotCartesianController,
-                                  objectFeatures){}
+                                  objectFeatures){_preContactForce = 0;}
     void run();
     bool threadInit();
     void threadRelease();
@@ -32,6 +32,7 @@ public:
 private:
     State _contactState;
     Vector _indexFingerEncoders;
+    double _preContactForce;
 private:
     void moveToNewLocation();
     void approachObject();

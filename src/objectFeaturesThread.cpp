@@ -99,7 +99,7 @@ bool ObjectFeaturesThread::fingerMovePosition(int joint, double angle, double sp
 {
     double dummy;
     _armJointPositionCtrl->getRefSpeed(joint, &dummy);
-    cout << "Ref speed" << dummy << endl;
+    //cout << "Ref speed" << dummy << endl;
     _armJointPositionCtrl->setRefSpeed(joint, speed);
     if(!_armJointPositionCtrl->positionMove(joint, angle)) //TODO: use the config file
     {
