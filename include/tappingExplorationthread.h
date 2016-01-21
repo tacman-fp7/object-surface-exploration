@@ -32,6 +32,7 @@ public:
 private:
     State _contactState;
     Vector _indexFingerEncoders;
+    //Vector _indexFingerPosition;
     double _preContactForce;
 private:
     void moveToNewLocation();

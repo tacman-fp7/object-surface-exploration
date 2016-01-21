@@ -77,12 +77,13 @@ public:
     bool openHand();
     bool prepHand();
     void adjustIndexFinger();
-    bool getFingertipZ(double *zDisp);
-    bool getFingertipZ(double *zDisp, double proximalAngle);
-    bool getFingertipZ(double *zDisp, Vector &fingerEncoders);
-    void openIndexFinger();
+    bool getIndexFingertipPosition(Vector &position);
+    void getIndexFingertipPosition(Vector &position, Vector &fingerEncoders);
+
+
+    bool openIndexFinger();
     void calibrateHand();
-    void getIndexFingerEncoder(Vector &encoderValues);
+    bool getIndexFingerEncoder(Vector &encoderValues);
     bool fingerMovePosition(int joint, double angle, double speed = 10);
 
     bool checkOpenHandDone()
@@ -99,25 +100,21 @@ public:
     }
 
     bool setProximalAngle(double angle){
-        if(_armJointPositionCtrl != NULL || _armEncoder !=NULL)
+        bool ret = false;
+        if(_armJointPositionCtrl != NULL )
         {
 
-           /* double encVal;
-            _armEncoder->getEncoder(_proximalJoint_index,&encVal);
-
-            std::cout << "Encoder: "  << encVal << std::endl;
-            */
-
-            //double aa;
-            //getFingertipZ(&aa);
-            // Make sure the control is in position mode
-            //_armJointPositionCtrl->setPositionMode();
-            _armJointModeCtrl->setPositionMode(11);
-            return (_armJointPositionCtrl->positionMove(_proximalJoint_index, angle));
+           ret = _armJointModeCtrl->setPositionMode(11);
+           ret = _armJointPositionCtrl->positionMove(_proximalJoint_index, angle);
 
         }
+        else
+        {
         std::cerr << _dbgtag << "The joint controller is not initialised" << std::endl;
-        return false;
+        ret = false;
+        }
+
+        return ret;
     }
     bool getFingertipPose(Vector& pos, Vector& orient);
 

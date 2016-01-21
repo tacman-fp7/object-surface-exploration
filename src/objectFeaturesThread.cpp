@@ -236,10 +236,12 @@ void ObjectFeaturesThread::adjustIndexFinger()
     }
 }
 
-void ObjectFeaturesThread::openIndexFinger()
+bool ObjectFeaturesThread::openIndexFinger()
 {
-    _armJointPositionCtrl->positionMove(12,0);
-    _armJointPositionCtrl->positionMove(11,0);
+    bool ret;
+    ret = _armJointPositionCtrl->positionMove(12,0);
+    ret = _armJointPositionCtrl->positionMove(11,0);
+    return ret;
 }
 
 void ObjectFeaturesThread::calibrateHand()
@@ -306,28 +308,49 @@ if(currentVal < min)
     min = currentVal;
 }
 
-void ObjectFeaturesThread::getIndexFingerEncoder(yarp::sig::Vector &encoderValues)
+bool ObjectFeaturesThread::getIndexFingerEncoder(yarp::sig::Vector &encoderValues)
 {
 
+    bool ret = false;
 
     encoderValues.clear();
     encoderValues.resize(3);
 
     Bottle *handEnc = _fingerEncoders.read();
 
+    if(!handEnc->isNull())
+    {
+        encoderValues[0] = handEnc->get(3).asDouble();
+        encoderValues[1] = handEnc->get(4).asDouble();
+        encoderValues[2] = handEnc->get(5).asDouble();
+        ret = true;
+    }
 
-    encoderValues[0] = handEnc->get(3).asDouble();
-    encoderValues[1] = handEnc->get(4).asDouble();
-    encoderValues[2] = handEnc->get(5).asDouble();
+    return ret;
+}
+
+bool ObjectFeaturesThread::getIndexFingertipPosition(yarp::sig::Vector &position)
+{
+
+    bool ret = true;
+
+    Vector fingerEncoders;
+    ret = getIndexFingerEncoder(fingerEncoders);
+    getIndexFingertipPosition(position, fingerEncoders);
+
+    return true;
 
 
 }
 
-bool ObjectFeaturesThread::getFingertipZ(double *zDisp, yarp::sig::Vector &fingerEncoders)
+void ObjectFeaturesThread::getIndexFingertipPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders)
 {
 
     double l1, l2, l3;
     l1 = 0.022; l2 = 0.022; l3 = 0.023;
+
+    position.clear();
+    position.resize(3); //x,y, z position
 
     adjustMinMax(fingerEncoders[0], _minIndexProximal, _maxIndexProximal);
     adjustMinMax(fingerEncoders[1], _minIndexMiddle, _maxIndexMiddle);
@@ -341,7 +364,7 @@ bool ObjectFeaturesThread::getFingertipZ(double *zDisp, yarp::sig::Vector &finge
     joints[2] = 90 * (1 - (fingerEncoders[1] - _minIndexMiddle) / (_maxIndexMiddle - _minIndexMiddle) );
     joints[3] = 90 * (1 - (fingerEncoders[2] - _minIndexDistal) / (_maxIndexDistal - _minIndexDistal) );
 
-    cout << "Joints:" << joints.toString() << endl;
+    //cout << "Joints:" << joints.toString() << endl;
 
     //Convert the joints to radians.
     for (int j = 0; j < joints.size(); j++)
@@ -349,17 +372,17 @@ bool ObjectFeaturesThread::getFingertipZ(double *zDisp, yarp::sig::Vector &finge
 
 
 
-    *zDisp = l1 * sin(joints[1]) + l2 * sin(joints[1]  + joints[2])  +
+    position[0] = l1 * cos(joints[1]) + l2 * cos(joints[1]  + joints[2])  +
+            l3 *  cos(joints[1]  + joints[2] + joints[3]);
+    position[2] = l1 * sin(joints[1]) + l2 * sin(joints[1]  + joints[2])  +
             l3 *  sin(joints[1]  + joints[2] + joints[3]);
 
-    cout << "Z disp: " << *zDisp  << endl;
 
+    cout << "Finger position: " << position.toString()  << endl;
 
-
-    return true;
 }
-
-bool ObjectFeaturesThread::getFingertipZ(double *zDisp)
+/*
+bool ObjectFeaturesThread::getFingertipZ(yarp::sig::Vector &position, double proximalAngle)
 {
     Bottle *handEnc = _fingerEncoders.read(); // Decide if I want it to be blocking
 
@@ -368,10 +391,12 @@ bool ObjectFeaturesThread::getFingertipZ(double *zDisp)
     adjustMinMax(indexProximal, _minIndexProximal, _maxIndexProximal);
     double proximalAngle = 90 * (1 - (indexProximal - _minIndexProximal) / (_maxIndexProximal - _minIndexProximal) );
 
-    return(getFingertipZ(zDisp, proximalAngle ));
+    return(getFingertipZ(position, proximalAngle ));
 }
+*/
 
-bool ObjectFeaturesThread::getFingertipZ(double *zDisp, double proximalAngle)
+/*
+bool ObjectFeaturesThread::getFingertipZ(double *zDisp )
 {
 
     //int nEncs;
@@ -436,14 +461,14 @@ bool ObjectFeaturesThread::getFingertipZ(double *zDisp, double proximalAngle)
 
     return ret;
 }
-
+*/
 bool ObjectFeaturesThread::getFingertipPose(yarp::sig::Vector &pos, yarp::sig::Vector &orient)
 {
     bool ret = true;
 
 
-    double zz;
-    getFingertipZ(&zz);
+   // double zz;
+    //getFingertipZ(&zz);
 
     return true;
 

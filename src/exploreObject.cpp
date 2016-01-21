@@ -40,11 +40,9 @@ bool ExploreObject::calibrateHand()
 bool ExploreObject::fingerSetAngle(const double angle)
 {
 
-    Vector finger_pos, finger_orient;
-    finger_pos.resize(3);
-    finger_orient.resize(4);
+    Vector finger_pos;
 
-    _objectFeaturesThread->getFingertipPose(finger_pos, finger_orient);
+    _objectFeaturesThread->getIndexFingertipPosition(finger_pos);
 
     cout << "Finger: " << finger_pos.toString() << endl;
 return _objectFeaturesThread->setProximalAngle(angle);
