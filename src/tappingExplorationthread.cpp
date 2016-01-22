@@ -167,20 +167,27 @@ void TappingExplorationThread::maintainContact()
     starting_orient.resize(4);
 
     _objectFeatures->getWayPoint(starting_pos, starting_orient);
-    cout << "A: " << starting_pos.toString() << endl;
+    //cout << "A: " << starting_pos.toString() << endl;
 
     starting_pos[0] -= contactPosition[0] - openFingerPosition[0];
-    starting_pos[2] -= ( contactPosition[2] - openFingerPosition[2]);
 
-    cout << "B: " << starting_pos.toString() << endl;
+
+    //cout << "B: " << starting_pos.toString() << endl;
 
     _robotCartesianController->goToPoseSync(starting_pos, starting_orient);
 
-    _robotCartesianController->waitMotionDone(0.1, 5);
+    _robotCartesianController->waitMotionDone(0.1, 10);
+
+
+    starting_pos[2] -= ( contactPosition[2] - openFingerPosition[2]);
+
+    _robotCartesianController->goToPoseSync(starting_pos, starting_orient);
+
+    _robotCartesianController->waitMotionDone(0.1, 10);
 
 
     //cout << "Delay" << endl;
-    //yarp::os::Time::delay(2);
+    //yarp::os::Time::delay(1);
 
  ///// End of finger ....
 
@@ -201,12 +208,19 @@ void TappingExplorationThread::maintainContact()
     yarp::os::Time::delay(1);
 
 
+
+    // Move the hand up
+    starting_pos[2] += 0.005;
+
+    _robotCartesianController->goToPoseSync(starting_pos,starting_orient);
+    _robotCartesianController->waitMotionDone(0.1, 20);
+
     //_objectFeatures->prepHand();
 
 
     //Wait for the hand to go to open positon
-    while(!_objectFeatures->checkOpenHandDone() && !isStopping())
-        ;
+   // while(!_objectFeatures->checkOpenHandDone() && !isStopping())
+    //    ;
 
     _contactState = MOVE_LOCATION;
 }
@@ -390,7 +404,7 @@ void TappingExplorationThread::approachObject()
         // bool inContact = true;
 
         std::clock_t time = std::clock();
-        while((_objectFeatures->getContactForce() - _preContactForce) < 2 ) // Write a proper contact detctor
+        while((_objectFeatures->getContactForce() - _preContactForce) < 1 ) // Write a proper contact detctor
         {
 
             //cout << "ContactForce: " << _objectFeatures->getContactForce() << endl;
@@ -417,17 +431,21 @@ void TappingExplorationThread::approachObject()
                 cout << "No contact was detected -- timed out" << endl;
 #endif
                 //_proximalAngle = _objectFeatures->getProximalJointAngle();
+                _objectFeatures->getIndexFingerEncoder(_indexFingerEncoders);
                 _contactState = CALCULATE_NEWWAYPONT;
                 break;
             }
 
         }
 
+        _objectFeatures->getIndexFingerEncoder(_indexFingerEncoders);
+
         if(_contactState != CALCULATE_NEWWAYPONT)
         {
 #if DEBUG_LEVEL>=1
             cout << "We have detected contact" << endl;
 #endif
+
             _contactState = MAINTAIN_CONTACT;
         }
         else if(_contactState == CALCULATE_NEWWAYPONT)
