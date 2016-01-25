@@ -187,7 +187,7 @@ void TappingExplorationThread::maintainContact()
 
 
     //cout << "Delay" << endl;
-    //yarp::os::Time::delay(1);
+    yarp::os::Time::delay(2);
 
  ///// End of finger ....
 
@@ -404,7 +404,7 @@ void TappingExplorationThread::approachObject()
         // bool inContact = true;
 
         std::clock_t time = std::clock();
-        while((_objectFeatures->getContactForce() - _preContactForce) < 1 ) // Write a proper contact detctor
+        while((_objectFeatures->getContactForce() - _preContactForce) < 1) // Write a proper contact detctor
         {
 
             //cout << "ContactForce: " << _objectFeatures->getContactForce() << endl;
