@@ -149,8 +149,16 @@ void TappingExplorationThread::maintainContact()
     Vector contactPosition;
    _objectFeatures->getIndexFingertipPosition(contactPosition);
 
+
    // Open the fingertip
+
+
    _objectFeatures->openIndexFinger();
+   _objectFeatures->fingerMovePosition(11, 15);
+
+   _objectFeatures->changeOrient(0.3);
+
+   _robotCartesianController->waitMotionDone(0.1, 20);
 
    while(!_objectFeatures->checkOpenHandDone() && !isStopping())
        ;
@@ -215,6 +223,8 @@ void TappingExplorationThread::maintainContact()
     _robotCartesianController->goToPoseSync(starting_pos,starting_orient);
     _robotCartesianController->waitMotionDone(0.1, 20);
 
+    _objectFeatures->changeOrient(-0.3);
+    _robotCartesianController->waitMotionDone(0.1, 20);
     //_objectFeatures->prepHand();
 
 
@@ -309,10 +319,10 @@ void TappingExplorationThread::calculateNewWaypoint()
         fingertipPosition[2] -= prepDeltaPosition[2]; // Take the current delta z out
 
         //cout << "Delta z: " << fingertipZdisp << endl;
-        if(fingertipPosition[2] > 0.02)
+        if(fingertipPosition[2] > 0.04)
         {
-            cerr << "Warning! Delta z too big, capping it at 0.02";
-            fingertipPosition[2] = 0.02;
+            cerr << "Warning! Delta z too big, capping it at 0.04";
+            fingertipPosition[2] = 0.04;
         }
 
 
@@ -370,6 +380,7 @@ void TappingExplorationThread::approachObject()
             _robotCartesianController->waitMotionDone(0.1, 20);
 
         _objectFeatures->prepHand();
+
 
 #if DEBUG_LEVEL>=2
         cout << "done!" << endl;

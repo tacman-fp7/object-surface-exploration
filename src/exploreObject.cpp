@@ -42,7 +42,12 @@ bool ExploreObject::fingerSetAngle(const double angle)
 
     Vector finger_pos;
 
-    _objectFeaturesThread->getIndexFingertipPosition(finger_pos);
+    //_objectFeaturesThread->getIndexFingertipPosition(finger_pos);
+
+    Vector pos, orient;
+
+
+    _objectFeaturesThread->getFingertipPose(pos, orient);
 
     cout << "Finger: " << finger_pos.toString() << endl;
 return _objectFeaturesThread->setProximalAngle(angle);
@@ -380,6 +385,20 @@ bool ExploreObject::configure(yarp::os::ResourceFinder& rf )
 
     // Set the trajectory time
     _armCartesianController->setTrajTime(systemParameters.getTrajectoryTime());
+
+    // Enable the torso movement
+
+    Vector curDof;
+    _armCartesianController->getDOF(curDof);
+    cout<<"["<<curDof.toString()<<"]"<<endl;  // [0 0 0 1 1 1 1 1 1 1] will be printed out
+    Vector newDof(3);
+    newDof[0]=1;    // torso pitch: 1 => enable
+    newDof[1]=2;    // torso roll:  2 => skip
+    newDof[2]=1;    // torso yaw:   1 => enable
+    _armCartesianController->setDOF(newDof,curDof);
+    cout<<"["<<curDof.toString()<<"]"<<endl;  // [1 0 1 1 1 1 1 1 1 1] will be printed out
+
+    //_armCartesianController->setPosePriority("orientation");
 
 
     //////////////////////////////////////////////////////////////////////////////////////

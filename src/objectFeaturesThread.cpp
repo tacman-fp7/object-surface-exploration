@@ -25,6 +25,7 @@ using std::endl;
 using std::cerr;
 using yarp::os::Mutex;
 
+
 /*
  * 192 for hand data, where 1-60 are taxels of fingertips (12 each in this order:
  * index, middle, ring, little, thumb); 61-96 zeros; 97-144 palm taxels
@@ -107,12 +108,49 @@ bool ObjectFeaturesThread::fingerMovePosition(int joint, double angle, double sp
     }
 }
 
+
+
+bool ObjectFeaturesThread::maintainContactPose()
+{
+
+    bool ret = true;
+
+    openHand();
+
+    // Put the thumb in position
+    ret = fingerMovePosition(7, 12);
+    ret = fingerMovePosition(9, 30);
+    ret = fingerMovePosition(10, 170);
+
+     /*
+    Vector pos, orient;
+    pos.resize(3);
+    orient.resize(4);
+
+   ret = _armCartesianCtrl->getPose(pos, orient);
+
+    cout << "Pos: " << pos.toString() << "\tOrient: " << orient.toString() << endl;
+
+
+    orient[3] += 0.4;
+
+    if(ret){
+        ret = _armCartesianCtrl->goToPose(pos,orient);
+        ret = fingerMovePosition(11, 25);
+
+    }
+
+    */
+
+    return ret;
+}
+
 bool ObjectFeaturesThread::prepHand()
 {
     int numAxes;
+    bool ret = true;
 
-
-    if(!_armEncoder->getAxes( &numAxes))
+    if(! (ret = _armEncoder->getAxes( &numAxes)))
     {
         cerr << _dbgtag << "Could not read the number available arm axes." << endl;
         return false;
@@ -125,58 +163,26 @@ bool ObjectFeaturesThread::prepHand()
     }
 
 
+    ret = _armJointModeCtrl->setPositionMode(11);
 
-    /////_armJointPositionCtrl->setPositionMode();
-    ///// Quick fixe /////
+    // Put the thumb in position
+    ret = openHand();
 
-    /*if(!_armJointPositionCtrl->positionMove(7, 0)) //TODO: use the config file
-    {
-        cerr << _dbgtag << "Falied to move to the requsted positions." << endl;
-    }
+    ret = fingerMovePosition(7, 12);
+    ret = fingerMovePosition(9, 30);
+    ret = fingerMovePosition(10, 170);
+    ret = fingerMovePosition(11, 0);
+    ret = fingerMovePosition(12, 65);
 
 
-    if(!_armJointPositionCtrl->positionMove(8, 10)) //TODO: use the config file
-    {
-        cerr << _dbgtag << "Falied to move to the requsted positions." << endl;
-    }*/
 
-    _armJointModeCtrl->setPositionMode(11); //TODO: make apply to app hand joins. quit hack
-    for (int i=7; i < numAxes; i++)
-    {
-        if(!_armJointPositionCtrl->positionMove(i, 0))
-        {
-            cerr << _dbgtag << "Falied to move to the requsted positions." << endl;
-        }
-    }
 
-    if(!_armJointPositionCtrl->positionMove(12, 65)) //TODO: use the config file
-    {
-        cerr << _dbgtag << "Falied to move to the requsted positions." << endl;
-    }
 
-    if(!_armJointPositionCtrl->positionMove(13, 60)) //TODO: use the config file
-    {
-        cerr << _dbgtag << "Falied to move to the requsted positions." << endl;
-    }
-
-    if(!_armJointPositionCtrl->positionMove(14, 150)) //TODO: use the config file
-    {
-        cerr << _dbgtag << "Falied to move to the requsted positions." << endl;
-    }
-
-    if(!_armJointPositionCtrl->positionMove(15, 130)) //TODO: use the config file
-    {
-        cerr << _dbgtag << "Falied to move to the requsted positions." << endl;
-    }
-
-    if(!_armJointPositionCtrl->positionMove(7, 5)) //TODO: use the config file
-    {
-        cerr << _dbgtag << "Falied to move to the requsted positions." << endl;
-    }
 
    return true;
 
 }
+
 
 bool ObjectFeaturesThread::openHand()
 {
@@ -222,6 +228,29 @@ bool ObjectFeaturesThread::openHand()
 
    return true;
 }
+
+
+bool ObjectFeaturesThread::setProximalAngle(double angle){
+    bool ret = false;
+    if(_armJointPositionCtrl != NULL )
+    {
+
+       ret = _armJointModeCtrl->setPositionMode(11);
+       ret = _armJointPositionCtrl->positionMove(_proximalJoint_index, angle);
+
+    }
+    else
+    {
+    std::cerr << _dbgtag << "The joint controller is not initialised" << std::endl;
+    ret = false;
+    }
+
+
+    //maintainContactPose();
+
+    return ret;
+}
+
 
 void ObjectFeaturesThread::adjustIndexFinger()
 {
@@ -336,29 +365,48 @@ bool ObjectFeaturesThread::getIndexFingertipPosition(yarp::sig::Vector &position
 
     Vector fingerEncoders;
     ret = getIndexFingerEncoder(fingerEncoders);
-    getIndexFingertipPosition(position, fingerEncoders);
+    ret = ret && getIndexFingertipPosition(position, fingerEncoders);
 
     return true;
 
 
 }
 
-void ObjectFeaturesThread::getIndexFingertipPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders)
+
+bool ObjectFeaturesThread::getIndexFingertipPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders)
 {
 
-    double l1, l2, l3;
-    l1 = 0.022; l2 = 0.022; l3 = 0.023;
+    // I am using an hybrid fingertip position forward kinematics. Fristly, I use the the actual encoder
+    // data for the last three joints. Secondly, the behaviour of the icubFinger position estimation
+    // is a little unpredictable, so I am transforming the fingertip position into the robot coordingates
+    // myself.
+
+    bool ret = true;
+    Vector joints;
+    iCub::iKin::iCubFinger finger(_whichFinger);
+    int nEncs;
 
     position.clear();
     position.resize(3); //x,y, z position
+
+
+    ret = ret && _armEncoder->getAxes(&nEncs);
+    Vector encs(nEncs);
+    if(! (ret = ret && _armEncoder->getEncoders(encs.data())))
+    {
+        cerr << _dbgtag << "Failed to read arm encoder data" << endl;
+    }
+
+    ret = ret && finger.getChainJoints(encs, joints);
+
 
     adjustMinMax(fingerEncoders[0], _minIndexProximal, _maxIndexProximal);
     adjustMinMax(fingerEncoders[1], _minIndexMiddle, _maxIndexMiddle);
     adjustMinMax(fingerEncoders[2], _minIndexDistal, _maxIndexDistal);
 
-    Vector joints;
-    joints.resize(4);
-    joints.zero();
+
+
+    // Replace the joins with the encoder readings
 
     joints[1] = 90 * (1 - (fingerEncoders[0] - _minIndexProximal) / (_maxIndexProximal - _minIndexProximal) );
     joints[2] = 90 * (1 - (fingerEncoders[1] - _minIndexMiddle) / (_maxIndexMiddle - _minIndexMiddle) );
@@ -372,109 +420,62 @@ void ObjectFeaturesThread::getIndexFingertipPosition(yarp::sig::Vector &position
 
 
 
-    position[0] = l1 * cos(joints[1]) + l2 * cos(joints[1]  + joints[2])  +
-            l3 *  cos(joints[1]  + joints[2] + joints[3]);
-    position[2] = l1 * sin(joints[1]) + l2 * sin(joints[1]  + joints[2])  +
-            l3 *  sin(joints[1]  + joints[2] + joints[3]);
+    yarp::sig::Matrix tipFrame = finger.getH(joints);
 
+    Vector tip_x = tipFrame.getCol(3); // Tip's position in the hand coordinate
+
+
+
+    Vector armPos, armOrient;
+
+    _armCartesianCtrl->getPose(armPos, armOrient);
+
+
+    // My own transformation
+
+    yarp::sig::Matrix T_rotoTrans(4,4);
+
+    T_rotoTrans = yarp::math::axis2dcm(armOrient);
+    T_rotoTrans.setSubcol(armPos, 0,3);
+
+    //cout << "TR" << endl << T_rotoTrans.toString() << endl;
+
+    Vector retMat = yarp::math::operator *(T_rotoTrans, tip_x);
+
+    cout << "F Pos: " << retMat.toString() << endl;
+
+
+    position = retMat.subVector(0,2);
 
     cout << "Finger position: " << position.toString()  << endl;
 
+
+
+
 }
-/*
-bool ObjectFeaturesThread::getFingertipZ(yarp::sig::Vector &position, double proximalAngle)
+
+
+
+
+bool ObjectFeaturesThread::changeOrient(double newOrient)
 {
-    Bottle *handEnc = _fingerEncoders.read(); // Decide if I want it to be blocking
+   Vector pos, orient;
+   pos.resize(3);
+   orient.resize(4);
 
-    double indexProximal = handEnc->get(3).asDouble();
+   _armCartesianCtrl->getPose(pos, orient);
 
-    adjustMinMax(indexProximal, _minIndexProximal, _maxIndexProximal);
-    double proximalAngle = 90 * (1 - (indexProximal - _minIndexProximal) / (_maxIndexProximal - _minIndexProximal) );
+   orient[4] += newOrient;
 
-    return(getFingertipZ(position, proximalAngle ));
+   _armCartesianCtrl->goToPose(pos, orient);
+
+
 }
-*/
 
-/*
-bool ObjectFeaturesThread::getFingertipZ(double *zDisp )
-{
-
-    //int nEncs;
-    bool ret = true;
-
-    double l1, l2, l3;
-    l1 = 0.022; l2 = 0.022; l3 = 0.023; //TODO: get it from a config file
-
-    Bottle *handEnc = _fingerEncoders.read(); // Decide if I want it to be blocking
-    //cout << "Hand encoder: " << handEnc->toString() << endl;
-
-    //double indexProximal = proximalAngle;
-    //double indexProximal = handEnc->get(3).asDouble();
-    double indexMiddle = handEnc->get(4).asDouble();
-    double indexDistal = handEnc->get(5).asDouble();
-
-//    cout << "Enc" << indexProximal << "\t" << indexDistal << endl;
-
-    //adjustMinMax(indexProximal, _minIndexProximal, _maxIndexProximal);
-    adjustMinMax(indexMiddle, _minIndexMiddle, _maxIndexMiddle);
-    adjustMinMax(indexDistal, _minIndexDistal, _maxIndexDistal);
-
-
-    //_armEncoder->getAxes(&nEncs);
-    //Vector encs(nEncs);
-    //if(! (ret = _armEncoder->getEncoders(encs.data())))
-    //{
-        //cerr << _dbgtag << "Failed to read arm encoder data" << endl;
-    //}
-
-
-
-    //cout << "Encoder:" << encs.toString() << endl;
-
-    Vector joints;
-    joints.resize(4);
-    joints.zero();
-    //iCub::iKin::iCubFinger finger(_whichFinger);
-
-    //cout << "Finger: " << _whichFinger << endl;
-
-
-    //finger.getChainJoints(encs, joints);
-
-
-    joints[1] = proximalAngle;
-    joints[2] = 90 * (1 - (indexMiddle - _minIndexMiddle) / (_maxIndexMiddle - _minIndexMiddle) );
-    joints[3] = 90 * (1 - (indexDistal - _minIndexDistal) / (_maxIndexDistal - _minIndexDistal) );
-
-    cout << "Joints:" << joints.toString() << endl;
-
-    //Convert the joints to radians.
-    for (int j = 0; j < joints.size(); j++)
-        joints[j] *= M_PI/180;
-
-
-
-    *zDisp = l1 * sin(joints[1]) + l2 * sin(joints[1]  + joints[2])  +
-            l3 *  sin(joints[1]  + joints[2] + joints[3]);
-
-    cout << "Z disp: " << *zDisp  << endl;
-
-    return ret;
-}
-*/
 bool ObjectFeaturesThread::getFingertipPose(yarp::sig::Vector &pos, yarp::sig::Vector &orient)
 {
     bool ret = true;
 
-
-   // double zz;
-    //getFingertipZ(&zz);
-
-    return true;
-
-    ////////////////// Fix it! /////////////////////////
-    /// \brief nEncs
-    ///
 
     int nEncs;
 
@@ -508,15 +509,38 @@ bool ObjectFeaturesThread::getFingertipPose(yarp::sig::Vector &pos, yarp::sig::V
 
     yarp::sig::Matrix tipFrame = finger.getH(joints);
 
+
+    //cout << "Tip frame:" << endl << tipFrame.toString() << endl;
+
+
     Vector tip_x = tipFrame.getCol(3);
     Vector tip_o = yarp::math::dcm2axis(tipFrame);
 
+
+
+    //yarp::sig::Matrix h0 = finger.getH0();
+
+    //cout << "H0" << endl << h0.toString() << endl;
+
+
+
+    Vector armPos, armOrient;
+
+    _armCartesianCtrl->getPose(armPos, armOrient);
+
+
+
+
+    //////////////////
     //cout << "Tip" << tip_x.toString() << endl;
     // I should have a mutex here specsific for the carteria view!
-    _armPoseMutex.lock();
+    //_armPoseMutex.lock();
 
    if(!_armCartesianCtrl->attachTipFrame(tip_x, tip_o))
        ret = false;
+
+
+    //yarp::os::Time::delay(1);
 
     if(!_armCartesianCtrl->getPose(pos, orient))
     {
@@ -527,7 +551,32 @@ bool ObjectFeaturesThread::getFingertipPose(yarp::sig::Vector &pos, yarp::sig::V
     if(!_armCartesianCtrl->removeTipFrame())
         ret = false;
 
-    _armPoseMutex.unlock();
+    //_armPoseMutex.unlock();
+
+    cout << "A Pos: " << armPos.toString() << endl;
+    cout << "T Pos: " << tip_x.toString() << endl;
+
+    cout << "F Pos: " << pos.toString() << endl;
+
+
+
+
+
+
+
+    // My own transformation
+
+    yarp::sig::Matrix T_rotoTrans(4,4);
+
+    T_rotoTrans = yarp::math::axis2dcm(armOrient);
+    T_rotoTrans.setSubcol(armPos, 0,3);
+
+    //cout << "TR" << endl << T_rotoTrans.toString() << endl;
+
+    Vector retMat = yarp::math::operator *(T_rotoTrans, tip_x);
+
+    cout << "F Pos: " << retMat.toString() << endl;
+
     return ret;
 }
 

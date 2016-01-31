@@ -76,15 +76,20 @@ public:
     double getProximalJointAngle(){return _proximalJointAngle;}
     bool openHand();
     bool prepHand();
+    bool maintainContactPose();
     void adjustIndexFinger();
     bool getIndexFingertipPosition(Vector &position);
-    void getIndexFingertipPosition(Vector &position, Vector &fingerEncoders);
+    bool getIndexFingertipPosition(Vector &position, Vector &fingerEncoders);
+    bool changeOrient(double orient);
 
 
     bool openIndexFinger();
+
     void calibrateHand();
     bool getIndexFingerEncoder(Vector &encoderValues);
     bool fingerMovePosition(int joint, double angle, double speed = 10);
+
+    bool setProximalAngle(double angle);
 
     bool checkOpenHandDone()
     {
@@ -99,23 +104,6 @@ public:
         return ret;
     }
 
-    bool setProximalAngle(double angle){
-        bool ret = false;
-        if(_armJointPositionCtrl != NULL )
-        {
-
-           ret = _armJointModeCtrl->setPositionMode(11);
-           ret = _armJointPositionCtrl->positionMove(_proximalJoint_index, angle);
-
-        }
-        else
-        {
-        std::cerr << _dbgtag << "The joint controller is not initialised" << std::endl;
-        ret = false;
-        }
-
-        return ret;
-    }
     bool getFingertipPose(Vector& pos, Vector& orient);
 
 private:
