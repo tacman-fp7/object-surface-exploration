@@ -168,11 +168,11 @@ bool ObjectFeaturesThread::prepHand()
     // Put the thumb in position
     ret = openHand();
 
-    ret = fingerMovePosition(7, 12);
+    ret = fingerMovePosition(7, 0);
     ret = fingerMovePosition(9, 30);
     ret = fingerMovePosition(10, 170);
     ret = fingerMovePosition(11, 0);
-    ret = fingerMovePosition(12, 65);
+    ret = fingerMovePosition(12, 55);
 
 
 
@@ -345,7 +345,11 @@ bool ObjectFeaturesThread::getIndexFingerEncoder(yarp::sig::Vector &encoderValue
     encoderValues.clear();
     encoderValues.resize(3);
 
-    Bottle *handEnc = _fingerEncoders.read();
+    int nData = _fingerEncoders.getInputCount();
+     Bottle *handEnc;
+
+    for(int data = 0; data < nData; data++)
+        handEnc = _fingerEncoders.read();
 
     if(!handEnc->isNull())
     {
@@ -355,6 +359,7 @@ bool ObjectFeaturesThread::getIndexFingerEncoder(yarp::sig::Vector &encoderValue
         ret = true;
     }
 
+    //cout << "Encoders: " << encoderValues.toString() << endl;
     return ret;
 }
 
@@ -364,10 +369,11 @@ bool ObjectFeaturesThread::getIndexFingertipPosition(yarp::sig::Vector &position
     bool ret = true;
 
     Vector fingerEncoders;
+    fingerEncoders.size(3);
     ret = getIndexFingerEncoder(fingerEncoders);
     ret = ret && getIndexFingertipPosition(position, fingerEncoders);
 
-    return true;
+    return ret;
 
 
 }
@@ -399,6 +405,7 @@ bool ObjectFeaturesThread::getIndexFingertipPosition(yarp::sig::Vector &position
 
     ret = ret && finger.getChainJoints(encs, joints);
 
+    //cout << fingerEncoders.toString() << endl;
 
     adjustMinMax(fingerEncoders[0], _minIndexProximal, _maxIndexProximal);
     adjustMinMax(fingerEncoders[1], _minIndexMiddle, _maxIndexMiddle);
@@ -465,7 +472,8 @@ bool ObjectFeaturesThread::changeOrient(double newOrient)
 
    _armCartesianCtrl->getPose(pos, orient);
 
-   orient[4] += newOrient;
+   orient[3] += newOrient;
+
 
    _armCartesianCtrl->goToPose(pos, orient);
 

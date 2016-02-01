@@ -44,12 +44,13 @@ bool ExploreObject::fingerSetAngle(const double angle)
 
     //_objectFeaturesThread->getIndexFingertipPosition(finger_pos);
 
-    Vector pos, orient;
+    //Vector pos, orient;
 
 
-    _objectFeaturesThread->getFingertipPose(pos, orient);
+    //_objectFeaturesThread->getFingertipPose(pos, orient);
+    _objectFeaturesThread->getIndexFingertipPosition(finger_pos);
 
-    cout << "Finger: " << finger_pos.toString() << endl;
+    //cout << "Finger: " << finger_pos.toString() << endl;
 return _objectFeaturesThread->setProximalAngle(angle);
 }
 

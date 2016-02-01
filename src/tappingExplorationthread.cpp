@@ -154,14 +154,16 @@ void TappingExplorationThread::maintainContact()
 
 
    _objectFeatures->openIndexFinger();
+   while(!_objectFeatures->checkOpenHandDone() && !isStopping())
+       ;
+
    _objectFeatures->fingerMovePosition(11, 15);
 
-   _objectFeatures->changeOrient(0.3);
+   //_objectFeatures->changeOrient(-0.3);
 
    _robotCartesianController->waitMotionDone(0.1, 20);
 
-   while(!_objectFeatures->checkOpenHandDone() && !isStopping())
-       ;
+
 
    // Read the current position
     Vector openFingerPosition;
@@ -177,7 +179,8 @@ void TappingExplorationThread::maintainContact()
     _objectFeatures->getWayPoint(starting_pos, starting_orient);
     //cout << "A: " << starting_pos.toString() << endl;
 
-    starting_pos[0] -= contactPosition[0] - openFingerPosition[0];
+    //starting_orient[3] += -0.3;
+    starting_pos[0] += (contactPosition[0] - openFingerPosition[0]);
 
 
     //cout << "B: " << starting_pos.toString() << endl;
@@ -187,7 +190,7 @@ void TappingExplorationThread::maintainContact()
     _robotCartesianController->waitMotionDone(0.1, 10);
 
 
-    starting_pos[2] -= ( contactPosition[2] - openFingerPosition[2]);
+    starting_pos[2] += ( contactPosition[2] - openFingerPosition[2])+ 0.004;
 
     _robotCartesianController->goToPoseSync(starting_pos, starting_orient);
 
@@ -203,6 +206,7 @@ void TappingExplorationThread::maintainContact()
     _objectFeatures->writeToFingerController("start");
     yarp::os::Time::delay(2); //TODO: config file or some other type of criterion
 
+    /*
     _objectFeatures->fingerMovePosition(7, 10, 100);
      yarp::os::Time::delay(2);
     _objectFeatures->fingerMovePosition(7,0, 100);
@@ -210,7 +214,7 @@ void TappingExplorationThread::maintainContact()
     _objectFeatures->fingerMovePosition(7, 5, 100);
      yarp::os::Time::delay(2);
     _objectFeatures->fingerMovePosition(7,5,10);
-
+*/
     // Stop the maintain contact task
     _objectFeatures->writeToFingerController("stop");
     yarp::os::Time::delay(1);
@@ -223,7 +227,7 @@ void TappingExplorationThread::maintainContact()
     _robotCartesianController->goToPoseSync(starting_pos,starting_orient);
     _robotCartesianController->waitMotionDone(0.1, 20);
 
-    _objectFeatures->changeOrient(-0.3);
+    //_objectFeatures->changeOrient(-0.3);
     _robotCartesianController->waitMotionDone(0.1, 20);
     //_objectFeatures->prepHand();
 
@@ -332,7 +336,7 @@ void TappingExplorationThread::calculateNewWaypoint()
 
 
 
-        px[2] -= fingertipPosition[2];
+        px[2] += fingertipPosition[2];
         _objectFeatures->setWayPoint(px, ox);
 
         _contactState = APPROACH_OBJECT;
