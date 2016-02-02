@@ -85,6 +85,8 @@ void ObjectFeaturesThread::run()
     Vector fingertipPosition;
     getIndexFingertipPosition(fingertipPosition);
     publishFingertipPosition(fingertipPosition);
+
+    publishContactState(_contactState);
 }
 
 bool ObjectFeaturesThread::getArmPose(yarp::sig::Vector &pos, yarp::sig::Vector &orient)
@@ -802,6 +804,8 @@ bool ObjectFeaturesThread::threadInit()
     yarp::os::RateThread::threadInit();
 
     bool ret = true;
+
+    _contactState = 0;
 
   _dbgtag = "\n\nObjectFeaturesThread.cpp: ";
 

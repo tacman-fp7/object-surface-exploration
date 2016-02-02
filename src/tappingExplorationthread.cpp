@@ -37,7 +37,7 @@ void TappingExplorationThread::run()
     {
 
 
-        _objectFeatures->publishContactState(_contactState);
+        _objectFeatures->updateContactState(_contactState);
 
 
         switch (_contactState)
