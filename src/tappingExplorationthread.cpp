@@ -4,6 +4,7 @@
 #include <yarp/os/Time.h>
 #include <cmath>
 #include <ctime>
+#include <yarp/os/Value.h>
 
 #define DEBUG_LEVEL 1
 
@@ -17,7 +18,7 @@ using std::endl;
 using std::cerr;
 
 using yarp::sig::Vector;
-
+using yarp::os::Value;
 
 
 void TappingExplorationThread::run()
@@ -36,9 +37,7 @@ void TappingExplorationThread::run()
     {
 
 
-
-
-
+        _objectFeatures->publishContactState(_contactState);
 
 
         switch (_contactState)
@@ -104,6 +103,7 @@ void TappingExplorationThread::finshExploration()
     starting_pos.resize(3);
     starting_orient.resize(4);
 
+    _nGrid = 0;
     // Open the hand
     _objectFeatures->prepHand();
 
@@ -157,7 +157,7 @@ void TappingExplorationThread::maintainContact()
    while(!_objectFeatures->checkOpenHandDone() && !isStopping())
        ;
 
-   _objectFeatures->fingerMovePosition(11, 15);
+
 
    //_objectFeatures->changeOrient(-0.3);
 
@@ -190,7 +190,7 @@ void TappingExplorationThread::maintainContact()
     _robotCartesianController->waitMotionDone(0.1, 10);
 
 
-    starting_pos[2] += ( contactPosition[2] - openFingerPosition[2])+ 0.004;
+    starting_pos[2] += ( contactPosition[2] - openFingerPosition[2])+ 0.008;
 
     _robotCartesianController->goToPoseSync(starting_pos, starting_orient);
 
@@ -198,11 +198,13 @@ void TappingExplorationThread::maintainContact()
 
 
     //cout << "Delay" << endl;
-    yarp::os::Time::delay(2);
-
+    //yarp::os::Time::delay(2);
+     _objectFeatures->fingerMovePosition(11, 15);
+     yarp::os::Time::delay(2);
  ///// End of finger ....
 
-    _objectFeatures->writeToFingerController("task add ctrl 20");  // TODO: put it in the config file
+    _objectFeatures->writeToFingerController("task add ctrl 10");
+    //_objectFeatures->writeToFingerController("task add appr");// TODO: put it in the config file
     _objectFeatures->writeToFingerController("start");
     yarp::os::Time::delay(2); //TODO: config file or some other type of criterion
 
@@ -316,7 +318,7 @@ void TappingExplorationThread::calculateNewWaypoint()
             ;
 
         //cout << "motion done!" << endl;
-        yarp::os::Time::delay(1); //TODO: hack to make sure motion is done
+        //yarp::os::Time::delay(1); //TODO: hack to make sure motion is done
         Vector prepDeltaPosition;
         _objectFeatures->getIndexFingertipPosition(prepDeltaPosition);
 
@@ -367,8 +369,7 @@ void TappingExplorationThread::approachObject()
     ox.resize(4);
     ox.zero();
 
-    // Get the precontact force
-    _preContactForce = _objectFeatures->getContactForce();
+
 
 #if DEBUG_LEVEL>=2
     cout << "Getting the next waypoint...";
@@ -383,8 +384,12 @@ void TappingExplorationThread::approachObject()
         if(_robotCartesianController->goToPoseSync(px, ox))
             _robotCartesianController->waitMotionDone(0.1, 20);
 
-        _objectFeatures->prepHand();
+        // Get the precontact force
+        _preContactForce = 0; //_objectFeatures->getContactForce();
 
+        _objectFeatures->prepHand();
+        while(!_objectFeatures->checkOpenHandDone() && !isStopping())
+            ;
 
 #if DEBUG_LEVEL>=2
         cout << "done!" << endl;
@@ -419,7 +424,7 @@ void TappingExplorationThread::approachObject()
         // bool inContact = true;
 
         std::clock_t time = std::clock();
-        while((_objectFeatures->getContactForce() - _preContactForce) < 1) // Write a proper contact detctor
+        while((_objectFeatures->getContactForce() - _preContactForce) < 0.8) // Write a proper contact detctor
         {
 
             //cout << "ContactForce: " << _objectFeatures->getContactForce() << endl;
@@ -524,21 +529,40 @@ void TappingExplorationThread::moveToNewLocation()
     //////////////// Calculating a new waypoint for the travaersal /////////////////
     ////////////////////////////////////////////////////////////////////////////////
 
-    wayPoint_pos[1] += ((end_pos[1] - starting_pos[1]) * 0.2);
+    double factor = 0.01;
+    wayPoint_pos[1] += ((end_pos[1] - starting_pos[1]) * factor);
     wayPoint_pos[2] = starting_pos[2];
 
     _objectFeatures->setWayPoint(wayPoint_pos, wayPoint_orient);
 
 
-    //cout << "WayPoint: " << fabs(wayPoint_pos[1]) << " " << "EndPos: " << fabs(end_pos[1]) << endl;
-    if(fabs(wayPoint_pos[1]) > fabs(end_pos[1]))
+    //cout << "WayPoint: " << fabs(wayPoint_pos[1] - end_pos[1]) << " " << "EndPos: " << fabs(end_pos[1] - starting_pos[1]) * factor << endl;
+    if((fabs(wayPoint_pos[1] - end_pos[1]) > fabs(end_pos[1] - starting_pos[1]) * factor))
         _contactState = APPROACH_OBJECT;
     else
     {
+       // I have to go to the next step of the grip
+
+        if (_nGrid < 5)
+        {
+            cout << "Next grid" << endl;
+            starting_pos[0] -= 0.01;
+            end_pos[0] -= 0.01;
+
+            _objectFeatures->setStartingPose(starting_pos, starting_orient);
+            _objectFeatures->setEndPose(end_pos, end_orient);
+            _nGrid++;
+            _objectFeatures->setWayPoint(starting_pos, starting_orient);
+            _contactState = APPROACH_OBJECT;
+        }
+        else
+        {
+
 #if DEBUG_LEVEL>=2
-        cout << "State set to finished" << endl;
+            cout << "State set to finished" << endl;
 #endif
-        _contactState = FINISHED;
+            _contactState = FINISHED;
+        }
     }
 
 
@@ -546,6 +570,8 @@ void TappingExplorationThread::moveToNewLocation()
 
 bool TappingExplorationThread::threadInit()
 {
+
+
     return true;
 }
 

@@ -81,6 +81,10 @@ void ObjectFeaturesThread::run()
     _tactileMutex.unlock();
 
 
+    // Read the fingertip position
+    Vector fingertipPosition;
+    getIndexFingertipPosition(fingertipPosition);
+    publishFingertipPosition(fingertipPosition);
 }
 
 bool ObjectFeaturesThread::getArmPose(yarp::sig::Vector &pos, yarp::sig::Vector &orient)
@@ -172,7 +176,7 @@ bool ObjectFeaturesThread::prepHand()
     ret = fingerMovePosition(9, 30);
     ret = fingerMovePosition(10, 170);
     ret = fingerMovePosition(11, 0);
-    ret = fingerMovePosition(12, 55);
+    ret = fingerMovePosition(12, 70);
 
 
 
@@ -449,12 +453,12 @@ bool ObjectFeaturesThread::getIndexFingertipPosition(yarp::sig::Vector &position
 
     Vector retMat = yarp::math::operator *(T_rotoTrans, tip_x);
 
-    cout << "F Pos: " << retMat.toString() << endl;
+    //cout << "F Pos: " << retMat.toString() << endl;
 
 
     position = retMat.subVector(0,2);
 
-    cout << "Finger position: " << position.toString()  << endl;
+    //cout << "Finger position: " << position.toString()  << endl;
 
 
 
@@ -561,10 +565,10 @@ bool ObjectFeaturesThread::getFingertipPose(yarp::sig::Vector &pos, yarp::sig::V
 
     //_armPoseMutex.unlock();
 
-    cout << "A Pos: " << armPos.toString() << endl;
-    cout << "T Pos: " << tip_x.toString() << endl;
+    //cout << "A Pos: " << armPos.toString() << endl;
+    //cout << "T Pos: " << tip_x.toString() << endl;
 
-    cout << "F Pos: " << pos.toString() << endl;
+    //cout << "F Pos: " << pos.toString() << endl;
 
 
 
@@ -671,8 +675,8 @@ void ObjectFeaturesThread::setStartingPose ( Vector& pos, Vector& orient )
     cout << "Starting pose set" << endl;
     _desiredStartingPosition = pos;
     _desiredStartingOrientation = orient;
-    _zMax = pos[2] + 0.05;
-    _zMin = pos[2] - 0.05;
+    _zMax = pos[2] + 0.04;
+    _zMin = pos[2] - 0.04;
     cout << "Max: " << _zMax << " Min: " << _zMin << endl;
 
     _desiredStartingPose_isValid = true;
@@ -860,6 +864,8 @@ bool ObjectFeaturesThread::threadInit()
 
     //calibrateFinger();
 
+    _contactStatePort_out.open("/object-exploration/contact/state:o");
+    _fingertipPosition_out.open("/object-exploration/fingertip/position:o");
     ///////////////////////////////
 
 
@@ -876,11 +882,32 @@ void ObjectFeaturesThread::threadRelease()
 
 }
 
+void ObjectFeaturesThread::publishFingertipPosition(Vector pos)
+{
+    Bottle &data = _fingertipPosition_out.prepare();
+    data.clear();
+    data.addDouble(pos[0]);
+    data.addDouble(pos[1]);
+    data.addDouble(pos[2]);
+    _fingertipPosition_out.writeStrict();
+
+}
+
+void ObjectFeaturesThread::publishContactState(int contactState)
+{
+    Bottle &data = _contactStatePort_out.prepare();
+    data.clear();
+    data.addInt(contactState);
+    _contactStatePort_out.writeStrict();
+}
+
 ObjectFeaturesThread::~ObjectFeaturesThread()
 {
     _contactForceCoPPort.close();
     //_armPositionPort.close();
 
+    _contactStatePort_out.close();
+    _fingertipPosition_out.close();
 }
 
 void ObjectFeaturesThread::setArmController_cart(yarp::dev::ICartesianControl *cartesianCtrl)

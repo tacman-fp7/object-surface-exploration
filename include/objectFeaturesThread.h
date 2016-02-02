@@ -81,8 +81,8 @@ public:
     bool getIndexFingertipPosition(Vector &position);
     bool getIndexFingertipPosition(Vector &position, Vector &fingerEncoders);
     bool changeOrient(double orient);
-
-
+    void publishContactState(int contactState);
+    void publishFingertipPosition(Vector pos);
     bool openIndexFinger();
 
     void calibrateHand();
@@ -198,6 +198,9 @@ protected:
     int _proximalJoint_index;
 
     //BufferedPort<Bottle> _armJointPort_in;
+
+    BufferedPort<Bottle> _contactStatePort_out;
+    BufferedPort<Bottle> _fingertipPosition_out;
 
 };
 
