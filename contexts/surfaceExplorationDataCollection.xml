@@ -1,0 +1,111 @@
+<application>
+	<!-- yarpmanager file for the object surface exploration experiments -->
+	<name> Contact Data Collection </name>
+	<description> Object surface exploration contact data collection	</description>
+	<version> 0.0 </version>
+
+	<authors>
+		<author email="nawid.jamali@iit.it"> Nawid Jamali </author>
+	</authors>
+
+	<!-- Required modules -->
+		
+	<module>
+		<name>yarpdatadumper</name>
+		<parameters>--name /data/force_estimate</parameters>
+		<node>localhost</node>
+	</module>
+	<connection>
+		<from>/force-reconstruction/left_index/force-CoP</from>
+		<to>/data/force_estimate</to>
+		<protocol>tcp</protocol>
+	</connection>
+
+
+
+	<module>
+		<name>yarpdatadumper</name>
+		<parameters>--name /data/tactile_raw</parameters>
+		<node>localhost</node>
+	</module>
+	<connection>
+		<from>/icub/skin/left_hand</from>
+		<to>/data/tactile_raw</to>
+		<protocol>tcp</protocol>
+	</connection>
+
+
+	<module>
+		<name>yarpdatadumper</name>
+		<parameters>--name /data/tactile_cmp</parameters>
+		<node>localhost</node>
+	</module>
+	<connection>
+		<from>/icub/skin/left_hand_comp</from>
+		<to>/data/tactile_cmp</to>
+		<protocol>tcp</protocol>
+	</connection>
+
+
+	<module>
+		<name>yarpdatadumper</name>
+		<parameters>--name /data/hand_encoders</parameters>
+		<node>localhost</node>
+	</module>
+	<connection>
+		<from>/icub/left_hand/analog:o</from>
+		<to>/data/hand_encoders</to>
+		<protocol>tcp</protocol>
+	</connection>
+
+
+	<module>
+		<name>yarpdatadumper</name>
+		<parameters>--name /data/contact_control</parameters>
+		<node>localhost</node>
+	</module>
+	<connection>
+		<from>/plantIdentification/control</from>
+		<to>/data/contact_control</to>
+		<protocol>tcp</protocol>
+	</connection>
+
+
+	
+	<module>
+		<name>yarpdatadumper</name>
+		<parameters>--name /data/fingertip_position</parameters>
+		<node>localhost</node>
+	</module>
+	<connection>
+		<from>/object-exploration/fingertip/position:o</from>
+		<to>/data/fingertip_position</to>
+		<protocol>tcp</protocol>
+	</connection>
+
+	<module>
+		<name>yarpdatadumper</name>
+		<parameters>--name /data/contact_state</parameters>
+		<node>localhost</node>
+	</module>
+	<connection>
+		<from>//object-exploration/contact/state:o</from>
+		<to>/data/contact_state</to>
+		<protocol>tcp</protocol>
+	</connection>
+
+
+
+
+
+
+
+	
+
+
+
+	
+
+	
+
+</application>
