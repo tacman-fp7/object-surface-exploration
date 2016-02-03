@@ -37,6 +37,8 @@ private:
     int _nGrid;
     //Vector _indexFingerPosition;
     double _preContactForce;
+    int _repeats;
+
 
 private:
     void moveToNewLocation();

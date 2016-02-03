@@ -89,23 +89,36 @@
 		<node>localhost</node>
 	</module>
 	<connection>
-		<from>//object-exploration/contact/state:o</from>
+		<from>/object-exploration/contact/state:o</from>
 		<to>/data/contact_state</to>
+		<protocol>tcp</protocol>
+	</connection>
+
+	
+	<module>
+		<name>yarpdatadumper</name>
+		<parameters>--name /data/robot_position</parameters>
+		<node>localhost</node>
+	</module>
+	<connection>
+		<from>/icub/cartesianController/left_arm/state:o</from>
+		<to>/data/robot_position</to>
 		<protocol>tcp</protocol>
 	</connection>
 
 
 
+	<module>
+		<name>yarpdatadumper</name>
+		<parameters>--name /data/plantID_log</parameters>
+		<node>localhost</node>
+	</module>
+	<connection>
+		<from>/plantIdentification/log:o</from>
+		<to>/data/plantID_log</to>
+		<protocol>tcp</protocol>
+	</connection>
 
 
-
-
-	
-
-
-
-	
-
-	
 
 </application>

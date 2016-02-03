@@ -283,6 +283,9 @@ bool ExploreObject::stopExploring()
     {
 
 
+
+        // 0 is invalid state!
+        _objectFeaturesThread->updateContactState(0);
         _exploreObjectThread->stop();
 
         cout << "stopped" << endl;
