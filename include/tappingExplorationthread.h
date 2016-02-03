@@ -38,7 +38,9 @@ private:
     //Vector _indexFingerPosition;
     double _preContactForce;
     int _repeats;
-
+    double _forceThreshold;
+    double _curProximal;
+    double _curDistal;
 
 private:
     void moveToNewLocation();

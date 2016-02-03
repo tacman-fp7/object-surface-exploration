@@ -7,7 +7,7 @@
 #include <yarp/os/Value.h>
 
 #define DEBUG_LEVEL 1
-
+#define FORCE_TH 0.8
 namespace objectExploration
 {
 
@@ -32,7 +32,10 @@ void TappingExplorationThread::run()
 
     _contactState = APPROACH_OBJECT;
     _repeats = 0;
+    _curDistal = 0;
+    _curProximal = 0;
 
+    _forceThreshold = FORCE_TH;
     while(!isStopping() && !(_contactState == STOP)) // Keep running this
     {
 
@@ -90,7 +93,7 @@ void TappingExplorationThread::run()
     }
 
     // Make sure nothing is conrolling the finger
-    _objectFeatures->writeToFingerController("stop");
+    //_objectFeatures->writeToFingerController("stop");
 
     yarp::os::Time::delay(1);
 
@@ -106,7 +109,12 @@ void TappingExplorationThread::finshExploration()
     _nGrid = 0;
     // Open the hand
     _objectFeatures->prepHand();
-
+    _curDistal = 70;
+    Bottle msg;
+    msg.clear();
+    msg.addDouble(_curProximal);
+    msg.addDouble(_curDistal);
+    _objectFeatures->publishFingertipControl(msg);
     // Wait for the hand to open;
     while(!_objectFeatures->checkOpenHandDone() && !isStopping())
         ;
@@ -143,27 +151,43 @@ void TappingExplorationThread::finshExploration()
 void TappingExplorationThread::maintainContact()
 {
 
-    // Get the current position of the fingertip
-    _objectFeatures->writeToFingerController("task add ctrl");
-    _objectFeatures->writeToFingerController("start");
+
      yarp::os::Time::delay(0.1);
-    _objectFeatures->writeToFingerController("stop");
+    //_objectFeatures->writeToFingerController("stop");
 
     Vector starting_pos, starting_orient;
     starting_pos.resize(3);
     starting_orient.resize(4);
-    _objectFeatures->getWayPoint(starting_pos, starting_orient);
-    starting_pos[2] += 0.002;
+    _objectFeatures->getWayPoint(starting_pos, starting_orient, false);
+    starting_pos[2] += 0.006;
+    cout << "moving up...";
     _robotCartesianController->goToPoseSync(starting_pos,starting_orient);
-    _robotCartesianController->waitMotionDone(0.1, 10);
+    _robotCartesianController->waitMotionDone(0.1, 20);
 
+    _objectFeatures->prepHand();
+    _curDistal = 70;
+    Bottle msg;
+    msg.clear();
+    msg.addDouble(_curProximal);
+    msg.addDouble(_curDistal);
+    _objectFeatures->publishFingertipControl(msg);
+    //Wait for the fingertip to get to position
+    while(!_objectFeatures->checkOpenHandDone() && !isStopping())
+        ;
+
+    cout << "done!" << endl;
     if(_repeats < 3)
     {
+
+        _forceThreshold = 0.7 * FORCE_TH;
+        _objectFeatures->setWayPoint(starting_pos, starting_orient); // Let the approach start from the new point
        _contactState = APPROACH_OBJECT;
        _repeats++;
     }
     else
     {
+        _forceThreshold = FORCE_TH;
+        _objectFeatures->getWayPoint(starting_pos, starting_orient);
         _contactState = MOVE_LOCATION;
         _repeats = 0;
     }
@@ -267,28 +291,18 @@ void TappingExplorationThread::maintainContact()
 
 void TappingExplorationThread::calculateNewWaypoint()
 {
-
 #if DEBUG_LEVEL>=2
     cout << "Calculating new waypoint" << endl;
 #endif
-
-
-
+    // This is used for????
     Vector fingertipPosition;
     fingertipPosition.resize(3);
     fingertipPosition.zero();
 
-    /* Vector finger_pos, finger_orient;
-    finger_pos.resize(3);
-    finger_orient.resize(4);
-    finger_pos.zero();
-    finger_orient.zero();
-*/
+    // This is used for the final waypoint
     Vector px, ox;
     px.resize(3);
-    px.zero();
     ox.resize(4);
-    ox.zero();
 
 
     if(_objectFeatures->getWayPoint(px, ox))
@@ -297,19 +311,8 @@ void TappingExplorationThread::calculateNewWaypoint()
 #if DEBUG_LEVEL>=2
         cout << "Stopping the finger controller...";
 #endif
+       // _objectFeatures->writeToFingerController("stop");
 
-
-
-        _objectFeatures->writeToFingerController("stop");
-        //_objectFeatures->setProximalAngle(_proximalAngle);
-        // while(!_objectFeatures->checkOpenHandDone() && !isStopping())
-        //     ;
-        // yarp::os::Time::delay(1);
-
-
-
-
-        //yarp::os::Time::delay(10);
 #if DEBUG_LEVEL>=2
         cout << "Done!" << endl;
 #endif
@@ -330,68 +333,54 @@ void TappingExplorationThread::calculateNewWaypoint()
 
 
 #if DEBUG_LEVEL>=2
-        cout << "Opening the hand...";
+        cout << "Prep the hand...";
 #endif
         //Open the finger
         _objectFeatures->prepHand();
+        _curDistal = 70;
+        Bottle msg;
+        msg.clear();
+        msg.addDouble(_curProximal);
+        msg.addDouble(_curDistal);
+        _objectFeatures->publishFingertipControl(msg);
 
         //Wait for the fingertip to open
         while(!_objectFeatures->checkOpenHandDone() && !isStopping())
             ;
 
-        //cout << "motion done!" << endl;
-        //yarp::os::Time::delay(1); //TODO: hack to make sure motion is done
         Vector prepDeltaPosition;
         _objectFeatures->getIndexFingertipPosition(prepDeltaPosition);
 
         fingertipPosition[2] -= prepDeltaPosition[2]; // Take the current delta z out
 
-        //cout << "Delta z: " << fingertipZdisp << endl;
+
         if(fingertipPosition[2] > 0.04)
         {
             cerr << "Warning! Delta z too big, capping it at 0.04";
             fingertipPosition[2] = 0.04;
         }
-
-
 #if DEBUG_LEVEL>=2
         cout << "Done!" << endl;
 #endif
-
-
-
         px[2] += fingertipPosition[2];
         _objectFeatures->setWayPoint(px, ox);
-
         _contactState = APPROACH_OBJECT;
-
     }
     else
     {
         std::cerr << endl << "Got invalid waypoint" << endl;
     }
-
-
-
-
 }
 
 void TappingExplorationThread::approachObject()
 {
-
-
 #if DEBUG_LEVEL>=2
     cout << "Approaching the object" << endl;
 #endif
-
-    /// Position the hand at the waypoint
+    // Position the hand at the waypoint
     Vector px, ox;
     px.resize(3);
-    px.zero();
     ox.resize(4);
-    ox.zero();
-
-
 
 #if DEBUG_LEVEL>=2
     cout << "Getting the next waypoint...";
@@ -406,10 +395,15 @@ void TappingExplorationThread::approachObject()
         if(_robotCartesianController->goToPoseSync(px, ox))
             _robotCartesianController->waitMotionDone(0.1, 20);
 
-        // Get the precontact force
-        _preContactForce = 0; //_objectFeatures->getContactForce();
-
+        // Put the fingers in the right position
         _objectFeatures->prepHand();
+        _curDistal = 70;
+        Bottle msg;
+        msg.clear();
+        msg.addDouble(_curProximal);
+        msg.addDouble(_curDistal);
+        _objectFeatures->publishFingertipControl(msg);
+
         while(!_objectFeatures->checkOpenHandDone() && !isStopping())
             ;
 
@@ -424,43 +418,39 @@ void TappingExplorationThread::approachObject()
         _contactState = MOVE_LOCATION;
     }
 
-
-
     if(_contactState == APPROACH_OBJECT)
     {
-
 
 #if DEBUG_LEVEL>=2
         cout << "Approaching...";
 #endif
         /// Tell the finger controller to approach the object
-        _objectFeatures->writeToFingerController("task add appr");
-        _objectFeatures->writeToFingerController("start");
-        // _objectFeatures->setProximalAngle(60);
+        _objectFeatures->fingerMovePosition(11, 20, 30);
+        Bottle msg;
+        msg.clear();
+        _curProximal = 20;
+        msg.addDouble(_curProximal);
+        msg.addDouble(_curDistal);
+        _objectFeatures->publishFingertipControl(msg);
+
+       // _objectFeatures->writeToFingerController("task add appr");
+       // _objectFeatures->writeToFingerController("start");
 
 #if DEBUG_LEVEL>=2
         cout << "Waiting for contact ...";
 #endif
-
-        // Wait for a contact or the distal angle being beyond certain limit
-        // bool inContact = true;
-
         std::clock_t time = std::clock();
-        while((_objectFeatures->getContactForce() - _preContactForce) < 0.8) // Write a proper contact detctor
+        while((_objectFeatures->getContactForce()) < _forceThreshold) // Write a proper contact detctor
         {
-
-            //_objectFeatures->adjustIndexFinger();
             if(isStopping())
             {
                 break;
             }
-            else if(_objectFeatures->getProximalJointAngle() > 20)
+            else if(_objectFeatures->getProximalJointAngle() > 15)
             {
 #if DEBUG_LEVEL>=1
                 cout << "No contact detected." << endl;
 #endif
-                _objectFeatures->getIndexFingerEncoder(_indexFingerEncoders);
-
                 _contactState = CALCULATE_NEWWAYPONT;
                 break;
             }
@@ -469,14 +459,13 @@ void TappingExplorationThread::approachObject()
 #if DEBUG_LEVEL>=1
                 cout << "No contact was detected -- timed out" << endl;
 #endif
-                //_proximalAngle = _objectFeatures->getProximalJointAngle();
-                _objectFeatures->getIndexFingerEncoder(_indexFingerEncoders);
                 _contactState = CALCULATE_NEWWAYPONT;
                 break;
             }
-
         }
 
+        // This is used later to move the relative to the contact
+        // and prep position.
         _objectFeatures->getIndexFingerEncoder(_indexFingerEncoders);
 
         if(_contactState != CALCULATE_NEWWAYPONT)
@@ -484,19 +473,24 @@ void TappingExplorationThread::approachObject()
 #if DEBUG_LEVEL>=1
             cout << "We have detected contact" << endl;
 #endif
-
             _contactState = MAINTAIN_CONTACT;
         }
         else if(_contactState == CALCULATE_NEWWAYPONT)
         {
             // No contact detected put the hand in prep position
             _objectFeatures->prepHand();
+            _curDistal = 70;
+            Bottle msg;
+            msg.clear();
+            msg.addDouble(_curProximal);
+            msg.addDouble(_curDistal);
+            _objectFeatures->publishFingertipControl(msg);
             // Wait for the hand to open;
             while(!_objectFeatures->checkOpenHandDone() && !isStopping())
                 ;
         }
     }
-    _objectFeatures->writeToFingerController("stop");
+    //_objectFeatures->writeToFingerController("stop");
 }
 
 void TappingExplorationThread::moveToNewLocation()

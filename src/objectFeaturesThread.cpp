@@ -104,8 +104,8 @@ bool ObjectFeaturesThread::getArmPose(yarp::sig::Vector &pos, yarp::sig::Vector 
 
 bool ObjectFeaturesThread::fingerMovePosition(int joint, double angle, double speed)
 {
-    double dummy;
-    _armJointPositionCtrl->getRefSpeed(joint, &dummy);
+    //double dummy;
+    //_armJointPositionCtrl->getRefSpeed(joint, &dummy);
     //cout << "Ref speed" << dummy << endl;
     _armJointPositionCtrl->setRefSpeed(joint, speed);
     if(!_armJointPositionCtrl->positionMove(joint, angle)) //TODO: use the config file
@@ -870,6 +870,7 @@ bool ObjectFeaturesThread::threadInit()
 
     _contactStatePort_out.open("/object-exploration/contact/state:o");
     _fingertipPosition_out.open("/object-exploration/fingertip/position:o");
+    _fingertipControlPort_out.open("/object-exploration/fingertip/control:o");
     ///////////////////////////////
 
 
@@ -884,6 +885,13 @@ bool ObjectFeaturesThread::threadInit()
 void ObjectFeaturesThread::threadRelease()
 {
 
+}
+void ObjectFeaturesThread::publishFingertipControl(Bottle controlCommand)
+{
+    Bottle &data = _fingertipControlPort_out.prepare();
+    data.clear();
+    data = controlCommand;
+    _fingertipControlPort_out.writeStrict();
 }
 
 void ObjectFeaturesThread::publishFingertipPosition(Vector pos)
@@ -935,7 +943,7 @@ ObjectFeaturesThread::ObjectFeaturesThread ( int period, ResourceFinder rf ) : R
 {
 
     // Some sane and safe default values
-    _trajectoryTime = 1; // By default take 5 seconds to complete a trajectory
+    _trajectoryTime = 5; // By default take 5 seconds to complete a trajectory
     _maintainContactPeriod = 20;
     _readTactilePeriod = 20;
     _explorationThreadPeriod = 20;
@@ -1005,7 +1013,7 @@ bool ObjectFeaturesThread::readParameters()
         _robotName = robotParameters.check("robotName", Value("icubSim")).asString();
         _controller = robotParameters.check("controller", Value("Error")).asString();
         _controllerName = robotParameters.check("controllerName", Value("Error")).asString();
-        _trajectoryTime = robotParameters.check("_trajectoryTime", Value(5)).asInt();
+        _trajectoryTime = robotParameters.check("trajectoryTime", Value(5)).asInt();
         _fingerControllerPortName = robotParameters.check("fingerControllerPortName",
                                                           Value("/plantIdentification/cmd:i")).asString();
         _whichFinger = robotParameters.check("whichFinger", Value("left_index")).asString();

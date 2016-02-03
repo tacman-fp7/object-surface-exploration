@@ -388,6 +388,7 @@ bool ExploreObject::configure(yarp::os::ResourceFinder& rf )
     _armCartesianController->storeContext(&_cartCtrlStartupIDstartupID);
 
     // Set the trajectory time
+    cout << "Trajectory time: " << systemParameters.getTrajectoryTime() << endl;
     _armCartesianController->setTrajTime(systemParameters.getTrajectoryTime());
 
     // Enable the torso movement

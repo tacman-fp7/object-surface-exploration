@@ -83,6 +83,7 @@ public:
     bool changeOrient(double orient);
     void publishContactState(int contactState);
     void publishFingertipPosition(Vector pos);
+    void publishFingertipControl(Bottle controlCommand);
     bool openIndexFinger();
 
     void calibrateHand();
@@ -203,6 +204,7 @@ protected:
 
     BufferedPort<Bottle> _contactStatePort_out;
     BufferedPort<Bottle> _fingertipPosition_out;
+    BufferedPort<Bottle> _fingertipControlPort_out;
 
 };
 
