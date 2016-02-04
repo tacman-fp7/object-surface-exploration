@@ -89,7 +89,8 @@ public:
     void calibrateHand();
     bool getIndexFingerEncoder(Vector &encoderValues);
     bool fingerMovePosition(int joint, double angle, double speed = 10);
-    void updateContactState(int contactState){_contactState = contactState;}
+    void updateContactState(int contactState){_contactState = contactState;
+                                             publishContactState(_contactState);}
     bool setProximalAngle(double angle);
 
     bool checkOpenHandDone()
