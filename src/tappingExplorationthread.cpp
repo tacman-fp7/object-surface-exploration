@@ -552,7 +552,7 @@ void TappingExplorationThread::moveToNewLocation()
     //////////////// Calculating a new waypoint for the travaersal /////////////////
     ////////////////////////////////////////////////////////////////////////////////
 
-    double factor = 0.1;
+    double factor = 0.2;
     wayPoint_pos[1] += ((end_pos[1] - starting_pos[1]) * factor);
     wayPoint_pos[2] = starting_pos[2];
 
@@ -560,13 +560,13 @@ void TappingExplorationThread::moveToNewLocation()
 
 
     //cout << "WayPoint: " << fabs(wayPoint_pos[1] - end_pos[1]) << " " << "EndPos: " << fabs(end_pos[1] - starting_pos[1]) * factor << endl;
-    if((fabs(wayPoint_pos[1] - end_pos[1]) > fabs(end_pos[1] - starting_pos[1]) * factor))
+    if((fabs(wayPoint_pos[1] - starting_pos[1]) < fabs(end_pos[1] - starting_pos[1]) ))
         _contactState = APPROACH_OBJECT;
     else
     {
         // I have to go to the next step of the grip
 
-        if (_nGrid < 5)
+        if (_nGrid < 8)
         {
             cout << "Next grid" << endl;
             starting_pos[0] -= 0.01;
