@@ -109,6 +109,7 @@ void TappingExplorationThread::finshExploration()
     _nGrid = 0;
     // Open the hand
     _objectFeatures->prepHand();
+    _curProximal = 0;
     _curDistal = 70;
     Bottle msg;
     msg.clear();
@@ -152,19 +153,22 @@ void TappingExplorationThread::maintainContact()
 {
 
 
-     yarp::os::Time::delay(0.1);
+     yarp::os::Time::delay(0.05);
     //_objectFeatures->writeToFingerController("stop");
 
     Vector starting_pos, starting_orient;
     starting_pos.resize(3);
     starting_orient.resize(4);
     _objectFeatures->getWayPoint(starting_pos, starting_orient, false);
-    starting_pos[2] += 0.006;
+    // Only lift it for the first repeat
+    if(_repeats < 2)
+        starting_pos[2] += 0.004;
     cout << "moving up...";
     _robotCartesianController->goToPoseSync(starting_pos,starting_orient);
     _robotCartesianController->waitMotionDone(0.1, 20);
 
     _objectFeatures->prepHand();
+    _curProximal = 0;
     _curDistal = 70;
     Bottle msg;
     msg.clear();
@@ -174,7 +178,6 @@ void TappingExplorationThread::maintainContact()
     //Wait for the fingertip to get to position
     while(!_objectFeatures->checkOpenHandDone() && !isStopping())
         ;
-
     cout << "done!" << endl;
     if(_repeats < 3)
     {
@@ -337,7 +340,8 @@ void TappingExplorationThread::calculateNewWaypoint()
 #endif
         //Open the finger
         _objectFeatures->prepHand();
-        _curDistal = 70;
+        _curProximal = 0;
+    _curDistal = 70;
         Bottle msg;
         msg.clear();
         msg.addDouble(_curProximal);
@@ -348,10 +352,14 @@ void TappingExplorationThread::calculateNewWaypoint()
         while(!_objectFeatures->checkOpenHandDone() && !isStopping())
             ;
 
+        yarp::os::Time::delay(0.01);
+
         Vector prepDeltaPosition;
         _objectFeatures->getIndexFingertipPosition(prepDeltaPosition);
 
-        fingertipPosition[2] -= prepDeltaPosition[2]; // Take the current delta z out
+
+
+        fingertipPosition[2] -= prepDeltaPosition[2] + 0.003; // Take the current delta z out
 
 
         if(fingertipPosition[2] > 0.04)
@@ -397,7 +405,8 @@ void TappingExplorationThread::approachObject()
 
         // Put the fingers in the right position
         _objectFeatures->prepHand();
-        _curDistal = 70;
+        _curProximal = 0;
+    _curDistal = 70;
         Bottle msg;
         msg.clear();
         msg.addDouble(_curProximal);
@@ -446,7 +455,7 @@ void TappingExplorationThread::approachObject()
             {
                 break;
             }
-            else if(_objectFeatures->getProximalJointAngle() > 15)
+            else if(_objectFeatures->getProximalJointAngle() > 18)
             {
 #if DEBUG_LEVEL>=1
                 cout << "No contact detected." << endl;
@@ -454,7 +463,7 @@ void TappingExplorationThread::approachObject()
                 _contactState = CALCULATE_NEWWAYPONT;
                 break;
             }
-            else if( (std::clock() - time) / (double)(CLOCKS_PER_SEC) > 10)
+            else if( (std::clock() - time) / (double)(CLOCKS_PER_SEC) > 2)
             {
 #if DEBUG_LEVEL>=1
                 cout << "No contact was detected -- timed out" << endl;
@@ -479,7 +488,8 @@ void TappingExplorationThread::approachObject()
         {
             // No contact detected put the hand in prep position
             _objectFeatures->prepHand();
-            _curDistal = 70;
+            _curProximal = 0;
+    _curDistal = 70;
             Bottle msg;
             msg.clear();
             msg.addDouble(_curProximal);
