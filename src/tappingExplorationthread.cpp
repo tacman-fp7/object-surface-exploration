@@ -560,7 +560,7 @@ void TappingExplorationThread::moveToNewLocation()
 
 
     //cout << "WayPoint: " << fabs(wayPoint_pos[1] - end_pos[1]) << " " << "EndPos: " << fabs(end_pos[1] - starting_pos[1]) * factor << endl;
-    if((fabs(wayPoint_pos[1] - starting_pos[1]) < fabs(end_pos[1] - starting_pos[1]) ))
+    if((fabs(wayPoint_pos[1] - starting_pos[1]) <= fabs(end_pos[1] - starting_pos[1]) ))
         _contactState = APPROACH_OBJECT;
     else
     {
