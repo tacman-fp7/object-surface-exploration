@@ -8,7 +8,7 @@
 #include <yarp/os/Network.h>
 #include <yarp/os/ResourceFinder.h>
 #include <exploreObject.h>
-
+#include <surfacemodelgp.h>
 
 using namespace yarp::os;
 using namespace std;
@@ -28,7 +28,16 @@ int main(int argc, char *argv[])
   rf.setDefaultContext("object-surface-exploration");
   rf.setDefaultConfigFile("objectExplorationConfig.ini");
   rf.configure(argc, argv);
-    
+
+  objectExploration::SurfaceModelGP surfModel;
+
+  surfModel.loadContactData();
+  surfModel.trainModel();
+  surfModel.saveMeshCSV();
+
+  return 1;
+
+
   // Create a robot control server
   objectExploration::ExploreObject objectExplorationModule(rf);
   
