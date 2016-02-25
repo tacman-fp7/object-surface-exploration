@@ -1,5 +1,7 @@
 #include "surfacemodelgp.h"
 #include <gurls++/gvec.h>
+#include <cmath>
+
 
 namespace objectExploration
 {
@@ -143,7 +145,7 @@ bool SurfaceModelGP::saveMeshCSV()
     // Generating training data
 
     unsigned int nPoints = 120;
-    double offset = 2.5;
+    double offset = 5;
 
     gVec<double> *inputMax = _inputTraining.max(COLUMNWISE);
     gVec<double> *inputMin = _inputTraining.min(COLUMNWISE);
@@ -163,8 +165,8 @@ bool SurfaceModelGP::saveMeshCSV()
         return false;
     }
 
-    linspace(inputMin->at(0) + offset, inputMax->at(0) - offset, 120, xlin);
-    linspace(inputMin->at(1) + offset, inputMax->at(1) - offset, 120, ylin);
+    linspace(inputMin->at(0) + offset, inputMax->at(0) - offset, nPoints, xlin);
+    linspace(inputMin->at(1) + offset, inputMax->at(1) - offset, nPoints, ylin);
 
     gMat2D < double > inputTesting;
     inputTesting.resize(nPoints * nPoints, 2);
@@ -187,12 +189,20 @@ bool SurfaceModelGP::saveMeshCSV()
     // Use the test array as input to the gp process
 
 
-    inputTesting.saveCSV("inputTesting.csv");
 
 
     gMat2D<double> vars;
     gMat2D<double>* means = this->eval(inputTesting, vars, opt);
 
+
+
+    cout << "Max: " <<  vars.max(gurls::COLUMNWISE)->at(0) << endl;
+
+
+    getMaxVariancePose(inputTesting, vars, *means);
+
+    // Save the data for matlab visualisation
+    inputTesting.saveCSV("inputTesting.csv");
     means->saveCSV("means.csv");
     vars.saveCSV("vars.csv");
 
@@ -201,6 +211,38 @@ bool SurfaceModelGP::saveMeshCSV()
 
 }
 
+yarp::sig::Vector SurfaceModelGP::getMaxVariancePose(const gMat2D<double> &positions,
+                                                     const gMat2D<double> &variances,
+                                                     const gMat2D<double> &means)
+{
+    yarp::sig::Vector maxVariancePos;
+    maxVariancePos.resize(3); // x, y  and z
+    maxVariancePos.zero();
+
+    unsigned long maxVarianceIndex = 0;
+    double maxVariance;
+
+    if(variances.getSize() > 0)
+        maxVariance = variances.max(gurls::COLUMNWISE)->at(0);
+
+    // Search for the index of the maxVariance
+    for( const double *var = variances.begin(); var != variances.end(); var++)
+    {
+        if(*var == maxVariance)
+            break;
+
+        maxVarianceIndex++;
+    }
+
+    maxVariancePos[0] = positions(maxVarianceIndex,0);
+    maxVariancePos[1] = positions(maxVarianceIndex,1);
+    maxVariancePos[2] = means(maxVarianceIndex,0);
+
+    cout << "Max var: " << variances(maxVarianceIndex, 0) << ","
+         << maxVariancePos.toString() << endl;
+    return maxVariancePos;
+
+}
 
 gMat2D<double>* SurfaceModelGP::eval(const gMat2D<double> &X, gMat2D<double> &vars, gurls::GurlsOptionsList  *opt){
 
