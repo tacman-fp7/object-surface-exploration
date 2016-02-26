@@ -8,7 +8,7 @@
 #include <yarp/os/Network.h>
 #include <yarp/os/ResourceFinder.h>
 #include <exploreObject.h>
-#include <surfacemodelgp.h>
+#include <surfaceModelGP.h>
 
 using namespace yarp::os;
 using namespace std;
@@ -34,6 +34,7 @@ int main(int argc, char *argv[])
   surfModel.loadContactData();
   surfModel.trainModel();
   surfModel.saveMeshCSV();
+  surfModel.saveContactPoints("blindSearh");
 
   return 1;
 

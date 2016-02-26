@@ -16,6 +16,7 @@ namespace objectExploration
 using yarp::os::ResourceFinder;
 using std::string;
 using gurls::gMat2D;
+using gurls::gVec;
 
 class SurfaceModelGP
 {
@@ -27,6 +28,8 @@ public:
     bool saveModel(); //to the disk
     bool saveMeshCSV();
     void loadContactData();
+    void addContactPoint(gVec<double> posXY, gVec<double> posZ);
+    void saveContactPoints(const std::string &fileName);
     //bool getMaxVariancePose(yarp::sig::Vector pos);
     yarp::sig::Vector getMaxVariancePose(const gMat2D <double> &positions,
                                          const gMat2D <double> &variance,

@@ -27,7 +27,7 @@ public:
                             ObjectFeaturesThread* objectFeatures):
         ExplorationStrategyThread(period, robotCartesianController,
                                   objectFeatures){_preContactForce = 0; _nGrid = 0;}
-    void run();
+    virtual void run();
     bool threadInit();
     void threadRelease();
 
@@ -42,7 +42,7 @@ private:
     double _curProximal;
     double _curDistal;
 
-private:
+protected:
     void moveToNewLocation();
     void approachObject();
     void calculateNewWaypoint();

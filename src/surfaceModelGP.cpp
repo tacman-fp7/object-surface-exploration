@@ -1,4 +1,4 @@
-#include "surfacemodelgp.h"
+#include "surfaceModelGP.h"
 #include <gurls++/gvec.h>
 #include <cmath>
 
@@ -38,6 +38,24 @@ void SurfaceModelGP::loadContactData()
 
 }
 
+void SurfaceModelGP::addContactPoint(gVec<double> posXY, gVec<double> posZ)
+{
+     // Add the new point to the matrix
+    _inputTraining.add(posXY);
+    _outputTraining.add(posZ);
+
+}
+
+void SurfaceModelGP::saveContactPoints(const std::string &fileName)
+{
+
+    _inputTraining.saveCSV(fileName + "_input.csv");
+    _inputTraining.save(fileName + "_input.bin");
+
+    _outputTraining.saveCSV(fileName + "_output.csv");
+    _outputTraining.save(fileName + "_output.bin");
+}
+
 // Assumes that the contact data has already been loaded
 bool SurfaceModelGP::trainModel(){
 
@@ -52,7 +70,6 @@ bool SurfaceModelGP::trainModel(){
     OptTaskSequence *seq = new OptTaskSequence();
     seq->addTask("split:ho");
     seq->addTask("paramsel:siglamhogpregr");
-    //seq->addTask("paramsel:siglamloogpregr");
     seq->addTask("kernel:rbf");
     seq->addTask("optimizer:rlsgpregr");
     seq->addTask("predkernel:traintest");

@@ -1,4 +1,4 @@
-#include "tappingExplorationthread.h"
+#include "tappingExplorationThread.h"
 #include <iostream>
 #include <yarp/sig/Vector.h>
 #include <yarp/os/Time.h>

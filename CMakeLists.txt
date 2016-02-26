@@ -13,12 +13,12 @@ include_directories(${YARP_INCLUDE_DIRS} ${Gurls_INCLUDE_DIRS} ./include/)
 
 set(HEADERS  include/robotControl.h include/exploreObject.h include/explorationStrategyThread.h include/planarExplorationThread.h
 include/maintainContactThread.h include/objectClassifierThread.h include/objectFeaturesThread.h 
-include/pidController.h include/tappingExplorationthread.h include/surfacemodelgp.h)
+include/pidController.h include/tappingExplorationThread.h include/surfaceModelGP.h include/gpExplorationThread.h)
 
 set(SOURCES src/main.cpp src/robotControl.cpp src/exploreObject.cpp
 src/maintainContactThread.cpp src/objectFeaturesThread.cpp
 src/planarExplorationThread.cpp src/pidController.cpp
-src/tappingExplorationthread.cpp src/surfacemodelgp.cpp ${HEADERS})
+src/tappingExplorationThread.cpp src/surfaceModelGP.cpp src/gpExplorationThread.cpp ${HEADERS})
 
 set(CONTEXT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/bin/context" CACHE PATH "Path to the context files")
 set( CMAKE_BUILD_TYPE Debug CACHE STRING
