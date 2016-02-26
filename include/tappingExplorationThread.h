@@ -17,7 +17,8 @@ enum State{
     MAINTAIN_CONTACT = 3,
     MOVE_LOCATION = 4,
     FINISHED = 5,
-    STOP = 6
+    STOP = 6,
+    SET_WAYPOINT_GP = 7
 };
 
 class TappingExplorationThread: public ExplorationStrategyThread
@@ -26,27 +27,32 @@ public:
     TappingExplorationThread(int period, ICartesianControl* robotCartesianController,
                             ObjectFeaturesThread* objectFeatures):
         ExplorationStrategyThread(period, robotCartesianController,
-                                  objectFeatures){_preContactForce = 0; _nGrid = 0;}
+                                  objectFeatures){ _nGrid = 0;}
     virtual void run();
-    bool threadInit();
-    void threadRelease();
+    virtual bool threadInit();
+    virtual void threadRelease();
 
-private:
+protected:
     State _contactState;
-    Vector _indexFingerEncoders;
-    int _nGrid;
-    //Vector _indexFingerPosition;
-    double _preContactForce;
     int _repeats;
     double _forceThreshold;
     double _curProximal;
     double _curDistal;
 
+private:
+    Vector _indexFingerEncoders;
+    int _nGrid;
+    //Vector _indexFingerPosition;
+   // double _preContactForce;
+
+private:
+    void logFingertipControl();
+
 protected:
-    void moveToNewLocation();
+    virtual void moveToNewLocation();
     void approachObject();
-    void calculateNewWaypoint();
-    void maintainContact();
+    virtual void calculateNewWaypoint();
+    virtual void maintainContact();
     void finshExploration();
 
 

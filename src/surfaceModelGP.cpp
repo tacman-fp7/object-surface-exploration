@@ -14,18 +14,27 @@ using std::string;
 
 
 
-SurfaceModelGP::SurfaceModelGP()
+SurfaceModelGP::SurfaceModelGP(const std::string objectName)
 {
-    _dbgtg = "surfaceModelGP: ";
-    opt = NULL;
+    _dbgtg = "surfaceModelGP ( " + objectName + " ):";
+    _objectName = objectName;
+    _opt = NULL;
+    _isValidModel = false;
 
 }
 
 
 SurfaceModelGP::~SurfaceModelGP()
 {
-    if(opt != NULL )
-        delete opt;
+    if(_opt != NULL )
+        delete _opt;
+}
+
+void SurfaceModelGP::loadContactData(const std::string fileName)
+{
+    _inputTraining.readCSV(fileName);
+    _outputTraining.readCSV(fileName);
+
 }
 
 void SurfaceModelGP::loadContactData()
@@ -35,6 +44,19 @@ void SurfaceModelGP::loadContactData()
     string outputTrainingFileName = "outputTraining.csv";
     _inputTraining.readCSV(inputTrainingFileName);
     _outputTraining.readCSV(outputTrainingFileName);
+
+}
+
+void SurfaceModelGP::addContactPoint(const yarp::sig::Vector &fingertipPosition)
+{
+    gVec<double> posXY;
+    gVec<double> posZ;
+
+    posXY.resize(2);
+    posZ.resize(1);
+    posXY.at(0) = fingertipPosition[0];
+    posXY.at(1) = fingertipPosition[1];
+    posZ.at(0) = fingertipPosition[2];
 
 }
 
@@ -104,40 +126,40 @@ bool SurfaceModelGP::trainModel(){
 
     // build an options' structure
     string modelFileName = "GURLSgpr";
-    opt = new GurlsOptionsList(modelFileName, true);
-    opt->addOpt("seq", seq);
-    opt->addOpt("processes", process);
+    _opt = new GurlsOptionsList(modelFileName, true);
+    _opt->addOpt("seq", seq);
+    _opt->addOpt("processes", process);
 
     OptNumber *nholdouts = new OptNumber;
     nholdouts->setValue(4);
-    if(opt->hasOpt("nholdouts"))
-        opt->removeOpt("nholdouts");
-    opt->addOpt("nholdouts", nholdouts);
+    if(_opt->hasOpt("nholdouts"))
+        _opt->removeOpt("nholdouts");
+    _opt->addOpt("nholdouts", nholdouts);
 
     OptNumber *hoproportion = new OptNumber;
     hoproportion->setValue(0.1);
-    if(opt->hasOpt("hoproportion"))
-        opt->removeOpt("hoproportion");
-    opt->addOpt("hoproportion", hoproportion);
+    if(_opt->hasOpt("hoproportion"))
+        _opt->removeOpt("hoproportion");
+    _opt->addOpt("hoproportion", hoproportion);
 
     OptNumber *epochs = new OptNumber;
     epochs->setValue(1000);
-    if(opt->hasOpt("epochs"))
-        opt->removeOpt("epochs");
-    opt->addOpt("epochs", epochs);
+    if(_opt->hasOpt("epochs"))
+        _opt->removeOpt("epochs");
+    _opt->addOpt("epochs", epochs);
 
     OptString *hoperf = new OptString;
     hoperf->setValue("abserr");
-    if(opt->hasOpt("hoperf"))
-        opt->removeOpt("hoperf");
+    if(_opt->hasOpt("hoperf"))
+        _opt->removeOpt("hoperf");
 
-    opt->addOpt("hoperf", hoperf);
+    _opt->addOpt("hoperf", hoperf);
 
     OptString *perfeval = new OptString;
     perfeval->setValue("abserr");
-    if(opt->hasOpt("perfeval"))
-        opt->removeOpt("perfeval");
-    opt->addOpt("perfeval", perfeval);
+    if(_opt->hasOpt("perfeval"))
+        _opt->removeOpt("perfeval");
+    _opt->addOpt("perfeval", perfeval);
 
     //cout << "hoperf: " << opt->getOptAsString("hoperf") << endl;
 
@@ -148,7 +170,9 @@ bool SurfaceModelGP::trainModel(){
 
 
     // run gurls for training
-    _objectModel.run(_inputTraining, _outputTraining, *opt, jobId0);
+    _objectModel.run(_inputTraining, _outputTraining, *_opt, jobId0);
+
+
     //opt->save(opt->getName());
     //cout << "After: " << endl << opt->toString();
     return ret;
@@ -209,14 +233,15 @@ bool SurfaceModelGP::saveMeshCSV()
 
 
     gMat2D<double> vars;
-    gMat2D<double>* means = this->eval(inputTesting, vars, opt);
+    gMat2D<double>* means = this->eval(inputTesting, vars, _opt);
 
 
 
-    cout << "Max: " <<  vars.max(gurls::COLUMNWISE)->at(0) << endl;
+    //cout << "Max: " <<  vars.max(gurls::COLUMNWISE)->at(0) << endl;
 
 
-    getMaxVariancePose(inputTesting, vars, *means);
+    yarp::sig::Vector dummy;
+    getMaxVariancePose(inputTesting, vars, *means, dummy);
 
     // Save the data for matlab visualisation
     inputTesting.saveCSV("inputTesting.csv");
@@ -228,11 +253,81 @@ bool SurfaceModelGP::saveMeshCSV()
 
 }
 
-yarp::sig::Vector SurfaceModelGP::getMaxVariancePose(const gMat2D<double> &positions,
-                                                     const gMat2D<double> &variances,
-                                                     const gMat2D<double> &means)
+bool SurfaceModelGP::getMaxVariancePose(yarp::sig::Vector &maxVariancePos)
 {
-    yarp::sig::Vector maxVariancePos;
+
+
+
+
+    ///////////////////////////////
+
+
+    unsigned int nPoints = 120;
+    double offset = 5;
+
+    gVec<double> *inputMax = _inputTraining.max(COLUMNWISE);
+    gVec<double> *inputMin = _inputTraining.min(COLUMNWISE);
+
+
+    double *xlin = NULL;
+    double *ylin = NULL;
+    xlin = new (std::nothrow) double[nPoints];
+    ylin = new (std::nothrow) double[nPoints];
+
+    if(xlin == NULL || ylin == NULL)
+    {
+        cerr << _dbgtg << "could not allocate memory.";
+        return false;
+    }
+
+    linspace(inputMin->at(0) + offset, inputMax->at(0) - offset, nPoints, xlin);
+    linspace(inputMin->at(1) + offset, inputMax->at(1) - offset, nPoints, ylin);
+
+    gMat2D < double > inputTesting;
+    inputTesting.resize(nPoints * nPoints, 2);
+
+
+
+
+    for ( int x = 0; x < nPoints; x++ )
+    {
+        gVec < double > rowVect;
+        rowVect.resize(2);
+        rowVect.at(0) = xlin[x];
+        for (int y = 0; y < nPoints; y++ )
+        {
+            rowVect.at(1) = ylin[y];
+            inputTesting.setRow(rowVect, nPoints * x + y);
+        }
+    }
+
+    // Use the test array as input to the gp process
+
+
+
+
+    gMat2D<double> vars;
+    gMat2D<double>* means = this->eval(inputTesting, vars, _opt);
+
+
+
+    //cout << "Max: " <<  vars.max(gurls::COLUMNWISE)->at(0) << endl;
+
+
+    getMaxVariancePose(inputTesting, vars, *means, maxVariancePos);
+
+
+
+    ////////////////////
+}
+
+bool SurfaceModelGP::getMaxVariancePose(const gMat2D<double> &positions,
+                                                     const gMat2D<double> &variances,
+                                                     const gMat2D<double> &means,
+                                                     yarp::sig::Vector &maxVariancePos)
+{
+    //yarp::sig::Vector maxVariancePos;
+    maxVariancePos.clear();
     maxVariancePos.resize(3); // x, y  and z
     maxVariancePos.zero();
 
@@ -257,7 +352,7 @@ yarp::sig::Vector SurfaceModelGP::getMaxVariancePose(const gMat2D<double> &posit
 
     cout << "Max var: " << variances(maxVarianceIndex, 0) << ","
          << maxVariancePos.toString() << endl;
-    return maxVariancePos;
+    return true;
 
 }
 
