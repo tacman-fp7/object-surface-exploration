@@ -29,7 +29,8 @@ int main(int argc, char *argv[])
   rf.setDefaultConfigFile("objectExplorationConfig.ini");
   rf.configure(argc, argv);
 
-  /*objectExploration::SurfaceModelGP surfModel("hut");
+ /*
+  objectExploration::SurfaceModelGP surfModel("hut");
 
   surfModel.loadContactData();
   surfModel.trainModel();

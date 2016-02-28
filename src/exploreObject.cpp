@@ -51,20 +51,21 @@ bool ExploreObject::fingerSetAngle(const double angle)
     _objectFeaturesThread->getIndexFingertipPosition(finger_pos);
 
     //cout << "Finger: " << finger_pos.toString() << endl;
-return _objectFeaturesThread->setProximalAngle(angle);
+    return _objectFeaturesThread->setProximalAngle(angle);
 }
 
 ExploreObject::ExploreObject(yarp::os::ResourceFinder& rf)
 {
 
-    bool failed = false;
+    // bool failed = false;
     _exploreObjectOnOff = true;
     _exploreObjectValid = true; // Assume it is true, set it to false when something fails
     _stopModule = false;
     _rf = rf;
 
-//    _maintainContactThread = NULL;
+    //    _maintainContactThread = NULL;
     _exploreObjectThread = NULL;
+    _exploreObjectGP_thread = NULL;
 
     //// TODO: I save system parameters here that I use in this module.
     /// This is not a good idea. I should change it.
@@ -92,7 +93,15 @@ ExploreObject::~ExploreObject()
         delete(_exploreObjectThread);
         _exploreObjectThread = NULL;
     }
-/*    if(_maintainContactThread != NULL)
+
+    if(_exploreObjectGP_thread != NULL)
+    {
+        if(_exploreObjectGP_thread->isRunning())
+            _exploreObjectGP_thread->stop();
+        delete(_exploreObjectGP_thread);
+        _exploreObjectGP_thread = NULL;
+    }
+    /*    if(_maintainContactThread != NULL)
     {
 
         delete(_maintainContactThread);
@@ -122,7 +131,7 @@ bool ExploreObject::goToStartingPose()
     if(_objectFeaturesThread->getStartingPose(pos, orient))
     {
 
-/*        // Quick test
+        /*        // Quick test
        double armJoints[16];
        memset(armJoints, 0, sizeof(armJoints));
        armJoints[0] = -20;
@@ -217,6 +226,62 @@ bool ExploreObject::setEndPose()
 // return true;
 // }
 
+
+bool ExploreObject::startExploringGP()
+{
+    bool ret = true;
+
+    cout << "Explore object starting" << endl;
+
+    if(!_exploreObjectValid || !_objectFeaturesThread->isExplorationValid())
+    {
+        cerr << _dbgtag << "Cannot start exploring, one or more of the dependencies have not been met" << endl;
+        return false;
+    }
+
+
+
+    if(_exploreObjectOnOff)
+    {
+        prepHand();
+        if(!this->goToStartingPose())
+            ret = false;
+        _armCartesianController->waitMotionDone(0.1, 20);
+
+        // Ge the current position of the arm.
+        Vector pos, orient;
+        pos.resize(3);
+        orient.resize(4);
+        if(!_objectFeaturesThread->getArmPose(pos, orient))
+        {
+            cerr << _dbgtag << "Could not read the arm position, cannot start exploration" << endl;
+            return false;
+        }
+
+        // Setting the way point to the start of the exploration
+        _objectFeaturesThread->setWayPoint(pos, orient);
+
+        _objectFeaturesThread->prepGP();
+
+
+        if(!_exploreObjectGP_thread->start())
+            ret = false;
+
+        _exploreObjectOnOff = false;
+
+        cout << "Exoploring the object using GP\n" << endl;
+
+    }
+    else{
+
+        cout << "Warning! Already exploring." << endl;
+    }
+
+
+
+    return ret;
+}
+
 bool ExploreObject::startExploring()
 {
     bool ret = true;
@@ -287,33 +352,13 @@ bool ExploreObject::stopExploring()
 
         // 0 is invalid state!
         _objectFeaturesThread->updateContactState(0);
-        _exploreObjectThread->stop();
+        if(_exploreObjectThread->isRunning())
+            _exploreObjectThread->stop();
+        if(_exploreObjectGP_thread->isRunning())
+            _exploreObjectGP_thread->stop();
+
 
         cout << "stopped" << endl;
-       // if(!this->goToHomePose())
-       //     ret = false;
-
-
-
-       /* if(!goToStartingPose())
-            ret = false;
-
-        _armCartesianController->waitMotionDone(0.1, 20);
-
-        // Try to go to home pose if available;
-        goToHomePose();
-
-        _armCartesianController->waitMotionDone(0.1, 20);
-
-
-         openHand();
-
-         */
-        //_maintainContactThread->stop();
-
-
-
-
 
         cout << "Stopped the exploration" << endl;
         _exploreObjectOnOff = true;
@@ -415,7 +460,7 @@ bool ExploreObject::configure(yarp::os::ResourceFinder& rf )
     optionsJnt.put("device", "remote_controlboard");
     optionsJnt.put("local", "/" + moduleName + "/" + systemParameters.getArm() + "_arm/joint");                 //local port names
     optionsJnt.put("remote", "/" + systemParameters.getRobotName()
-                    + "/" + systemParameters.getArm() + "_arm");
+                   + "/" + systemParameters.getArm() + "_arm");
 
 
 
@@ -488,10 +533,11 @@ bool ExploreObject::configure(yarp::os::ResourceFinder& rf )
     ////////////////////////// Setting up the exploration strategy thread ///////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////////
     _exploreObjectThread = new TappingExplorationThread(systemParameters.getExplorationThreadPeriod(),
-                                                       _armCartesianController,_objectFeaturesThread);
+                                                        _armCartesianController,_objectFeaturesThread);
 
 
-
+    _exploreObjectGP_thread = new GPExplorationThread(systemParameters.getExplorationThreadPeriod(),
+                                                      _armCartesianController, _objectFeaturesThread);
 
 
     std::string portName= "/";
@@ -538,7 +584,7 @@ bool ExploreObject::close()
     _deviceController_joint.close();
 
     _robotControl_port.close();
-                                  // Close the device controller
+    // Close the device controller
 
 
     return true;

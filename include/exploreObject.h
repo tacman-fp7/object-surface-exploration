@@ -2,6 +2,7 @@
 //#include <approachObject.h>
 //#include <maintainContactThread.h>
 #include <explorationStrategyThread.h>
+#include <gpExplorationThread.h>
 #include <objectFeaturesThread.h>
 //#include <objectClassifierThread.h>
 #include <yarp/dev/CartesianControl.h>
@@ -40,7 +41,7 @@ public: // Methods related to the robot control
     bool openHand();
     bool prepHand();
     bool calibrateHand();
-    //bool startExploringGP();
+    bool startExploringGP();
     bool quit();
     
 public: // Methods related to the RF module
@@ -58,7 +59,9 @@ private: // Private members
     // It has to be instantiated with the desired approachObject instance
     //ApproachObject* _approachObjectCntrl; // Approach the object
 //    MaintainContactThread* _maintainContactThread; // maintain contact
-    ExplorationStrategyThread* _exploreObjectThread; // run appropriate exploration strategy
+    ExplorationStrategyThread *_exploreObjectThread; // run appropriate exploration strategy
+    GPExplorationThread *_exploreObjectGP_thread;
+
 //    ObjectClassifierThread* _objectClassifierThread; // run appropriate classifier
     yarp::os::ResourceFinder _rf;
     ObjectFeaturesThread* _objectFeaturesThread; // This is shared between threads. Must have sync

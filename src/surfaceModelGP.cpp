@@ -186,7 +186,7 @@ bool SurfaceModelGP::saveMeshCSV()
     // Generating training data
 
     unsigned int nPoints = 120;
-    double offset = 5;
+    double offset = 5.0/1000;
 
     gVec<double> *inputMax = _inputTraining.max(COLUMNWISE);
     gVec<double> *inputMin = _inputTraining.min(COLUMNWISE);
@@ -247,6 +247,7 @@ bool SurfaceModelGP::saveMeshCSV()
     inputTesting.saveCSV("inputTesting.csv");
     means->saveCSV("means.csv");
     vars.saveCSV("vars.csv");
+    vars.save("updateHack.csv");
 
     delete[] xlin;
     delete[] ylin;

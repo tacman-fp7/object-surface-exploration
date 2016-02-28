@@ -128,7 +128,7 @@ bool ObjectFeaturesThread::maintainContactPose()
     ret = fingerMovePosition(9, 30);
     ret = fingerMovePosition(10, 170);
 
-     /*
+    /*
     Vector pos, orient;
     pos.resize(3);
     orient.resize(4);
@@ -185,7 +185,7 @@ bool ObjectFeaturesThread::prepHand()
 
 
 
-   return true;
+    return true;
 
 }
 
@@ -212,7 +212,7 @@ bool ObjectFeaturesThread::openHand()
 
     ////_armJointPositionCtrl->setPositionMode();
     ///// Quick fix /////
-   /* if(!_armJointPositionCtrl->positionMove(7, 0)) //TODO: use the config file
+    /* if(!_armJointPositionCtrl->positionMove(7, 0)) //TODO: use the config file
     {
         cerr << _dbgtag << "Falied to move to the requsted positions." << endl;
     }
@@ -232,7 +232,7 @@ bool ObjectFeaturesThread::openHand()
     }
 
 
-   return true;
+    return true;
 }
 
 
@@ -241,14 +241,14 @@ bool ObjectFeaturesThread::setProximalAngle(double angle){
     if(_armJointPositionCtrl != NULL )
     {
 
-       ret = _armJointModeCtrl->setPositionMode(11);
-       ret = _armJointPositionCtrl->positionMove(_proximalJoint_index, angle);
+        ret = _armJointModeCtrl->setPositionMode(11);
+        ret = _armJointPositionCtrl->positionMove(_proximalJoint_index, angle);
 
     }
     else
     {
-    std::cerr << _dbgtag << "The joint controller is not initialised" << std::endl;
-    ret = false;
+        std::cerr << _dbgtag << "The joint controller is not initialised" << std::endl;
+        ret = false;
     }
 
 
@@ -337,10 +337,10 @@ void ObjectFeaturesThread::calibrateHand()
 
 void ObjectFeaturesThread::adjustMinMax(const double currentVal, double &min, double &max)
 {
-if(currentVal > max)
-    max = currentVal;
-if(currentVal < min)
-    min = currentVal;
+    if(currentVal > max)
+        max = currentVal;
+    if(currentVal < min)
+        min = currentVal;
 }
 
 bool ObjectFeaturesThread::getIndexFingerEncoder(yarp::sig::Vector &encoderValues)
@@ -352,7 +352,7 @@ bool ObjectFeaturesThread::getIndexFingerEncoder(yarp::sig::Vector &encoderValue
     encoderValues.resize(3);
 
     int nData = _fingerEncoders.getInputCount();
-     Bottle *handEnc;
+    Bottle *handEnc;
 
     for(int data = 0; data < nData; data++)
         handEnc = _fingerEncoders.read();
@@ -472,16 +472,16 @@ bool ObjectFeaturesThread::getIndexFingertipPosition(yarp::sig::Vector &position
 
 bool ObjectFeaturesThread::changeOrient(double newOrient)
 {
-   Vector pos, orient;
-   pos.resize(3);
-   orient.resize(4);
+    Vector pos, orient;
+    pos.resize(3);
+    orient.resize(4);
 
-   _armCartesianCtrl->getPose(pos, orient);
+    _armCartesianCtrl->getPose(pos, orient);
 
-   orient[3] += newOrient;
+    orient[3] += newOrient;
 
 
-   _armCartesianCtrl->goToPose(pos, orient);
+    _armCartesianCtrl->goToPose(pos, orient);
 
 
 }
@@ -550,8 +550,8 @@ bool ObjectFeaturesThread::getFingertipPose(yarp::sig::Vector &pos, yarp::sig::V
     // I should have a mutex here specsific for the carteria view!
     //_armPoseMutex.lock();
 
-   if(!_armCartesianCtrl->attachTipFrame(tip_x, tip_o))
-       ret = false;
+    if(!_armCartesianCtrl->attachTipFrame(tip_x, tip_o))
+        ret = false;
 
 
     //yarp::os::Time::delay(1);
@@ -700,9 +700,10 @@ void ObjectFeaturesThread::setWayPoint ( Vector pos, Vector orient )
 {
 
 
+
     _wayPoint_isValid = true;
 
-    if(pos[0] >= 0)
+    if(pos[0] >= 10.0/1000)
     {
         cerr << _dbgtag << "Cannot have positive x-axis value" << endl;
         _wayPoint_isValid = false;
@@ -711,9 +712,37 @@ void ObjectFeaturesThread::setWayPoint ( Vector pos, Vector orient )
 
 
 
+
     // TODO: in a config file
-    double min = _zMin;
-    double max =  _zMax;
+    double minX;
+    double maxX;
+    minX = _desiredStartingPosition[0] - 100.0/1000;
+    maxX = _desiredStartingPosition[0] - 10.0/1000;
+
+    if(pos[0] < minX || pos[0] > maxX)
+    {
+        cerr << _dbgtag << "X position outside allowable range ( " << minX << "--" << maxX << "): " << pos[0] << endl;
+        _wayPoint_isValid = false;
+        return;
+    }
+
+    double startY;
+    double endY;
+
+    startY = _desiredStartingPosition[2];
+    endY = _desiredEndPosition[2];
+    double range = fabs(endY - startY);
+
+    if(fabs(pos[1] - startY) > range || fabs(pos[1] - endY) > range)
+    {
+        cerr << _dbgtag << "Y position outside allowable range ( " << startY << "--" << endY << "): " << pos[1] << endl;
+        _wayPoint_isValid = false;
+        return;
+    }
+    double minZ = _zMin;
+    double maxZ =  _zMax;
+
+
 
     //if(_wayPointPos[2] == max || _wayPointPos[2] == min)
     //{
@@ -722,22 +751,22 @@ void ObjectFeaturesThread::setWayPoint ( Vector pos, Vector orient )
 
     //}
 
-    if(pos[2] < min)
+    if(pos[2] < minZ)
     {
 
-        cerr << _dbgtag << "Exceeded the z-axis limit ( " << min << " ): " << pos[2] << endl;
-        pos[2] = min;
+        cerr << _dbgtag << "Exceeded the z-axis limit ( " << minZ << " ): " << pos[2] << endl;
+        pos[2] = minZ;
 
-        if(_wayPointPos[2] == min)
+        if(_wayPointPos[2] == minZ)
             _wayPoint_isValid = false;
     }
 
-    if(pos[2] > max)
+    if(pos[2] > maxZ)
     {
-        cerr << _dbgtag << "Exceeded the z-axis limit ( " << max << " ): " << pos[2] << endl;
-        pos[2] = max;
+        cerr << _dbgtag << "Exceeded the z-axis limit ( " << maxZ << " ): " << pos[2] << endl;
+        pos[2] = maxZ;
 
-        if(_wayPointPos[2] == max)
+        if(_wayPointPos[2] == maxZ)
             _wayPoint_isValid = false;
     }
 
@@ -754,10 +783,10 @@ bool ObjectFeaturesThread::getWayPoint ( Vector& pos, Vector& orient, bool inval
     bool ret = _wayPoint_isValid;
     //if(_wayPoint_isValid)
     //{
-        pos = _wayPointPos;
-        orient = _wayPointOrient;
-        _wayPoint_isValid = !invalidateWayPoint;
-      //  return true;
+    pos = _wayPointPos;
+    orient = _wayPointOrient;
+    _wayPoint_isValid = !invalidateWayPoint;
+    //  return true;
     //}
     return ret;
 }
@@ -807,7 +836,7 @@ bool ObjectFeaturesThread::threadInit()
 
     _contactState = 0;
 
-  _dbgtag = "\n\nObjectFeaturesThread.cpp: ";
+    _dbgtag = "\n\nObjectFeaturesThread.cpp: ";
 
     /*   /////////////////// Connect to the tactile sensor port /////////////////
     if(!_tactilePort.open("/objectExploration/tactileSensors/" + _arm + "_hand")){
@@ -825,14 +854,14 @@ bool ObjectFeaturesThread::threadInit()
         cerr << _dbgtag << "Failed to open " << "/" << _moduleName << "/skin" << _arm << "_hand/" <<
                 _whichFinger << "/force-CoP:i" << endl;
         _isExplorationValid = false;
-//        printf("Failed to open local tactile port\n");
+        //        printf("Failed to open local tactile port\n");
     }
 
     ///////////////////////////////////////
     //TODO: Change the incoming port!
     ////////////////////////////////////////
     if(!Network::connect("/force-reconstruction/" + _arm + "_index/force-CoP",
-                     "/" + _moduleName + "/skin/" + _arm + "_hand/" + _whichFinger + "/force-CoP:i"))
+                         "/" + _moduleName + "/skin/" + _arm + "_hand/" + _whichFinger + "/force-CoP:i"))
     {
         _isExplorationValid = false;
         cerr << _dbgtag << "Failed to connect:" << endl;
@@ -846,16 +875,16 @@ bool ObjectFeaturesThread::threadInit()
     {
         ret = false;
         cerr << _dbgtag << "Failed to open local fingerController port" << endl;
-         _isExplorationValid = false;
+        _isExplorationValid = false;
     }
 
     if(!Network::connect("/" + _moduleName + "/" + _arm + "_hand/" + _whichFinger + "/command:o",
-                     _fingerControllerPortName))
+                         _fingerControllerPortName))
     {
         cerr << _dbgtag << "Failed to connect" << endl;
         cerr << "/" + _moduleName + "/" + _arm + "_hand/" + _whichFinger + "/command:o" << endl;
         cerr << _fingerControllerPortName << endl << endl;
-         _isExplorationValid = false;
+        _isExplorationValid = false;
     }
 
 
@@ -879,13 +908,47 @@ bool ObjectFeaturesThread::threadInit()
     else
         cerr << _dbgtag << "Error, object features thread failed during configuration" << endl;
 
+    _objectSurfaceModelGP = new objectExploration::SurfaceModelGP("hut"); //TODO: use the config file
     return ret;
 }
 
 void ObjectFeaturesThread::threadRelease()
 {
+    delete _objectSurfaceModelGP;
 
 }
+
+bool ObjectFeaturesThread::prepGP()
+{
+
+    bool ret = true;
+    _objectSurfaceModelGP->loadContactData();
+    _objectSurfaceModelGP->trainModel();
+    _objectSurfaceModelGP->saveMeshCSV();
+    _objectSurfaceModelGP->saveContactPoints("blindSearh");
+
+    Vector maxVariancePos;
+    Vector orient;
+
+    // Get the valid point from object features
+    if(getWayPoint(maxVariancePos, orient))
+    {
+
+        // I have to make sure the new waypoint is valid
+        if(_objectSurfaceModelGP->getMaxVariancePose(maxVariancePos))
+            setWayPoint(maxVariancePos, orient);
+
+    }
+    else
+    {
+        cerr << _dbgtag << "Invalid initial waypoint" << endl;
+        ret = false;
+    }
+
+    return ret;
+
+}
+
 void ObjectFeaturesThread::publishFingertipControl(Bottle controlCommand)
 {
     Bottle &data = _fingertipControlPort_out.prepare();
@@ -1003,7 +1066,7 @@ bool ObjectFeaturesThread::readParameters()
 {
 
     _moduleName = _rf.check("moduleName", Value("object-exploration-server"),
-                                 "module name (string)").asString().c_str();
+                            "module name (string)").asString().c_str();
 
 
     Bottle &robotParameters = _rf.findGroup("RobotParameters");

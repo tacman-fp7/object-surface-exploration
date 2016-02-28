@@ -13,6 +13,7 @@
 #include <yarp/dev/IEncoders.h>
 #include <yarp/dev/IPositionControl.h>
 #include <yarp/dev/IControlMode2.h>
+#include "surfaceModelGP.h"
 
 // This object is used to update features which will be shared between object objectExploraton
 // and object classification threads
@@ -20,6 +21,11 @@
 // change trajectory/location
 
 // Make it a thread that reads the finger data, sums 
+
+
+
+namespace objectExploration
+{
 
 using yarp::os::RateThread;
 using yarp::os::BufferedPort;
@@ -29,10 +35,6 @@ using yarp::sig::Vector;
 using yarp::os::Mutex;
 using std::string;
 using yarp::os::RpcClient;
-
-namespace objectExploration
-{
-
 
 class ObjectFeaturesThread: public RateThread
 {
@@ -85,7 +87,7 @@ public:
     void publishFingertipPosition(Vector pos);
     void publishFingertipControl(Bottle controlCommand);
     bool openIndexFinger();
-
+    bool prepGP();
     void calibrateHand();
     bool getIndexFingerEncoder(Vector &encoderValues);
     bool fingerMovePosition(int joint, double angle, double speed = 10);
@@ -208,7 +210,7 @@ protected:
     BufferedPort<Bottle> _fingertipControlPort_out;
 
     ////
-
+    objectExploration::SurfaceModelGP *_objectSurfaceModelGP;
 
 };
 
