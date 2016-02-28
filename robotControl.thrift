@@ -12,6 +12,8 @@ service robotControl {
 	bool prepHand();
 	bool openHand();
 	bool calibrateHand();
+	bool startExploringGP();
+	bool endExploringGP();
 	bool quit();
 	
 }

@@ -63,7 +63,7 @@ ExploreObject::ExploreObject(yarp::os::ResourceFinder& rf)
     _stopModule = false;
     _rf = rf;
 
-    _maintainContactThread = NULL;
+//    _maintainContactThread = NULL;
     _exploreObjectThread = NULL;
 
     //// TODO: I save system parameters here that I use in this module.
@@ -92,12 +92,13 @@ ExploreObject::~ExploreObject()
         delete(_exploreObjectThread);
         _exploreObjectThread = NULL;
     }
-    if(_maintainContactThread != NULL)
+/*    if(_maintainContactThread != NULL)
     {
 
         delete(_maintainContactThread);
         _maintainContactThread = NULL;
     }
+    */
     //cout << "Here2" << endl;
     if(_objectFeaturesThread != NULL)
     {
@@ -479,10 +480,10 @@ bool ExploreObject::configure(yarp::os::ResourceFinder& rf )
     ////////// Setting up the MaintainContactThread ////////////////////////////////////////
     ////////// at the meoment it is achieved using Massimo's code //////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////
-    _maintainContactThread = new MaintainContactThread(systemParameters.getMaintainContactPeriod(),
+    /*_maintainContactThread = new MaintainContactThread(systemParameters.getMaintainContactPeriod(),
                                                        _objectFeaturesThread);
     _maintainContactThread->setDesiredForce(systemParameters.getDesiredForce());
-
+    */
     /////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////// Setting up the exploration strategy thread ///////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////////

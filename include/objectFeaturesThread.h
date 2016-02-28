@@ -207,6 +207,9 @@ protected:
     BufferedPort<Bottle> _fingertipPosition_out;
     BufferedPort<Bottle> _fingertipControlPort_out;
 
+    ////
+
+
 };
 
 } // namespace objectExploration

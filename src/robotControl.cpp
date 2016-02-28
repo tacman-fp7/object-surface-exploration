@@ -103,6 +103,22 @@ public:
   virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
+class robotControl_startExploringGP : public yarp::os::Portable {
+public:
+  bool _return;
+  void init();
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
+};
+
+class robotControl_endExploringGP : public yarp::os::Portable {
+public:
+  bool _return;
+  void init();
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
+};
+
 class robotControl_quit : public yarp::os::Portable {
 public:
   bool _return;
@@ -365,6 +381,48 @@ void robotControl_calibrateHand::init() {
   _return = false;
 }
 
+bool robotControl_startExploringGP::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(1)) return false;
+  if (!writer.writeTag("startExploringGP",1,1)) return false;
+  return true;
+}
+
+bool robotControl_startExploringGP::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void robotControl_startExploringGP::init() {
+  _return = false;
+}
+
+bool robotControl_endExploringGP::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(1)) return false;
+  if (!writer.writeTag("endExploringGP",1,1)) return false;
+  return true;
+}
+
+bool robotControl_endExploringGP::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void robotControl_endExploringGP::init() {
+  _return = false;
+}
+
 bool robotControl_quit::write(yarp::os::ConnectionWriter& connection) {
   yarp::os::idl::WireWriter writer(connection);
   if (!writer.writeListHeader(1)) return false;
@@ -505,6 +563,26 @@ bool robotControl::calibrateHand() {
   helper.init();
   if (!yarp().canWrite()) {
     yError("Missing server method '%s'?","bool robotControl::calibrateHand()");
+  }
+  bool ok = yarp().write(helper,helper);
+  return ok?helper._return:_return;
+}
+bool robotControl::startExploringGP() {
+  bool _return = false;
+  robotControl_startExploringGP helper;
+  helper.init();
+  if (!yarp().canWrite()) {
+    yError("Missing server method '%s'?","bool robotControl::startExploringGP()");
+  }
+  bool ok = yarp().write(helper,helper);
+  return ok?helper._return:_return;
+}
+bool robotControl::endExploringGP() {
+  bool _return = false;
+  robotControl_endExploringGP helper;
+  helper.init();
+  if (!yarp().canWrite()) {
+    yError("Missing server method '%s'?","bool robotControl::endExploringGP()");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
@@ -666,6 +744,28 @@ bool robotControl::read(yarp::os::ConnectionReader& connection) {
       reader.accept();
       return true;
     }
+    if (tag == "startExploringGP") {
+      bool _return;
+      _return = startExploringGP();
+      yarp::os::idl::WireWriter writer(reader);
+      if (!writer.isNull()) {
+        if (!writer.writeListHeader(1)) return false;
+        if (!writer.writeBool(_return)) return false;
+      }
+      reader.accept();
+      return true;
+    }
+    if (tag == "endExploringGP") {
+      bool _return;
+      _return = endExploringGP();
+      yarp::os::idl::WireWriter writer(reader);
+      if (!writer.isNull()) {
+        if (!writer.writeListHeader(1)) return false;
+        if (!writer.writeBool(_return)) return false;
+      }
+      reader.accept();
+      return true;
+    }
     if (tag == "quit") {
       bool _return;
       _return = quit();
@@ -723,6 +823,8 @@ std::vector<std::string> robotControl::help(const std::string& functionName) {
     helpString.push_back("prepHand");
     helpString.push_back("openHand");
     helpString.push_back("calibrateHand");
+    helpString.push_back("startExploringGP");
+    helpString.push_back("endExploringGP");
     helpString.push_back("quit");
     helpString.push_back("help");
   }
@@ -762,6 +864,12 @@ std::vector<std::string> robotControl::help(const std::string& functionName) {
     }
     if (functionName=="calibrateHand") {
       helpString.push_back("bool calibrateHand() ");
+    }
+    if (functionName=="startExploringGP") {
+      helpString.push_back("bool startExploringGP() ");
+    }
+    if (functionName=="endExploringGP") {
+      helpString.push_back("bool endExploringGP() ");
     }
     if (functionName=="quit") {
       helpString.push_back("bool quit() ");

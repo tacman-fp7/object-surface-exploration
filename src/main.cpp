@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
   rf.setDefaultConfigFile("objectExplorationConfig.ini");
   rf.configure(argc, argv);
 
-  objectExploration::SurfaceModelGP surfModel("hut");
+  /*objectExploration::SurfaceModelGP surfModel("hut");
 
   surfModel.loadContactData();
   surfModel.trainModel();
@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
   surfModel.saveContactPoints("blindSearh");
 
   return 1;
-
+*/
 
   // Create a robot control server
   objectExploration::ExploreObject objectExplorationModule(rf);
