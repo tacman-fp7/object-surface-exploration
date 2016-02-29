@@ -14,7 +14,7 @@ public:
     GPExplorationThread(int period, ICartesianControl* robotCartesianController,
                             ObjectFeaturesThread* objectFeatures):
         TappingExplorationThread(period, robotCartesianController,
-                                  objectFeatures){}
+                                  objectFeatures){ _surfaceModel = objectFeatures->getGPSurfaceModel();}
 
     virtual void run();
     virtual bool threadInit();

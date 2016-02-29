@@ -58,13 +58,23 @@ void SurfaceModelGP::addContactPoint(const yarp::sig::Vector &fingertipPosition)
     posXY.at(1) = fingertipPosition[1];
     posZ.at(0) = fingertipPosition[2];
 
+    addContactPoint(posXY, posZ);
+
 }
 
 void SurfaceModelGP::addContactPoint(gVec<double> posXY, gVec<double> posZ)
 {
      // Add the new point to the matrix
-    _inputTraining.add(posXY);
-    _outputTraining.add(posZ);
+    cout << "Adding a new contact point: " << _inputTraining.rows() << endl;
+
+    _inputTraining.resize(_inputTraining.rows() + 1, _inputTraining.cols());
+    _outputTraining.resize(_outputTraining.rows() + 1, _outputTraining.cols());
+    _inputTraining.setRow(posXY, _inputTraining.rows()-1);
+    _outputTraining.setRow(posZ, _outputTraining.rows()-1);
+
+    //_inputTraining.add(posXY);
+    //_outputTraining.add(posZ);
+    cout << "After: " << _inputTraining.rows() << endl;
 
 }
 
@@ -168,7 +178,7 @@ bool SurfaceModelGP::trainModel(){
 
     string jobId0("train");
 
-
+    cout << "Training the model with size: " << _inputTraining.getSize() << endl;
     // run gurls for training
     _objectModel.run(_inputTraining, _outputTraining, *_opt, jobId0);
 
@@ -244,6 +254,7 @@ bool SurfaceModelGP::saveMeshCSV()
     getMaxVariancePose(inputTesting, vars, *means, dummy);
 
     // Save the data for matlab visualisation
+    _inputTraining.saveCSV("newTraining.csv");
     inputTesting.saveCSV("inputTesting.csv");
     means->saveCSV("means.csv");
     vars.saveCSV("vars.csv");
@@ -264,7 +275,7 @@ bool SurfaceModelGP::getMaxVariancePose(yarp::sig::Vector &maxVariancePos)
 
 
     unsigned int nPoints = 120;
-    double offset = 5;
+    double offset = 5.0/1000;
 
     gVec<double> *inputMax = _inputTraining.max(COLUMNWISE);
     gVec<double> *inputMin = _inputTraining.min(COLUMNWISE);

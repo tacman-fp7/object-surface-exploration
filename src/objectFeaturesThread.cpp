@@ -696,7 +696,7 @@ bool ObjectFeaturesThread::getDesiredEndPose ( Vector& pos, Vector& orient )
     return _desiredEndPose_isValid;
 }
 
-void ObjectFeaturesThread::setWayPoint ( Vector pos, Vector orient )
+bool ObjectFeaturesThread::setWayPoint ( Vector pos, Vector orient )
 {
 
 
@@ -707,7 +707,7 @@ void ObjectFeaturesThread::setWayPoint ( Vector pos, Vector orient )
     {
         cerr << _dbgtag << "Cannot have positive x-axis value" << endl;
         _wayPoint_isValid = false;
-        return;
+        return false;
     }
 
 
@@ -716,28 +716,28 @@ void ObjectFeaturesThread::setWayPoint ( Vector pos, Vector orient )
     // TODO: in a config file
     double minX;
     double maxX;
-    minX = _desiredStartingPosition[0] - 100.0/1000;
-    maxX = _desiredStartingPosition[0] - 10.0/1000;
+    minX = _desiredStartingPosition[0] - 200.0/1000;
+    maxX = _desiredStartingPosition[0] + 20.0/1000;
 
     if(pos[0] < minX || pos[0] > maxX)
     {
         cerr << _dbgtag << "X position outside allowable range ( " << minX << "--" << maxX << "): " << pos[0] << endl;
         _wayPoint_isValid = false;
-        return;
+        return _wayPoint_isValid;
     }
 
     double startY;
     double endY;
 
-    startY = _desiredStartingPosition[2];
-    endY = _desiredEndPosition[2];
+    startY = _desiredStartingPosition[1] + 0.02 * _desiredStartingPosition[1] ;
+    endY = _desiredEndPosition[1] + 0.02 * _desiredEndPosition[1];
     double range = fabs(endY - startY);
 
     if(fabs(pos[1] - startY) > range || fabs(pos[1] - endY) > range)
     {
         cerr << _dbgtag << "Y position outside allowable range ( " << startY << "--" << endY << "): " << pos[1] << endl;
         _wayPoint_isValid = false;
-        return;
+        return _wayPoint_isValid;
     }
     double minZ = _zMin;
     double maxZ =  _zMax;
@@ -773,6 +773,8 @@ void ObjectFeaturesThread::setWayPoint ( Vector pos, Vector orient )
 
     _wayPointPos = pos;
     _wayPointOrient = orient;
+
+    return _wayPoint_isValid;
 
 }
 
@@ -936,7 +938,7 @@ bool ObjectFeaturesThread::prepGP()
 
         // I have to make sure the new waypoint is valid
         if(_objectSurfaceModelGP->getMaxVariancePose(maxVariancePos))
-            setWayPoint(maxVariancePos, orient);
+            ret = ret && setWayPoint(maxVariancePos, orient);
 
     }
     else

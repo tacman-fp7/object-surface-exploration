@@ -59,7 +59,7 @@ public:
     bool getStartingPose(Vector& pos, Vector& orient);
     void setHomePose(Vector& pos, Vector& orient);
     bool getHomePose(Vector& pos, Vector& orient);
-    void setWayPoint(Vector pos, Vector orient);
+    bool setWayPoint(Vector pos, Vector orient);
     bool getWayPoint(Vector& pos, Vector& orient, bool invalidateWayPoint = true);
     bool readParameters();
     const string& getArm();
@@ -94,6 +94,9 @@ public:
     void updateContactState(int contactState){_contactState = contactState;
                                              publishContactState(_contactState);}
     bool setProximalAngle(double angle);
+    objectExploration::SurfaceModelGP* getGPSurfaceModel(){
+        return _objectSurfaceModelGP;
+    }
 
     bool checkOpenHandDone()
     {

@@ -91,6 +91,7 @@ void GPExplorationThread::moveToNewLocation()
 void GPExplorationThread::maintainContact()
 {
 
+    cout << "Contact state is GP maintain contact" << endl;
     // Store the contact location
     Vector fingertipPosition, fingertipOrientation;
     _objectFeatures->getFingertipPose(fingertipPosition, fingertipOrientation);
@@ -111,6 +112,7 @@ void GPExplorationThread::setWayPoint_GP()
 
     Vector maxVariancePos;
     Vector orient;
+
 
     // Get the valid point from object features
     _objectFeatures->getWayPoint(maxVariancePos, orient, false);

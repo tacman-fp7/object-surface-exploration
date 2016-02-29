@@ -258,8 +258,13 @@ bool ExploreObject::startExploringGP()
             return false;
         }
 
+
         // Setting the way point to the start of the exploration
-        _objectFeaturesThread->setWayPoint(pos, orient);
+        if(!_objectFeaturesThread->setWayPoint(pos, orient))
+        {
+            cerr << _dbgtag << "Failed to set the initial waypoint. Aborting exploration!" << endl;
+            return false;
+        }
 
         _objectFeaturesThread->prepGP();
 
@@ -314,7 +319,11 @@ bool ExploreObject::startExploring()
         }
 
         // Setting the way point to the start of the exploration
-        _objectFeaturesThread->setWayPoint(pos, orient);
+        if(!_objectFeaturesThread->setWayPoint(pos, orient))
+        {
+            cerr << _dbgtag << "Failed to set the initial waypoint. Aborting exploration!" << endl;
+            return false;
+        }
 
 
         // Then explore the object
