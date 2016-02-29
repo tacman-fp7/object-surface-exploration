@@ -924,10 +924,11 @@ bool ObjectFeaturesThread::prepGP()
 {
 
     bool ret = true;
-    _objectSurfaceModelGP->loadContactData();
+    _objectSurfaceModelGP->loadContactData("blindSearch"); //TODO: put this in a config file
     _objectSurfaceModelGP->trainModel();
-    _objectSurfaceModelGP->saveMeshCSV();
-    _objectSurfaceModelGP->saveContactPoints("blindSearh");
+    _objectSurfaceModelGP->updateSurfaceEstimate();
+    //_objectSurfaceModelGP->saveMeshCSV();
+
 
     Vector maxVariancePos;
     Vector orient;

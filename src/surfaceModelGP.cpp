@@ -1,6 +1,7 @@
 #include "surfaceModelGP.h"
 #include <gurls++/gvec.h>
 #include <cmath>
+#include <fstream>
 
 
 namespace objectExploration
@@ -20,6 +21,7 @@ SurfaceModelGP::SurfaceModelGP(const std::string objectName)
     _objectName = objectName;
     _opt = NULL;
     _isValidModel = false;
+    _isValidMaxVar = false;
 
 }
 
@@ -30,18 +32,13 @@ SurfaceModelGP::~SurfaceModelGP()
         delete _opt;
 }
 
-void SurfaceModelGP::loadContactData(const std::string fileName)
-{
-    _inputTraining.readCSV(fileName);
-    _outputTraining.readCSV(fileName);
 
-}
 
-void SurfaceModelGP::loadContactData()
+void SurfaceModelGP::loadContactData(const std::string type)
 {
 
-    string inputTrainingFileName = "inputTraining.csv";
-    string outputTrainingFileName = "outputTraining.csv";
+    string inputTrainingFileName =  _objectName + "_training_input_"  + type + ".csv";
+    string outputTrainingFileName = _objectName + "_training_target_" + type + ".csv";;
     _inputTraining.readCSV(inputTrainingFileName);
     _outputTraining.readCSV(outputTrainingFileName);
 
@@ -76,16 +73,25 @@ void SurfaceModelGP::addContactPoint(gVec<double> posXY, gVec<double> posZ)
     //_outputTraining.add(posZ);
     cout << "After: " << _inputTraining.rows() << endl;
 
+
 }
 
-void SurfaceModelGP::saveContactPoints(const std::string &fileName)
+void SurfaceModelGP::saveContactPoints()
 {
 
-    _inputTraining.saveCSV(fileName + "_input.csv");
-    _inputTraining.save(fileName + "_input.bin");
+    string inputFileName = _objectName + "_training_input_GP";
+    string outputFilename = _objectName + "_training_target_GP";
+    _inputTraining.saveCSV(inputFileName + ".csv");
+    _inputTraining.save(inputFileName + ".bin");
 
-    _outputTraining.saveCSV(fileName + "_output.csv");
-    _outputTraining.save(fileName + "_output.bin");
+    _outputTraining.saveCSV(outputFilename + ".csv");
+    _outputTraining.save(outputFilename + ".bin");
+}
+
+bool SurfaceModelGP::updateModel()
+{
+    //TODO: in future I can implement incremental update here
+    return trainModel();
 }
 
 // Assumes that the contact data has already been loaded
@@ -189,14 +195,14 @@ bool SurfaceModelGP::trainModel(){
 }
 
 
-bool SurfaceModelGP::saveMeshCSV()
+bool SurfaceModelGP::updateSurfaceEstimate(const unsigned int nPoints, const double offset)
 {
 
 
     // Generating training data
 
-    unsigned int nPoints = 120;
-    double offset = 5.0/1000;
+    //unsigned int nPoints = 120;
+    //double offset = 5.0/1000;
 
     gVec<double> *inputMax = _inputTraining.max(COLUMNWISE);
     gVec<double> *inputMin = _inputTraining.min(COLUMNWISE);
@@ -250,15 +256,24 @@ bool SurfaceModelGP::saveMeshCSV()
     //cout << "Max: " <<  vars.max(gurls::COLUMNWISE)->at(0) << endl;
 
 
-    yarp::sig::Vector dummy;
-    getMaxVariancePose(inputTesting, vars, *means, dummy);
+    //yarp::sig::Vector maxVariancePos;
+    getMaxVariancePose(inputTesting, vars, *means, _maxVariancePos);
+    _isValidMaxVar = true;
 
     // Save the data for matlab visualisation
-    _inputTraining.saveCSV("newTraining.csv");
-    inputTesting.saveCSV("inputTesting.csv");
-    means->saveCSV("means.csv");
-    vars.saveCSV("vars.csv");
-    vars.save("updateHack.csv");
+   //_inputTraining.saveCSV("newTraining.csv");
+    inputTesting.saveCSV(_objectName + "_model_input.csv");
+    means->saveCSV(_objectName + "_model_output_GP.csv");
+    vars.saveCSV(_objectName + "_model_variance_GP.csv");
+
+
+    std::ofstream maxVarFile;
+    maxVarFile.open( (_objectName + "_model_nextPoint.csv").c_str());
+    maxVarFile << _maxVariancePos.toString(10) << " ";
+    maxVarFile << vars.max(gurls::COLUMNWISE)->at(0);
+    maxVarFile.flush();
+    maxVarFile.close();
+
 
     delete[] xlin;
     delete[] ylin;
@@ -268,8 +283,12 @@ bool SurfaceModelGP::saveMeshCSV()
 bool SurfaceModelGP::getMaxVariancePose(yarp::sig::Vector &maxVariancePos)
 {
 
+    maxVariancePos = _maxVariancePos;
+    return _isValidMaxVar;
 
 
+
+/*
 
     ///////////////////////////////
 
@@ -329,8 +348,12 @@ bool SurfaceModelGP::getMaxVariancePose(yarp::sig::Vector &maxVariancePos)
     getMaxVariancePose(inputTesting, vars, *means, maxVariancePos);
 
 
+    delete[] xlin;
+    delete[] ylin;
 
     ////////////////////
+
+    */
 }
 
 bool SurfaceModelGP::getMaxVariancePose(const gMat2D<double> &positions,
@@ -362,8 +385,8 @@ bool SurfaceModelGP::getMaxVariancePose(const gMat2D<double> &positions,
     maxVariancePos[1] = positions(maxVarianceIndex,1);
     maxVariancePos[2] = means(maxVarianceIndex,0);
 
-    cout << "Max var: " << variances(maxVarianceIndex, 0) << ","
-         << maxVariancePos.toString() << endl;
+    cout << "Max var: " << variances(maxVarianceIndex, 0) << ", at location ( "
+         << maxVariancePos.toString() << " )" << endl;
     return true;
 
 }
