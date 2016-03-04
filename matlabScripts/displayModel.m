@@ -27,6 +27,10 @@ while(true)
     
     x = modelInput(:, 1);% - min(inputTesting(:, 1));
     y = modelInput(:, 2);% - min(inputTesting(:, 2));
+    
+    fprintf('Xmin: %f, Xmax: %f, Ymin: %f, Ymax: %f\n',...
+    min(x), max(x), min(y), max(y));
+
     xlin = linspace(min(x), max(x), nPoints);
     ylin = linspace(min(y), max(y), nPoints);
     [XT,YT] = meshgrid(xlin,ylin);
@@ -36,7 +40,7 @@ while(true)
     
     figure(1)
     mesh(XT, YT, ZT);
-    view(viewVars);
+    %view(viewVars);
     
     hold on
     h_cp = scatter3(maxVarPoint(1), maxVarPoint(2),...
@@ -45,7 +49,7 @@ while(true)
     
     figure(2)
     mesh(XT,YT, ZV);
-    view(viewVars);
+    %view(viewVars);
     
     
     hold on

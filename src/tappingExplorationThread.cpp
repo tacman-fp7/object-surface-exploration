@@ -33,7 +33,7 @@ void TappingExplorationThread::run()
     _contactState = APPROACH_OBJECT;
     _repeats = 0;
     _curDistal = 0;
-    _curProximal = 0;
+    _curProximal = 10;
 
     _forceThreshold = FORCE_TH;
     while(!isStopping() && !(_contactState == STOP)) // Keep running this
@@ -109,7 +109,7 @@ void TappingExplorationThread::finshExploration()
     _nGrid = 0;
     // Open the hand
     _objectFeatures->prepHand();
-    _curProximal = 0;
+    _curProximal = 10;
     _curDistal = 70;
     Bottle msg;
     msg.clear();
@@ -153,7 +153,7 @@ void TappingExplorationThread::maintainContact()
 {
 
     // Maintain the location for a given time period in the form of dealy
-    yarp::os::Time::delay(0.05);
+    yarp::os::Time::delay(0.01);
 
     // This is where I should log the position
 
@@ -172,7 +172,7 @@ void TappingExplorationThread::maintainContact()
     _robotCartesianController->waitMotionDone(0.1, 20);
 
     // Command the fingertip to move
-    _curProximal = 0;
+    _curProximal = 10;
     _curDistal = 70;
     logFingertipControl();
     _objectFeatures->prepHand();
@@ -181,7 +181,7 @@ void TappingExplorationThread::maintainContact()
         ;
     cout << "done!" << endl;
 
-    if(_repeats < 3)
+    if(_repeats < 0) // TODO: change
     {
 
         _forceThreshold = 0.7 * FORCE_TH;
@@ -320,7 +320,7 @@ void TappingExplorationThread::calculateNewWaypoint()
 
         //Open the finger
         // TODO: make the logging less error prone.
-        _curProximal = 0;
+        _curProximal = 10;
         _curDistal = 70;
         logFingertipControl();
         _objectFeatures->prepHand();
@@ -377,7 +377,7 @@ void TappingExplorationThread::approachObject()
         // Put the fingers in the right position
         _objectFeatures->prepHand();
         // TODO: fix the logging, this approach is error prone
-        _curProximal = 0;
+        _curProximal = 10;
         _curDistal = 70;
         logFingertipControl();
 
@@ -395,7 +395,7 @@ void TappingExplorationThread::approachObject()
     if(_contactState == APPROACH_OBJECT)
     {
         /// Tell the finger controller to approach the object
-        _curProximal = 20;
+        _curProximal = 25;
         logFingertipControl();
         _objectFeatures->fingerMovePosition(11, _curProximal, 30);
 
@@ -439,7 +439,7 @@ void TappingExplorationThread::approachObject()
         {
             // No contact detected put the hand in prep position
             _objectFeatures->prepHand();
-            _curProximal = 0;
+            _curProximal = 10;
             _curDistal = 70;
             logFingertipControl();
 
@@ -449,6 +449,12 @@ void TappingExplorationThread::approachObject()
         }
     }
 
+    if(_contactState == MAINTAIN_CONTACT)
+    {
+        yarp::os::Time::delay(0.01);
+        if(_objectFeatures->getContactForce() < _forceThreshold)
+            _contactState == APPROACH_OBJECT;
+    }
     //_objectFeatures->writeToFingerController("stop");
 
     return;

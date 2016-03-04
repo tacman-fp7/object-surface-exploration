@@ -29,17 +29,19 @@ public:
     bool saveModel(); //to the disk
     bool updateModel();
     void saveModelOutput();
-    bool updateSurfaceEstimate(const unsigned int nGrid = 120, const double offset = 5.0/1000);
+    bool updateSurfaceEstimate(const unsigned int nGrid = 120, const double offset = 0/1000);
     //bool saveMeshCSV();
 
     void loadContactData(const std::string type);
     void addContactPoint(const Vector &fingertipPosition);
     void addContactPoint(gVec<double> posXY, gVec<double> posZ);
     void saveContactPoints();
+    void setBoundingBox(const unsigned int nPoints = 120, const double offset = 0/1000);
 
     bool getMaxVariancePose(Vector &maxVariancePos);
 
 private:
+
     bool init(ResourceFinder& rf);
     double readOption(const string& main, const string& sub,  gurls::GurlsOptionsList *opt);
     gMat2D<double>* eval(const gMat2D<double> &X, gMat2D<double> &vars, gurls::GurlsOptionsList *opt);
@@ -58,5 +60,6 @@ private:
     bool _isValidMaxVar;
     string _dbgtg;
     bool _isValidModel;
+    gMat2D < double > _inputTesting;
 }; // end of class
 } // end of namespace objectExploration

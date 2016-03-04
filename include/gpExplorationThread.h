@@ -19,11 +19,16 @@ public:
     virtual void run();
     virtual bool threadInit();
     virtual void threadRelease();
+    bool initialiseGP(Vector startingPos, Vector startingOrient,
+                      Vector endingPos, Vector endingOrient);
 
 protected:
      void setWayPoint_GP();
      void maintainContact();
      void moveToNewLocation();
+
+private:
+     void makeSingleContact(yarp::sig::Vector pos, yarp::sig::Vector orient);
 
 private:
      SurfaceModelGP *_surfaceModel;

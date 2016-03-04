@@ -177,7 +177,7 @@ bool ObjectFeaturesThread::prepHand()
     ret = fingerMovePosition(7, 0);
     ret = fingerMovePosition(9, 30);
     ret = fingerMovePosition(10, 170);
-    ret = fingerMovePosition(11, 0);
+    ret = fingerMovePosition(11, 10);
     ret = fingerMovePosition(12, 70);
 
 
@@ -207,21 +207,6 @@ bool ObjectFeaturesThread::openHand()
         return false;
     }
 
-
-
-
-    ////_armJointPositionCtrl->setPositionMode();
-    ///// Quick fix /////
-    /* if(!_armJointPositionCtrl->positionMove(7, 0)) //TODO: use the config file
-    {
-        cerr << _dbgtag << "Falied to move to the requsted positions." << endl;
-    }
-
-
-    if(!_armJointPositionCtrl->positionMove(8, 10)) //TODO: use the config file
-    {
-        cerr << _dbgtag << "Falied to move to the requsted positions." << endl;
-    }*/
 
     for (int i=7; i < numAxes; i++)
     {
@@ -425,46 +410,23 @@ bool ObjectFeaturesThread::getIndexFingertipPosition(yarp::sig::Vector &position
     joints[2] = 90 * (1 - (fingerEncoders[1] - _minIndexMiddle) / (_maxIndexMiddle - _minIndexMiddle) );
     joints[3] = 90 * (1 - (fingerEncoders[2] - _minIndexDistal) / (_maxIndexDistal - _minIndexDistal) );
 
-    //cout << "Joints:" << joints.toString() << endl;
-
     //Convert the joints to radians.
     for (int j = 0; j < joints.size(); j++)
         joints[j] *= M_PI/180;
 
-
-
     yarp::sig::Matrix tipFrame = finger.getH(joints);
-
     Vector tip_x = tipFrame.getCol(3); // Tip's position in the hand coordinate
-
-
-
+    //cout << "TipX: " << tip_x.toString() << endl;
     Vector armPos, armOrient;
-
     _armCartesianCtrl->getPose(armPos, armOrient);
 
-
     // My own transformation
-
     yarp::sig::Matrix T_rotoTrans(4,4);
-
     T_rotoTrans = yarp::math::axis2dcm(armOrient);
     T_rotoTrans.setSubcol(armPos, 0,3);
-
-    //cout << "TR" << endl << T_rotoTrans.toString() << endl;
-
     Vector retMat = yarp::math::operator *(T_rotoTrans, tip_x);
-
-    //cout << "F Pos: " << retMat.toString() << endl;
-
-
     position = retMat.subVector(0,2);
-
     //cout << "Finger position: " << position.toString()  << endl;
-
-
-
-
 }
 
 
@@ -486,6 +448,131 @@ bool ObjectFeaturesThread::changeOrient(double newOrient)
 
 }
 
+
+bool ObjectFeaturesThread::indexFinger2ArmPosition(Vector &fingertipPosition, Vector &retArmpPosition)
+{
+
+    bool ret = true;
+
+
+    Vector joints;
+    iCub::iKin::iCubFinger finger(_whichFinger);
+    int nEncs;
+
+    //position.clear();
+    //position.resize(3); //x,y, z position
+
+
+    ret = ret && _armEncoder->getAxes(&nEncs);
+    Vector encs(nEncs);
+    if(! (ret = ret && _armEncoder->getEncoders(encs.data())))
+    {
+        cerr << _dbgtag << "Failed to read arm encoder data" << endl;
+    }
+
+    ret = ret && finger.getChainJoints(encs, joints);
+
+    //cout << fingerEncoders.toString() << endl;
+    Vector fingerEncoders;
+
+    ret = ret && getIndexFingerEncoder(fingerEncoders);
+    adjustMinMax(fingerEncoders[0], _minIndexProximal, _maxIndexProximal);
+    adjustMinMax(fingerEncoders[1], _minIndexMiddle, _maxIndexMiddle);
+    adjustMinMax(fingerEncoders[2], _minIndexDistal, _maxIndexDistal);
+
+
+
+    // Replace the joins with the encoder readings
+
+    joints[1] = 90 * (1 - (fingerEncoders[0] - _minIndexProximal) / (_maxIndexProximal - _minIndexProximal) );
+    joints[2] = 90 * (1 - (fingerEncoders[1] - _minIndexMiddle) / (_maxIndexMiddle - _minIndexMiddle) );
+    joints[3] = 90 * (1 - (fingerEncoders[2] - _minIndexDistal) / (_maxIndexDistal - _minIndexDistal) );
+
+    //Convert the joints to radians.
+    for (int j = 0; j < joints.size(); j++)
+        joints[j] *= M_PI/180;
+
+    yarp::sig::Matrix tipFrame = finger.getH(joints);
+    Vector tip_x = tipFrame.getCol(3);
+
+    retArmpPosition.resize(3);
+    retArmpPosition[0] = fingertipPosition[0] + tip_x[0];
+    retArmpPosition[1] = fingertipPosition[1] + tip_x[1];
+    retArmpPosition[2] = fingertipPosition[2] - tip_x[2];
+    //cout << "Arm pos: " << armPos.toString() << endl;
+    cout << "Ftp pos: " << tip_x.toString() << endl;
+    cout << "Ret pos: " << retArmpPosition.toString() << endl;
+
+    //_armCartesianCtrl->goToPoseSync(retArmpPosition, _desiredStartingOrientation);
+    //_armCartesianCtrl->waitMotionDone();
+
+    //_armCartesianCtrl->goToPoseSync(retArmpPosition, _desiredStartingOrientation);
+    //_armCartesianCtrl->waitMotionDone();
+
+    //Vector newFTpos;
+    //getIndexFingertipPosition(newFTpos);
+    //cout << "Desired: " << fingertipPosition.toString() << endl;
+    //cout << "Final :  " << newFTpos.toString() << endl;
+
+    return ret;
+
+    /*
+    // Get the current arm position
+
+    Vector armPos, armOrient;
+    Vector fingertipPos, fingertipOrient;
+
+    ret = ret && _armCartesianCtrl->getPose(armPos, armOrient);
+
+    // Get the curent fingertip position
+    ret = ret && getIndexFingertipPosition(fingertipPos);
+
+    //retArmpPosition = fingertipPosition - (armPos - fingertipPos);
+    retArmpPosition.resize(3);
+    retArmpPosition[0] = fingertipPosition[0] + (armPos[0] - fingertipPos[0]);
+    retArmpPosition[1] = fingertipPosition[1] + (armPos[1] - fingertipPos[1]);
+    retArmpPosition[2] = fingertipPosition[2] + (armPos[2] - fingertipPos[2]);
+    cout << "Arm pos: " << armPos.toString() << endl;
+    cout << "Ftp pos: " << fingertipPos.toString() << endl;
+    cout << "Ret pos: " << retArmpPosition.toString() << endl;
+
+    return false;*/
+
+    /*
+    // fingertipPosition is in the world coordinate
+    Vector armPos, armOrient;
+    // Get the arm position in the world coordinate
+    ret = ret && _armCartesianCtrl->getPose(armPos, armOrient);
+
+    // My own transformation
+    yarp::sig::Matrix T_rotoTrans(4,4);
+    yarp::sig::Matrix T_rotoTransInverse(4,4);
+
+    T_rotoTrans = yarp::math::axis2dcm(_desiredStartingOrientation);
+    //T_rotoTrans = yarp::math::axis2dcm(armOrient);
+    T_rotoTrans.setSubcol(armPos, 0,3);
+    T_rotoTransInverse = yarp::math::SE3inv(T_rotoTrans);
+
+    //cout << T_rotoTransInverse.toString() << endl;
+
+    cout << "Fingertip position: " << fingertipPosition.toString() << endl;
+    //cout << "Fingertip: " << fingertipPosition.toString() << endl;
+    fingertipPosition.resize(4);
+    fingertipPosition[3] = 1;
+    //cout << "Fingertip: " << fingertipPosition.toString() << endl;
+
+    Vector retMat = yarp::math::operator *(fingertipPosition,T_rotoTransInverse);
+    retArmpPosition = retMat.subVector(0,2);
+
+    //cout << retMat.toString() << endl;
+
+    //cout << "Fingertip position: " << fingertipPosition.toString() << endl;
+    cout << "Correstponding arm: " << retArmpPosition.toString() << endl;
+    return ret;
+    */
+}
+
+/*
 bool ObjectFeaturesThread::getFingertipPose(yarp::sig::Vector &pos, yarp::sig::Vector &orient)
 {
     bool ret = true;
@@ -513,8 +600,6 @@ bool ObjectFeaturesThread::getFingertipPose(yarp::sig::Vector &pos, yarp::sig::V
 
     finger.getChainJoints(encs, joints);
 
-    //cout << "Joints: " << joints.toString() << endl;
-
     //Convert the joints to radians.
     for (int j = 0; j < joints.size(); j++)
         joints[j] *= M_PI/180;
@@ -524,31 +609,13 @@ bool ObjectFeaturesThread::getFingertipPose(yarp::sig::Vector &pos, yarp::sig::V
     yarp::sig::Matrix tipFrame = finger.getH(joints);
 
 
-    //cout << "Tip frame:" << endl << tipFrame.toString() << endl;
-
-
     Vector tip_x = tipFrame.getCol(3);
     Vector tip_o = yarp::math::dcm2axis(tipFrame);
-
-
-
-    //yarp::sig::Matrix h0 = finger.getH0();
-
-    //cout << "H0" << endl << h0.toString() << endl;
-
-
 
     Vector armPos, armOrient;
 
     _armCartesianCtrl->getPose(armPos, armOrient);
 
-
-
-
-    //////////////////
-    //cout << "Tip" << tip_x.toString() << endl;
-    // I should have a mutex here specsific for the carteria view!
-    //_armPoseMutex.lock();
 
     if(!_armCartesianCtrl->attachTipFrame(tip_x, tip_o))
         ret = false;
@@ -565,19 +632,6 @@ bool ObjectFeaturesThread::getFingertipPose(yarp::sig::Vector &pos, yarp::sig::V
     if(!_armCartesianCtrl->removeTipFrame())
         ret = false;
 
-    //_armPoseMutex.unlock();
-
-    //cout << "A Pos: " << armPos.toString() << endl;
-    //cout << "T Pos: " << tip_x.toString() << endl;
-
-    //cout << "F Pos: " << pos.toString() << endl;
-
-
-
-
-
-
-
     // My own transformation
 
     yarp::sig::Matrix T_rotoTrans(4,4);
@@ -589,11 +643,11 @@ bool ObjectFeaturesThread::getFingertipPose(yarp::sig::Vector &pos, yarp::sig::V
 
     Vector retMat = yarp::math::operator *(T_rotoTrans, tip_x);
 
-    cout << "F Pos: " << retMat.toString() << endl;
+    cout << "Finger Position: " << retMat.toString() << endl;
 
     return ret;
 }
-
+*/
 /// Urgh
 
 void ObjectFeaturesThread::writeToFingerController(std::string command)
@@ -666,22 +720,30 @@ void ObjectFeaturesThread::setHomePose ( Vector& pos, Vector& orient )
 
 void ObjectFeaturesThread::setEndPose ( Vector& pos, Vector& orient )
 {
+    if(pos[0] > _robotReachableSpace.disasterX)
+    {
+        cerr << _dbgtag << "Invalid x position" << endl;
+        return;
+    }
     _desiredEndPosition = pos;
     _desiredEndOrientation = orient;
     _desiredEndPose_isValid = true;
+    updateRobotReachableSpace();
     printPose(pos, orient);
 }
 
 void ObjectFeaturesThread::setStartingPose ( Vector& pos, Vector& orient )
 {
-    cout << "Starting pose set" << endl;
+    if(pos[0] > _robotReachableSpace.disasterX)
+    {
+        cerr << _dbgtag << "Invalid x position" << endl;
+        return;
+    }
+    //cout << "Starting pose set" << endl;
     _desiredStartingPosition = pos;
     _desiredStartingOrientation = orient;
-    _zMax = pos[2] + 0.04;
-    _zMin = pos[2] - 0.04;
-    cout << "Max: " << _zMax << " Min: " << _zMin << endl;
-
     _desiredStartingPose_isValid = true;
+    updateRobotReachableSpace(); // This must be done after isValid is set to true;
     printPose(pos, orient);
 
 }
@@ -696,14 +758,19 @@ bool ObjectFeaturesThread::getDesiredEndPose ( Vector& pos, Vector& orient )
     return _desiredEndPose_isValid;
 }
 
-bool ObjectFeaturesThread::setWayPoint ( Vector pos, Vector orient )
+bool ObjectFeaturesThread::moveArmToPosition(yarp::sig::Vector pos, yarp::sig::Vector orient)
 {
+    bool ret;
+    ret =  _armCartesianCtrl->goToPoseSync(pos, orient);
+    _armCartesianCtrl->waitMotionDone(0.1, 5);
+    return ret;
 
+}
 
-
-    _wayPoint_isValid = true;
-
-    if(pos[0] >= 10.0/1000)
+bool ObjectFeaturesThread::setWayPointGP(yarp::sig::Vector pos, yarp::sig::Vector orient)
+{
+    // Breaching this will be disasterous for the robot!
+    if(pos[0] >= _robotReachableSpace.disasterX)
     {
         cerr << _dbgtag << "Cannot have positive x-axis value" << endl;
         _wayPoint_isValid = false;
@@ -711,62 +778,89 @@ bool ObjectFeaturesThread::setWayPoint ( Vector pos, Vector orient )
     }
 
 
+  pos[2] = _desiredStartingPosition[2];
+  setWayPoint (pos, orient );
+  _wayPoint_isValid = true;
+
+  return true;
+}
+
+bool ObjectFeaturesThread::setWayPoint ( Vector pos, Vector orient )
+{
 
 
-    // TODO: in a config file
-    double minX;
-    double maxX;
-    minX = _desiredStartingPosition[0] - 200.0/1000;
-    maxX = _desiredStartingPosition[0] + 20.0/1000;
 
-    if(pos[0] < minX || pos[0] > maxX)
+    _wayPoint_isValid = true;
+
+    // Breaching this will be disasterous for the robot!
+    if(pos[0] >= _robotReachableSpace.disasterX)
     {
-        cerr << _dbgtag << "X position outside allowable range ( " << minX << "--" << maxX << "): " << pos[0] << endl;
+        cerr << _dbgtag << "Cannot have positive x-axis value" << endl;
         _wayPoint_isValid = false;
-        return _wayPoint_isValid;
+        return false;
     }
 
-    double startY;
-    double endY;
-
-    startY = _desiredStartingPosition[1] + 0.02 * _desiredStartingPosition[1] ;
-    endY = _desiredEndPosition[1] + 0.02 * _desiredEndPosition[1];
-    double range = fabs(endY - startY);
-
-    if(fabs(pos[1] - startY) > range || fabs(pos[1] - endY) > range)
+    if(pos[0] < _robotReachableSpace.minX )
     {
-        cerr << _dbgtag << "Y position outside allowable range ( " << startY << "--" << endY << "): " << pos[1] << endl;
-        _wayPoint_isValid = false;
-        return _wayPoint_isValid;
+        cerr << _dbgtag << "X position outside allowable range ( "
+             << _robotReachableSpace.minX << ", "
+             <<  _robotReachableSpace.maxX << "): " << pos[0] << endl;
+
+        pos[0] = _robotReachableSpace.minX;
+        _wayPoint_isValid =  false;
+        //return _wayPoint_isValid;
     }
-    double minZ = _zMin;
-    double maxZ =  _zMax;
+
+    if( pos[0] > _robotReachableSpace.maxX)
+    {
+        cerr << _dbgtag << "X position outside allowable range ( "
+             << _robotReachableSpace.minX << ", "
+             <<  _robotReachableSpace.maxX << "): " << pos[0] << endl;
+
+        pos[0]  = _robotReachableSpace.maxX;
+        _wayPoint_isValid = false;
+        //return _wayPoint_isValid;
+    }
 
 
+    if(pos[1] < _robotReachableSpace.minY )
+    {
+        cerr << _dbgtag << "Y position outside allowable range ( "
+             << _robotReachableSpace.minY << ", "
+             <<  _robotReachableSpace.maxY << "): " << pos[1] << endl;
 
-    //if(_wayPointPos[2] == max || _wayPointPos[2] == min)
-    //{
-    //    _wayPoint_isValid = false;
-    //    return;
+        pos[1] = _robotReachableSpace.minY;
+        _wayPoint_isValid = false;
 
-    //}
+    }
 
-    if(pos[2] < minZ)
+    if( pos[1] > _robotReachableSpace.maxY)
+    {
+        cerr << _dbgtag << "Y position outside allowable range ( "
+             << _robotReachableSpace.minY << ", "
+             <<  _robotReachableSpace.maxY << "): " << pos[1] << endl;
+
+        pos[1] = _robotReachableSpace.maxY;
+        _wayPoint_isValid = false;
+        //return _wayPoint_isValid;
+    }
+
+    if(pos[2] < _robotReachableSpace.minZ)
     {
 
-        cerr << _dbgtag << "Exceeded the z-axis limit ( " << minZ << " ): " << pos[2] << endl;
-        pos[2] = minZ;
+        cerr << _dbgtag << "Exceeded the z-axis limit ( " << _robotReachableSpace.minZ << " ): " << pos[2] << endl;
+        pos[2] = _robotReachableSpace.minZ;
 
-        if(_wayPointPos[2] == minZ)
+        if(_wayPointPos[2] == _robotReachableSpace.minZ)
             _wayPoint_isValid = false;
     }
 
-    if(pos[2] > maxZ)
+    if(pos[2] > _robotReachableSpace.maxZ)
     {
-        cerr << _dbgtag << "Exceeded the z-axis limit ( " << maxZ << " ): " << pos[2] << endl;
-        pos[2] = maxZ;
+        cerr << _dbgtag << "Exceeded the z-axis limit ( " << _robotReachableSpace.maxZ << " ): " << pos[2] << endl;
+        pos[2] = _robotReachableSpace.maxZ;
 
-        if(_wayPointPos[2] == maxZ)
+        if(_wayPointPos[2] == _robotReachableSpace.maxZ)
             _wayPoint_isValid = false;
     }
 
@@ -804,6 +898,16 @@ bool ObjectFeaturesThread::getStartingPose ( Vector& pos, Vector& orient )
 
 }
 
+bool ObjectFeaturesThread::getEndingPose( Vector& pos, Vector& orient )
+{
+    if(_desiredEndPose_isValid)
+    {
+        pos = _desiredEndPosition;
+        orient = _desiredEndOrientation;
+    }
+    return _desiredEndPose_isValid;
+
+}
 void ObjectFeaturesThread::printPose ( Vector& pos, Vector& orient )
 {
     cout << "Position: " << pos.toString() << endl;
@@ -924,6 +1028,7 @@ bool ObjectFeaturesThread::prepGP()
 {
 
     bool ret = true;
+
     _objectSurfaceModelGP->loadContactData("blindSearch"); //TODO: put this in a config file
     _objectSurfaceModelGP->trainModel();
     _objectSurfaceModelGP->updateSurfaceEstimate();
@@ -1048,8 +1153,8 @@ ObjectFeaturesThread::ObjectFeaturesThread ( int period, ResourceFinder rf ) : R
     _proximalJointAngle = 0;
     _proximalJoint_index = 11;
 
-    _zMin = 0;
-    _zMax = 0;
+    //_zMin = 0;
+    //_zMax = 0;
 
     // TODO: Put it in a config file!
     _maxIndexProximal = 235;
@@ -1059,14 +1164,31 @@ ObjectFeaturesThread::ObjectFeaturesThread ( int period, ResourceFinder rf ) : R
     _maxIndexDistal = 250;
     _minIndexDistal = 24;
 
+
+
     ////////////// read the parameters from the config file ///////////////
     this->readParameters();
+
+
 
 
 }
 
 bool ObjectFeaturesThread::readParameters()
 {
+
+    ///// Set a safe workspace for the robot
+    //// This get updated when I read the
+    /// Starting and ending positions
+
+    _robotReachableSpace.minX = -0.4;
+    _robotReachableSpace.maxX = -0.2;
+    _robotReachableSpace.minY =  0; // This works for both arms
+    _robotReachableSpace.maxY =  0; // This works for both arms
+    _robotReachableSpace.minZ = -0.1;
+    _robotReachableSpace.maxZ =  0.1;
+    _robotReachableSpace.disasterX = -0.2; // Beyond this point you will break the hand
+
 
     _moduleName = _rf.check("moduleName", Value("object-exploration-server"),
                             "module name (string)").asString().c_str();
@@ -1117,9 +1239,9 @@ bool ObjectFeaturesThread::readParameters()
 
         setStartingPose(pos, orient);
 
-        //_desiredStartingPose_isValid = true;
+        _desiredStartingPose_isValid = true;
     }
-
+ /////////////////////////// Naiwd fix this! ////////
     if(endPose->size() < 7)
         cout << "End pose is invalid!" << endl;
     else
@@ -1128,7 +1250,9 @@ bool ObjectFeaturesThread::readParameters()
             _desiredEndPosition[i] = endPose->get(i).asDouble();
         for(int i = 3; i < 7; i++)
             _desiredEndOrientation[i-3] = endPose->get(i).asDouble();
+
         _desiredEndPose_isValid = true;
+         updateRobotReachableSpace();
     }
 
     cout << "Read the following configuration from the file:" << endl;
@@ -1140,6 +1264,7 @@ bool ObjectFeaturesThread::readParameters()
 
     if(_desiredStartingPose_isValid)
     {
+
         cout << "Starting position: " << _desiredStartingPosition.toString() << endl;
         cout << "Starting orientation: " << _desiredStartingOrientation.toString() << endl;
     }
@@ -1161,6 +1286,36 @@ bool ObjectFeaturesThread::readParameters()
     else
         _proximalJoint_index = 9;
 
+
+
+}
+
+void ObjectFeaturesThread::updateRobotReachableSpace()
+{
+    if(_desiredStartingPose_isValid) // && _desiredEndPose_isValid)
+    {
+        _robotReachableSpace.minX = _desiredStartingPosition[0] - 0.20; //Maximum width 13 cm + 2 cm leeway
+        _robotReachableSpace.maxX = _desiredStartingPosition[0] + 0.02;
+        _robotReachableSpace.minZ = _desiredStartingPosition[2] - 0.04;
+        _robotReachableSpace.maxZ = _desiredStartingPosition[2] + 0.04;
+
+    }
+
+    if(_desiredStartingPose_isValid && _desiredEndPose_isValid)
+    {
+        if(_desiredStartingPosition[1] < _desiredEndPosition[1])
+        {
+            _robotReachableSpace.minY = _desiredStartingPosition[1] - 0.04;
+            _robotReachableSpace.maxY = _desiredEndPosition[1] + 0.04;
+
+        }
+        else
+        {
+            _robotReachableSpace.minY = _desiredEndPosition[1] - 0.04;
+            _robotReachableSpace.maxY = _desiredStartingPosition[1] + 0.04;
+
+        }
+    }
 }
 
 const string& ObjectFeaturesThread::getArm()

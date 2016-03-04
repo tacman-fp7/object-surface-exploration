@@ -126,6 +126,7 @@ ExploreObject::~ExploreObject()
 bool ExploreObject::goToStartingPose()
 {
     Vector pos, orient;
+    Vector armPos, armOrient;
     pos.resize(3);
     orient.resize(4);
     if(_objectFeaturesThread->getStartingPose(pos, orient))
@@ -147,6 +148,10 @@ bool ExploreObject::goToStartingPose()
        _armJointPositionController->positionMove(armJoints);
 
 */
+        _objectFeaturesThread->getArmPose(armPos, armOrient);
+        armPos[2] = pos[2];
+        _objectFeaturesThread->moveArmToPosition(armPos, armOrient);
+
         _armCartesianController->goToPoseSync(pos, orient);
         return true;
     }
@@ -160,11 +165,16 @@ bool ExploreObject::goToStartingPose()
 bool ExploreObject::goToHomePose()
 {
     Vector pos, orient;
+    Vector armPos, armOrient;
     pos.resize(3); // x,y,z position
     orient.resize(4); // x,y,z,w prientation
 
     if(_objectFeaturesThread->getHomePose(pos, orient))
     {
+        _objectFeaturesThread->getArmPose(armPos, armOrient);
+        armPos[2] = pos[2];
+        _objectFeaturesThread->moveArmToPosition(armPos, armOrient);
+
         _armCartesianController->goToPoseSync(pos, orient);
         return true;
     }
@@ -174,10 +184,15 @@ bool ExploreObject::goToHomePose()
 bool ExploreObject::goToEndPose()
 {
     Vector pos, orient;
+    Vector armPos, armOrient;
     pos.resize(3); // x,y,z position
     orient.resize(4); // x,y,z,w prientation
     if(_objectFeaturesThread->getDesiredEndPose(pos, orient))
     {
+        _objectFeaturesThread->getArmPose(armPos, armOrient);
+        armPos[2] = pos[2];
+        _objectFeaturesThread->moveArmToPosition(armPos, armOrient);
+
         _armCartesianController->goToPoseSync(pos, orient);
         return true;
     }
@@ -266,8 +281,14 @@ bool ExploreObject::startExploringGP()
             return false;
         }
 
-        _objectFeaturesThread->prepGP();
+       /* Vector startingPos, endingPos, startingOrient, endingOrient;
+        _objectFeaturesThread->getStartingPose(startingPos, startingOrient);
+        _objectFeaturesThread->getEndingPose(endingPos, endingOrient);
+        _exploreObjectGP_thread->initialiseGP(startingPos, startingOrient,
+                                              endingPos, endingOrient);
+        //_objectFeaturesThread->prepGP();
 
+        */
 
         if(!_exploreObjectGP_thread->start())
             ret = false;

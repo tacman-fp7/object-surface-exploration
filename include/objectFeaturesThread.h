@@ -36,6 +36,19 @@ using yarp::os::Mutex;
 using std::string;
 using yarp::os::RpcClient;
 
+struct reachableSpace
+{
+    double minX;
+    double maxX;
+    double minY;
+    double maxY;
+    double minZ;
+    double maxZ;
+    double disasterX;
+};
+
+typedef struct reachableSpace reachableSpace;
+
 class ObjectFeaturesThread: public RateThread
 {
 private:
@@ -57,9 +70,11 @@ public:
     void setStartingPose(Vector& pos, Vector& orient);
     bool getDesiredEndPose(Vector& pos, Vector& orient);
     bool getStartingPose(Vector& pos, Vector& orient);
+    bool getEndingPose(Vector& pos, Vector& orient);
     void setHomePose(Vector& pos, Vector& orient);
     bool getHomePose(Vector& pos, Vector& orient);
     bool setWayPoint(Vector pos, Vector orient);
+    bool setWayPointGP(Vector pos, Vector orient);
     bool getWayPoint(Vector& pos, Vector& orient, bool invalidateWayPoint = true);
     bool readParameters();
     const string& getArm();
@@ -80,8 +95,10 @@ public:
     bool prepHand();
     bool maintainContactPose();
     void adjustIndexFinger();
+    bool getIndexFingerEncoder(Vector &encoderValues);
     bool getIndexFingertipPosition(Vector &position);
     bool getIndexFingertipPosition(Vector &position, Vector &fingerEncoders);
+    bool indexFinger2ArmPosition(Vector &fingertipPosition, Vector &retArmpPosition);
     bool changeOrient(double orient);
     void publishContactState(int contactState);
     void publishFingertipPosition(Vector pos);
@@ -89,7 +106,7 @@ public:
     bool openIndexFinger();
     bool prepGP();
     void calibrateHand();
-    bool getIndexFingerEncoder(Vector &encoderValues);
+    bool moveArmToPosition(Vector pos, Vector orient);
     bool fingerMovePosition(int joint, double angle, double speed = 10);
     void updateContactState(int contactState){_contactState = contactState;
                                              publishContactState(_contactState);}
@@ -110,11 +127,13 @@ public:
 
         return ret;
     }
-
-    bool getFingertipPose(Vector& pos, Vector& orient);
+    //bool getFingertipRelativeToHand(Vector& pos, Vector& orient);
+    //bool getFingertipPose(Vector& pos, Vector& orient);
 
 private:
     void printPose(Vector& pos, Vector& prient);
+    void updateRobotReachableSpace();
+
 protected:
     ResourceFinder _rf;
 
@@ -154,8 +173,8 @@ protected:
     bool _desiredStartingPose_isValid;
     Vector _desiredStartingPosition;
     Vector _desiredStartingOrientation;
-    double _zMax;
-    double _zMin;
+    //double _zMax;
+    //double _zMin;
 
     bool _desiredEndPose_isValid;
     Vector _desiredEndPosition;
@@ -214,6 +233,10 @@ protected:
 
     ////
     objectExploration::SurfaceModelGP *_objectSurfaceModelGP;
+
+
+    reachableSpace _robotReachableSpace;
+
 
 };
 
