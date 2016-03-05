@@ -29,8 +29,8 @@ while(true)
     y = modelInput(:, 2);% - min(inputTesting(:, 2));
     
     fprintf('Xmin: %f, Xmax: %f, Ymin: %f, Ymax: %f\n',...
-    min(x), max(x), min(y), max(y));
-
+        min(x), max(x), min(y), max(y));
+    
     xlin = linspace(min(x), max(x), nPoints);
     ylin = linspace(min(y), max(y), nPoints);
     [XT,YT] = meshgrid(xlin,ylin);
@@ -40,6 +40,11 @@ while(true)
     
     figure(1)
     mesh(XT, YT, ZT);
+%     set(gca, 'fontname', 'Bitstream Charter','fontsize', 35);
+%     xlabel('Width [mm]','fontsize', 35, 'interpreter', 'tex', 'verticalAlignment', 'bottom');
+%     ylabel('Length [mm]','fontsize', 35, 'interpreter', 'tex', 'verticalAlignment', 'top');
+%     zlabel('Height [mm]','fontsize', 35, 'interpreter', 'tex', 'verticalAlignment', 'bottom');
+%     title('Surface', 'fontsize', 35, 'interpreter', 'tex');
     %view(viewVars);
     
     hold on
@@ -49,6 +54,11 @@ while(true)
     
     figure(2)
     mesh(XT,YT, ZV);
+%     set(gca, 'fontname', 'Bitstream Charter','fontsize', 35);
+%     xlabel('Width [mm]','fontsize', 35, 'interpreter', 'tex', 'verticalAlignment', 'bottom');
+%     ylabel('Length [mm]','fontsize', 35, 'interpreter', 'tex', 'verticalAlignment', 'top');
+%     zlabel('Variance [mm]','fontsize', 35, 'interpreter', 'tex', 'verticalAlignment', 'bottom');
+%     title('Variance', 'fontsize', 35, 'interpreter', 'tex');
     %view(viewVars);
     
     

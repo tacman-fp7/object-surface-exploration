@@ -177,8 +177,9 @@ bool ObjectFeaturesThread::prepHand()
     ret = fingerMovePosition(7, 0);
     ret = fingerMovePosition(9, 30);
     ret = fingerMovePosition(10, 170);
-    ret = fingerMovePosition(11, 10);
-    ret = fingerMovePosition(12, 70);
+    setProximalAngle(40);
+    //ret = fingerMovePosition(11, 10);
+    //ret = fingerMovePosition(12, 70);
 
 
 
@@ -228,7 +229,7 @@ bool ObjectFeaturesThread::setProximalAngle(double angle){
 
         ret = _armJointModeCtrl->setPositionMode(11);
         ret = _armJointPositionCtrl->positionMove(_proximalJoint_index, angle);
-
+        _armJointPositionCtrl->positionMove(12, 90-angle);
     }
     else
     {
@@ -1296,8 +1297,8 @@ void ObjectFeaturesThread::updateRobotReachableSpace()
     {
         _robotReachableSpace.minX = _desiredStartingPosition[0] - 0.20; //Maximum width 13 cm + 2 cm leeway
         _robotReachableSpace.maxX = _desiredStartingPosition[0] + 0.02;
-        _robotReachableSpace.minZ = _desiredStartingPosition[2] - 0.04;
-        _robotReachableSpace.maxZ = _desiredStartingPosition[2] + 0.04;
+        _robotReachableSpace.minZ = _desiredStartingPosition[2] - 0.05;
+        _robotReachableSpace.maxZ = _desiredStartingPosition[2] + 0.05;
 
     }
 

@@ -3,7 +3,7 @@
 #include <yarp/os/Time.h>
 
 #define DEBUG_LEVEL 1
-#define FORCE_TH 0.8
+#define FORCE_TH 1.2
 
 namespace objectExploration
 {
@@ -104,6 +104,8 @@ void GPExplorationThread::maintainContact()
     Vector fingertipPosition, fingertipOrientation;
     _objectFeatures->getIndexFingertipPosition(fingertipPosition);
     // _objectFeatures->getFingertipPose(fingertipPosition, fingertipOrientation);
+    //cout << "Position of the fingertip: " << fingertipPosition.toString();
+
     _surfaceModel->addContactPoint(fingertipPosition);
 
     // Maintain contact
@@ -126,6 +128,7 @@ bool GPExplorationThread::initialiseGP(Vector startingPos, Vector startingOrient
     makeSingleContact(pos, orient);
 
     pos[0] -= 60.0/1000;
+
     makeSingleContact(pos, orient);
 
     pos = endingPos;
@@ -162,6 +165,8 @@ bool GPExplorationThread::initialiseGP(Vector startingPos, Vector startingOrient
 
 void GPExplorationThread::makeSingleContact(Vector pos, Vector orient)
 {
+    //Vector armPos;
+     //_objectFeatures->indexFinger2ArmPosition(pos, armPos);
     _objectFeatures->setWayPointGP(pos, orient);
     _contactState = APPROACH_OBJECT;
 
@@ -217,7 +222,7 @@ void GPExplorationThread::makeSingleContact(Vector pos, Vector orient)
         }
     }
 
-    Vector armPos, armOrient;
+    Vector  armPos, armOrient;
     Vector startingPos, startingOrient;
     _objectFeatures->prepHand();
     _objectFeatures->getArmPose(armPos, armOrient);

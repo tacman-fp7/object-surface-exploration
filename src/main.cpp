@@ -10,6 +10,7 @@
 #include <exploreObject.h>
 #include <surfaceModelGP.h>
 #include <yarp/os/Time.h>
+#include <gurls++/gmat2d.h>
 
 using namespace yarp::os;
 using namespace std;
@@ -31,6 +32,26 @@ int main(int argc, char *argv[])
   rf.configure(argc, argv);
 
 
+  /////////////////////////////////////
+  /// \brief surfModel
+  ///
+
+ /* gurls::gMat2D <double> a;
+  for(int i = 0; i < 10; i++){
+  a.resize(a.rows() +1,2);
+  a(a.rows() - 1, 0) = i;
+  a(a.rows() - 1, 1) = i+10;
+  }
+
+  for(int i = 0; i < a.rows(); i++){
+      a(i,0) = i; a(i,1) = i+10;
+      cout << a(i,0) << ", " << a(i, 1) << endl;
+  }
+
+  return 0;
+
+*/
+          ////////
   objectExploration::SurfaceModelGP surfModel("hut");
 
   surfModel.loadContactData("blindSearch");

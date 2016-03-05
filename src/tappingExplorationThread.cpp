@@ -7,7 +7,7 @@
 #include <yarp/os/Value.h>
 
 #define DEBUG_LEVEL 1
-#define FORCE_TH 0.8
+#define FORCE_TH 1.2
 namespace objectExploration
 {
 
@@ -395,10 +395,12 @@ void TappingExplorationThread::approachObject()
     if(_contactState == APPROACH_OBJECT)
     {
         /// Tell the finger controller to approach the object
-        _curProximal = 25;
+        _curProximal = 60;
+        _curDistal = 90 - _curProximal;
         logFingertipControl();
-        _objectFeatures->fingerMovePosition(11, _curProximal, 30);
 
+        _objectFeatures->fingerMovePosition(11, _curProximal, 30);
+        _objectFeatures->fingerMovePosition(12, _curDistal, 30);
 
 
         // _objectFeatures->writeToFingerController("task add appr");

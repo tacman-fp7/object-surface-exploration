@@ -7,6 +7,7 @@
 #include <gurls++/wrapper.h>
 #include <gurls++/gmat2d.h>
 #include <yarp/sig/Vector.h>
+#include <vector>
 
 
 
@@ -29,14 +30,14 @@ public:
     bool saveModel(); //to the disk
     bool updateModel();
     void saveModelOutput();
-    bool updateSurfaceEstimate(const unsigned int nGrid = 120, const double offset = 0/1000);
+    bool updateSurfaceEstimate(const unsigned int nGrid = 120, const double offset = 5/1000);
     //bool saveMeshCSV();
 
     void loadContactData(const std::string type);
-    void addContactPoint(const Vector &fingertipPosition);
+    void addContactPoint(const Vector fingertipPosition);
     void addContactPoint(gVec<double> posXY, gVec<double> posZ);
     void saveContactPoints();
-    void setBoundingBox(const unsigned int nPoints = 120, const double offset = 0/1000);
+    void setBoundingBox(const unsigned int nPoints = 120, const double offset = 5/1000);
 
     bool getMaxVariancePose(Vector &maxVariancePos);
 
@@ -47,6 +48,7 @@ private:
     gMat2D<double>* eval(const gMat2D<double> &X, gMat2D<double> &vars, gurls::GurlsOptionsList *opt);
     bool getMaxVariancePose(const gMat2D <double> &positions, const gMat2D <double> &variance,
                             const gMat2D <double> &means, Vector &maxVariancePos);
+     void printTrainingData();
 
 
 private:
@@ -61,5 +63,10 @@ private:
     string _dbgtg;
     bool _isValidModel;
     gMat2D < double > _inputTesting;
+    std::vector <double> _xPoints;
+    std::vector <double> _yPoints;
+    std::vector <double> _zPoints;
+
+
 }; // end of class
 } // end of namespace objectExploration

@@ -22,6 +22,7 @@ SurfaceModelGP::SurfaceModelGP(const std::string objectName)
     _opt = NULL;
     _isValidModel = false;
     _isValidMaxVar = false;
+    _inputTraining.resize(0,2);
 
 }
 
@@ -46,10 +47,11 @@ void SurfaceModelGP::loadContactData(const std::string type)
 
 }
 
-void SurfaceModelGP::addContactPoint(const yarp::sig::Vector &fingertipPosition)
+void SurfaceModelGP::addContactPoint(const Vector fingertipPosition)
 {
     gVec<double> posXY;
     gVec<double> posZ;
+
 
     posXY.resize(2);
     posZ.resize(1);
@@ -64,16 +66,25 @@ void SurfaceModelGP::addContactPoint(const yarp::sig::Vector &fingertipPosition)
 void SurfaceModelGP::addContactPoint(gVec<double> posXY, gVec<double> posZ)
 {
     // Add the new point to the matrix
-    cout << "Adding a new contact point: " << _inputTraining.rows() << endl;
+    cout << "Adding a new contact point: " << _inputTraining.rows() << ", " << _inputTraining.cols() << endl;
+    cout << posXY.at(0) << ", " << posXY.at(1) << " " << posZ.at(0) << endl;
+    //cout << "Size: " << posXY.getSize() << endl;
+    //cout << "Data: " << *(posXY.getData()) << "," << *(posXY.getData()+1) << endl;
 
-    _inputTraining.resize(_inputTraining.rows() + 1, 2);// _inputTraining.cols());
+    _inputTraining.resize(_inputTraining.rows() + 1, 2);
     _outputTraining.resize(_outputTraining.rows() + 1, 1);//_outputTraining.cols());
     _inputTraining.setRow(posXY, _inputTraining.rows()-1);
     _outputTraining.setRow(posZ, _outputTraining.rows()-1);
+     //_inputTraining[_inputTraining.rows() -1].at(0) = posXY.at(0);
+     // _inputTraining[_inputTraining.rows() -1].at(0) = posXY.at(1);
+    //cout << "T: " << _inputTraining[_inputTraining.rows() -1].at(0) << ", "
+    //     << _inputTraining[_inputTraining.rows() -1].at(1) << endl;
 
-    //_inputTraining.add(posXY);
-    //_outputTraining.add(posZ);
-    cout << "After: " << _inputTraining.rows() << endl;
+    _xPoints.push_back(posXY.at(0));
+    _yPoints.push_back(posXY.at(1));
+    _zPoints.push_back(posZ.at(0));
+
+    printTrainingData();
 
 
 }
@@ -194,6 +205,21 @@ bool SurfaceModelGP::trainModel(){
     //opt->save(opt->getName());
     //cout << "After: " << endl << opt->toString();
     return ret;
+}
+
+void SurfaceModelGP::printTrainingData()
+{
+
+    //_inputTraining =  gMat2D<double>::zeros(_inputTesting.rows(), 2);
+    for(int i =0; i < _inputTraining.rows(); i++ )
+    {
+        _inputTraining(i, 1) =  _yPoints.at(i);
+        //cout << "G: " << _inputTraining[i].at(0) << ", "   << _inputTraining[i].at(1) << ", "  << _outputTraining[i].at(0) << endl;
+
+        //cout << "V: " << _xPoints.at(i)  << ", " << _yPoints.at(i)  << ", " << _zPoints.at(i) << endl;
+    }
+
+
 }
 
 void SurfaceModelGP::setBoundingBox(const unsigned int nPoints, const double offset)
@@ -331,6 +357,7 @@ bool SurfaceModelGP::updateSurfaceEstimate(const unsigned int nPoints, const dou
     means->saveCSV(_objectName + "_model_output_GP.csv");
     vars.saveCSV(_objectName + "_model_variance_GP.csv");
 
+    saveContactPoints();
 
     std::ofstream maxVarFile;
     maxVarFile.open( (_objectName + "_model_nextPoint.csv").c_str());
@@ -344,6 +371,11 @@ bool SurfaceModelGP::updateSurfaceEstimate(const unsigned int nPoints, const dou
  //   delete[] ylin;
 
 }
+
+//void SurfaceModelGP::saveModelOutput()
+//{
+
+//}
 
 bool SurfaceModelGP::getMaxVariancePose(yarp::sig::Vector &maxVariancePos)
 {
