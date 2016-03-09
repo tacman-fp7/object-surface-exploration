@@ -146,20 +146,28 @@ bool GPExplorationThread::initialiseGP(Vector startingPos, Vector startingOrient
         }
         pos[0] += xSteps;
         pos[1] = startingPos[1];
-        /*for (int i = 0; i < nYGrid; i++)
-        {
 
-            makeSingleContact(pos, orient);
-            pos[1] -= ySteps;
-        }
-        pos[0] += xSteps;
-
-        */
     }
 
 
+    double xMin = startingPos[0];
+    double xMax = startingPos[0] + startingPos[0] + xSteps * nXGrid;
+    double yMin, yMax;
+
+    if(startingPos[1] < endingPos[1])
+    {
+        yMin = startingPos[1];
+        yMax = endingPos[1];
+    }
+    else
+    {
+        yMin = endingPos[1];
+        yMax = startingPos[1];
+    }
+
     _surfaceModel->trainModel();
-    _surfaceModel->setBoundingBox();
+    //_surfaceModel->setBoundingBox(xMin, xMax, yMin, yMax, 120, 10.0/1000);
+    _surfaceModel->setBoundingBox(120, 10.0/1000);
     _surfaceModel->updateSurfaceEstimate();
 
 
@@ -228,7 +236,12 @@ void GPExplorationThread::makeSingleContact(Vector pos, Vector orient)
 
     Vector  armPos, armOrient;
     Vector startingPos, startingOrient;
-    _objectFeatures->prepHand();
+    //_objectFeatures->prepHand();
+    _curProximal = 10;
+    _curDistal = 90 - _curProximal;
+    logFingertipControl();
+
+    _objectFeatures->setProximalAngle(_curProximal);
     _objectFeatures->getArmPose(armPos, armOrient);
     _objectFeatures->getStartingPose(startingPos, startingOrient);
 
@@ -248,7 +261,11 @@ void GPExplorationThread::setWayPoint_GP()
     Vector armPos;
     bool ret;
 
-    _objectFeatures->prepHand();
+    _curProximal = 10;
+    _curDistal = 90 - _curProximal;
+    _objectFeatures->setProximalAngle(_curProximal);
+
+    //_objectFeatures->prepHand();
     while(!_objectFeatures->checkOpenHandDone() && !isStopping())
         ;
     // Get the valid point from object features

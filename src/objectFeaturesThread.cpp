@@ -166,9 +166,11 @@ bool ObjectFeaturesThread::prepHand()
     ret = openHand();
 
     ret = fingerMovePosition(7, 0);
-    ret = fingerMovePosition(9, 30);
-    ret = fingerMovePosition(10, 170);
-    setProximalAngle(30);
+    //ret = fingerMovePosition(9, 30);
+    //ret = fingerMovePosition(10, 170);
+    ret = fingerMovePosition(9,0); // with idle thumb position
+    ret = fingerMovePosition(10, 65);
+    setProximalAngle(10);
     //ret = fingerMovePosition(11, 10);
     //ret = fingerMovePosition(12, 70);
 
@@ -1002,14 +1004,14 @@ bool ObjectFeaturesThread::threadInit()
         _isExplorationValid = false;
     }
 
-    if(!Network::connect("/" + _moduleName + "/" + _arm + "_hand/" + _whichFinger + "/command:o",
+    /*if(!Network::connect("/" + _moduleName + "/" + _arm + "_hand/" + _whichFinger + "/command:o",
                          _fingerControllerPortName))
     {
         cerr << _dbgtag << "Failed to connect" << endl;
         cerr << "/" + _moduleName + "/" + _arm + "_hand/" + _whichFinger + "/command:o" << endl;
         cerr << _fingerControllerPortName << endl << endl;
         _isExplorationValid = false;
-    }
+    } */
 
 
     /////////////////////////////////////////

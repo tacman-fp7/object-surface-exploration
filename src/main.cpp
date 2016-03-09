@@ -52,9 +52,9 @@ int main(int argc, char *argv[])
 
 */
           ////////
-  objectExploration::SurfaceModelGP surfModel("hut");
+ // objectExploration::SurfaceModelGP surfModel("hut");
 
-  surfModel.loadContactData("blindSearch");
+  //surfModel.loadContactData("blindSearch");
 
  /* for (int i = 0; i < 100; i++){
   surfModel.trainModel();

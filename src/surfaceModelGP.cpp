@@ -222,19 +222,9 @@ void SurfaceModelGP::printTrainingData()
 
 }
 
-void SurfaceModelGP::setBoundingBox(const unsigned int nPoints, const double offset)
+void SurfaceModelGP::setBoundingBox(const double xMin, const double xMax, const double yMin, const double yMax,
+                                    const unsigned int nPoints, const double offset)
 {
-    // Generating training data
-
-    //unsigned int nPoints = 120;
-    //double offset = 5.0/1000;
-
-    gVec<double> *inputMax = _inputTraining.max(COLUMNWISE);
-    gVec<double> *inputMin = _inputTraining.min(COLUMNWISE);
-
-    //cout << "Max: " << inputMax->at(0) << ", " << inputMax->at(1) << endl;
-    //cout << "Min: " << inputMin->at(0) << ", " << inputMin->at(1) << endl;
-
 
     double *xlin = NULL;
     double *ylin = NULL;
@@ -248,11 +238,11 @@ void SurfaceModelGP::setBoundingBox(const unsigned int nPoints, const double off
     }
 
 
-    linspace(inputMin->at(0) + offset, inputMax->at(0) - offset, nPoints, xlin);
-    linspace(inputMin->at(1) + offset, inputMax->at(1) - offset, nPoints, ylin);
+    linspace(xMin + offset, xMax - offset, nPoints, xlin);
+    linspace(yMin + offset, yMax - offset, nPoints, ylin);
 
-    cout << "Xmin: " << inputMin->at(0) << " XMax: " << inputMax->at(0) << endl;
-    cout << "Ymin: " << inputMin->at(1) << " YMax: " << inputMax->at(1) << endl;
+    cout << "Xmin: " << xMin << " XMax: " << xMax << endl;
+    cout << "Ymin: " << yMin << " YMax: " << yMax << endl;
 
 
     _inputTesting.resize(nPoints * nPoints, 2);
@@ -274,61 +264,25 @@ void SurfaceModelGP::setBoundingBox(const unsigned int nPoints, const double off
 
     delete [] xlin;
     delete [] ylin;
+
+}
+
+void SurfaceModelGP::setBoundingBox(const unsigned int nPoints, const double offset)
+{
+    // Generating training data
+
+    gVec<double> *inputMax = _inputTraining.max(COLUMNWISE);
+    gVec<double> *inputMin = _inputTraining.min(COLUMNWISE);
+
+
+    setBoundingBox(inputMin->at(0), inputMax->at(0),
+                   inputMin->at(1), inputMax->at(1),
+                   nPoints, offset);
+
 }
 
 bool SurfaceModelGP::updateSurfaceEstimate(const unsigned int nPoints, const double offset)
 {
-
-
-    // Generating training data
-
-    //unsigned int nPoints = 120;
-    //double offset = 5.0/1000;
-
-    /*  gVec<double> *inputMax = _inputTraining.max(COLUMNWISE);
-    gVec<double> *inputMin = _inputTraining.min(COLUMNWISE);
-
-    //cout << "Max: " << inputMax->at(0) << ", " << inputMax->at(1) << endl;
-    //cout << "Min: " << inputMin->at(0) << ", " << inputMin->at(1) << endl;
-
-
-    double *xlin = NULL;
-    double *ylin = NULL;
-    xlin = new (std::nothrow) double[nPoints];
-    ylin = new (std::nothrow) double[nPoints];
-
-    if(xlin == NULL || ylin == NULL)
-    {
-        cerr << _dbgtg << "could not allocate memory.";
-        return false;
-    }
-
-    linspace(inputMin->at(0) + offset, inputMax->at(0) - offset, nPoints, xlin);
-    linspace(inputMin->at(1) + offset, inputMax->at(1) - offset, nPoints, ylin);
-
-    cout << "Xmin: " << inputMin->at(0) << " XMax: " << inputMax->at(0) << endl;
-    cout << "Ymin: " << inputMin->at(1) << " YMax: " << inputMax->at(1) << endl;
-
-    gMat2D < double > inputTesting;
-    inputTesting.resize(nPoints * nPoints, 2);
-
-
-
-
-    for ( int x = 0; x < nPoints; x++ )
-    {
-        gVec < double > rowVect;
-        rowVect.resize(2);
-        rowVect.at(0) = xlin[x];
-        for (int y = 0; y < nPoints; y++ )
-        {
-            rowVect.at(1) = ylin[y];
-            inputTesting.setRow(rowVect, nPoints * x + y);
-        }
-    }
-
-    // Use the test array as input to the gp process
-*/
 
 
     gMat2D<double> vars;
@@ -345,12 +299,10 @@ bool SurfaceModelGP::updateSurfaceEstimate(const unsigned int nPoints, const dou
 
 
 
-    //cout << "Max: " <<  vars.max(gurls::COLUMNWISE)->at(0) << endl;
-
 
     //yarp::sig::Vector maxVariancePos;
     getMaxVariancePose(_inputTesting, vars, *means, _maxVariancePos);
-    _isValidMaxVar = true;
+
 
     // Save the data for matlab visualisation
     //_inputTraining.saveCSV("newTraining.csv");
@@ -368,15 +320,10 @@ bool SurfaceModelGP::updateSurfaceEstimate(const unsigned int nPoints, const dou
     maxVarFile.close();
 
 
- //   delete[] xlin;
- //   delete[] ylin;
+
 
 }
 
-//void SurfaceModelGP::saveModelOutput()
-//{
-
-//}
 
 bool SurfaceModelGP::getMaxVariancePose(yarp::sig::Vector &maxVariancePos)
 {
@@ -386,72 +333,7 @@ bool SurfaceModelGP::getMaxVariancePose(yarp::sig::Vector &maxVariancePos)
 
 
 
-    /*
 
-    ///////////////////////////////
-
-
-    unsigned int nPoints = 120;
-    double offset = 5.0/1000;
-
-    gVec<double> *inputMax = _inputTraining.max(COLUMNWISE);
-    gVec<double> *inputMin = _inputTraining.min(COLUMNWISE);
-
-
-    double *xlin = NULL;
-    double *ylin = NULL;
-    xlin = new (std::nothrow) double[nPoints];
-    ylin = new (std::nothrow) double[nPoints];
-
-    if(xlin == NULL || ylin == NULL)
-    {
-        cerr << _dbgtg << "could not allocate memory.";
-        return false;
-    }
-
-    linspace(inputMin->at(0) + offset, inputMax->at(0) - offset, nPoints, xlin);
-    linspace(inputMin->at(1) + offset, inputMax->at(1) - offset, nPoints, ylin);
-
-    gMat2D < double > inputTesting;
-    inputTesting.resize(nPoints * nPoints, 2);
-
-
-
-
-    for ( int x = 0; x < nPoints; x++ )
-    {
-        gVec < double > rowVect;
-        rowVect.resize(2);
-        rowVect.at(0) = xlin[x];
-        for (int y = 0; y < nPoints; y++ )
-        {
-            rowVect.at(1) = ylin[y];
-            inputTesting.setRow(rowVect, nPoints * x + y);
-        }
-    }
-
-    // Use the test array as input to the gp process
-
-
-
-
-    gMat2D<double> vars;
-    gMat2D<double>* means = this->eval(inputTesting, vars, _opt);
-
-
-
-    //cout << "Max: " <<  vars.max(gurls::COLUMNWISE)->at(0) << endl;
-
-
-    getMaxVariancePose(inputTesting, vars, *means, maxVariancePos);
-
-
-    delete[] xlin;
-    delete[] ylin;
-
-    ////////////////////
-
-    */
 }
 
 bool SurfaceModelGP::getMaxVariancePose(const gMat2D<double> &positions,
@@ -484,6 +366,9 @@ bool SurfaceModelGP::getMaxVariancePose(const gMat2D<double> &positions,
     maxVariancePos[2] = means(maxVarianceIndex,0);
 
     cout << "Max var location ("<< maxVariancePos.toString() << ")" << endl;
+
+     _isValidMaxVar = true;
+
     return true;
 
 }

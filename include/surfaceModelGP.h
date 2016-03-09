@@ -37,7 +37,9 @@ public:
     void addContactPoint(const Vector fingertipPosition);
     void addContactPoint(gVec<double> posXY, gVec<double> posZ);
     void saveContactPoints();
-    void setBoundingBox(const unsigned int nPoints = 60, const double offset = 10/1000);
+    void setBoundingBox(const unsigned int nPoints = 120, const double offset = 10/1000);
+    void setBoundingBox(const double xMin, const double xMax, const double yMin, const double yMax,
+                        const unsigned int nPoints = 120, const double offset = 10/1000);
 
     bool getMaxVariancePose(Vector &maxVariancePos);
 

@@ -108,9 +108,10 @@ void TappingExplorationThread::finshExploration()
 
     _nGrid = 0;
     // Open the hand
-    _objectFeatures->prepHand();
+    //_objectFeatures->prepHand();
     _curProximal = 10;
-    _curDistal = 70;
+    _curDistal = 90 - _curProximal;
+    _objectFeatures->setProximalAngle(_curProximal);
     Bottle msg;
     msg.clear();
     msg.addDouble(_curProximal);
@@ -161,9 +162,11 @@ void TappingExplorationThread::maintainContact()
 
 
     _curProximal = 10;
-    _curDistal = 70;
+    _curDistal = 90 - _curProximal;
     logFingertipControl();
-    _objectFeatures->prepHand();
+    //_objectFeatures->prepHand();
+    _objectFeatures->setProximalAngle(_curProximal);
+
     //Wait for the fingertip to get to position
     while(!_objectFeatures->checkOpenHandDone() && !isStopping())
         ;
@@ -309,9 +312,11 @@ void TappingExplorationThread::calculateNewWaypoint()
         //Open the finger
         // TODO: make the logging less error prone.
         _curProximal = 10;
-        _curDistal = 70;
+        _curDistal = 90 - _curProximal;
         logFingertipControl();
-        _objectFeatures->prepHand();
+        //_objectFeatures->prepHand();
+        _objectFeatures->setProximalAngle(_curProximal);
+
         //Wait for the fingertip to open
         while(!_objectFeatures->checkOpenHandDone() && !isStopping())
             ;
@@ -358,25 +363,31 @@ void TappingExplorationThread::approachObject()
     Vector indexFingerAngles;
 
     // Put the fingers in the right position
-    _objectFeatures->prepHand();
+    //_objectFeatures->prepHand();
+
     // TODO: fix the logging, this approach is error prone
     _curProximal = 10;
-    _curDistal = 70;
+    _curDistal = 90 - _curProximal;
     logFingertipControl();
+
+    //cout << "Here 0" << endl;
+    _objectFeatures->setProximalAngle(_curProximal);
 
     while(!_objectFeatures->checkOpenHandDone() && !isStopping())
         ;
 
+    //cout << "Here 1" << endl;
     if(_objectFeatures->getWayPoint(px, ox, false))
     {
         _objectFeatures->getIndexFingerAngles(indexFingerAngles);
-        //cout << "Before Angles: " << indexFingerAngles.toString() << endl;
+        cout << "Before Angles: " << indexFingerAngles.toString() << endl;
         // Go to the wayPoint if only it is a valid wayPoint.
         if(_robotCartesianController->goToPoseSync(px, ox))
         {
             bool motionDone = false;
             while(!motionDone)
             {
+                //cout << "Here 2" << endl;
                 if(_objectFeatures->getContactForce() > _forceThreshold)
                 {
                     cout  << "Abandoned motion due to force" << endl;
@@ -385,11 +396,12 @@ void TappingExplorationThread::approachObject()
                 }
 
                 _objectFeatures->getIndexFingerAngles(indexFingerAngles);
-                //cout << "After angles: " << indexFingerAngles.toString() << endl;
-                if(indexFingerAngles[1] < 30 || indexFingerAngles[2] > 35)
+
+                if(indexFingerAngles[1] < 20 )
                 {
                    cout << "Abandoned motion due to angles" << endl;
                    _robotCartesianController->stopControl();
+                   cout << "After angles: " << indexFingerAngles.toString() << endl;
                    break;
                 }
                 _robotCartesianController->checkMotionDone(&motionDone);
@@ -451,13 +463,13 @@ void TappingExplorationThread::approachObject()
             {
                 break;
             }
-            else if(_objectFeatures->getProximalJointAngle() > maxProximal) // stop if more than 80%
+            else if(_objectFeatures->getProximalJointAngle() > maxProximal)
             {
                 cout << "No contact detected." << endl;
                 _contactState = CALCULATE_NEWWAYPONT;
                 break;
             }
-            else if( (std::clock() - time) / (double)(CLOCKS_PER_SEC) > 2)
+            else if( (std::clock() - time) / (double)(CLOCKS_PER_SEC) > 1)
             {
                 cout << "No contact was detected -- timed out" << endl;
                 _contactState = CALCULATE_NEWWAYPONT;
@@ -477,10 +489,11 @@ void TappingExplorationThread::approachObject()
         else if(_contactState == CALCULATE_NEWWAYPONT)
         {
             // No contact detected put the hand in prep position
-            _objectFeatures->prepHand();
+           // _objectFeatures->prepHand();
             _curProximal = 10;
-            _curDistal = 70;
+            _curDistal = 90 - _curProximal;
             logFingertipControl();
+            _objectFeatures->setProximalAngle(_curProximal);
 
             // Wait for the hand to open;
             while(!_objectFeatures->checkOpenHandDone() && !isStopping())

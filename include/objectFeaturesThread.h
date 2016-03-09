@@ -122,7 +122,8 @@ public:
     bool checkOpenHandDone()
     {
         bool ret;
-        if(!_armJointPositionCtrl->checkMotionDone(&ret))
+
+        if(!_armJointPositionCtrl->checkMotionDone(11, &ret))
         {
             std::cerr << _dbgtag << "CheckMotionDone failed on network comms" << std::endl;
             ret = true;

@@ -45,7 +45,7 @@ private:
     //Vector _indexFingerPosition;
    // double _preContactForce;
 
-private:
+protected:
     void logFingertipControl();
 
 protected:
