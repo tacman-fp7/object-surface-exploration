@@ -19,7 +19,7 @@ while(true)
     
     
     
-    nPoints = 60;
+    nPoints = 120;
     
     modelInput = dlmread(modelInputFileName);
     modelOutput = dlmread(modelOutputFileName);
@@ -34,6 +34,8 @@ while(true)
     xlin = linspace(min(x), max(x), nPoints);
     ylin = linspace(min(y), max(y), nPoints);
     [XT,YT] = meshgrid(xlin,ylin);
+    maxVarPoint(3) = maxVarPoint(3) - min(modelOutput);
+    modelOutput = modelOutput - min(modelOutput);
     
     ZT = reshape(modelOutput, nPoints, nPoints);
     ZV = reshape(modelVariance, nPoints, nPoints);

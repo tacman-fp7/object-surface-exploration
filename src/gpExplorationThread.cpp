@@ -3,7 +3,7 @@
 #include <yarp/os/Time.h>
 
 #define DEBUG_LEVEL 1
-#define FORCE_TH 1.2
+#define FORCE_TH 1.6
 
 namespace objectExploration
 {
