@@ -101,6 +101,8 @@ void GPExplorationThread::maintainContact()
 
     cout << "Contact state is GP maintain contact" << endl;
     // Store the contact location
+
+
     Vector fingertipPosition, fingertipOrientation;
     _objectFeatures->getIndexFingertipPosition(fingertipPosition);
     // _objectFeatures->getFingertipPose(fingertipPosition, fingertipOrientation);
@@ -109,8 +111,8 @@ void GPExplorationThread::maintainContact()
     _surfaceModel->addContactPoint(fingertipPosition);
 
     // Maintain contact
-    //TappingExplorationThread::maintainContact();
-    _contactState = MOVE_LOCATION;
+    TappingExplorationThread::maintainContact();
+    //_contactState = MOVE_LOCATION;
 
 
 }
@@ -123,42 +125,44 @@ bool GPExplorationThread::initialiseGP(Vector startingPos, Vector startingOrient
     Vector pos, orient;
     pos = startingPos;
     orient = startingOrient;
+    double xSteps = -20.0/1000;
+    double ySteps = 0;
+    int nXGrid = 4;
+    int nYGrid = 5;
 
-    // Move to the starting positio
-    makeSingleContact(pos, orient);
+    if(startingPos[1] < endingPos[1])
+        ySteps = 20.0/1000;
+    else
+        ySteps = -20.0/1000;
 
-    pos[0] -= 60.0/1000;
+    while(pos[0] >= (startingPos[0] + xSteps * nXGrid))
+    {
 
-    makeSingleContact(pos, orient);
+        for (int i = 0; i < nYGrid; i++)
+        {
 
-    pos = endingPos;
-    orient = endingOrient;
+            makeSingleContact(pos, orient);
+            pos[1] += ySteps;
+        }
+        pos[0] += xSteps;
+        pos[1] = startingPos[1];
+        /*for (int i = 0; i < nYGrid; i++)
+        {
 
-    pos[0] -= 60.0/1000;
-    makeSingleContact(pos, orient);
+            makeSingleContact(pos, orient);
+            pos[1] -= ySteps;
+        }
+        pos[0] += xSteps;
 
-    pos = endingPos;
-    makeSingleContact(pos, orient);
-
-    pos = startingPos;
-    pos[0] -= 20.0/1000;
-    pos[1]  = (startingPos[1] + endingPos[1])/2;
-    makeSingleContact(pos, orient);
-
-    pos = startingPos;
-    pos[0] -= 30.0/1000;
-    pos[1]  = (startingPos[1] + endingPos[1])/2;
-    makeSingleContact(pos, orient);
-
-    pos = startingPos;
-    pos[0] -= 40.0/1000;
-    pos[1]  = (startingPos[1] + endingPos[1])/2;
-    makeSingleContact(pos, orient);
+        */
+    }
 
 
     _surfaceModel->trainModel();
     _surfaceModel->setBoundingBox();
     _surfaceModel->updateSurfaceEstimate();
+
+
 
     return ret;
 }

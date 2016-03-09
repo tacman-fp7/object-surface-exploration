@@ -30,14 +30,14 @@ public:
     bool saveModel(); //to the disk
     bool updateModel();
     void saveModelOutput();
-    bool updateSurfaceEstimate(const unsigned int nGrid = 120, const double offset = 5/1000);
+    bool updateSurfaceEstimate(const unsigned int nGrid = 120, const double offset = 10/1000);
     //bool saveMeshCSV();
 
     void loadContactData(const std::string type);
     void addContactPoint(const Vector fingertipPosition);
     void addContactPoint(gVec<double> posXY, gVec<double> posZ);
     void saveContactPoints();
-    void setBoundingBox(const unsigned int nPoints = 120, const double offset = 5/1000);
+    void setBoundingBox(const unsigned int nPoints = 60, const double offset = 10/1000);
 
     bool getMaxVariancePose(Vector &maxVariancePos);
 

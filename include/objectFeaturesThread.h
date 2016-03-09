@@ -62,6 +62,10 @@ public:
     bool threadInit();
     void threadRelease();
     //////// accessros and mutators ////
+    /// \brief getPosition
+    /// \return
+    ///
+    bool getIndexFingerAngles(yarp::sig::Vector &angles);
     Vector getPosition();
     Vector getOrientation();
     double getContactForce();

@@ -58,11 +58,6 @@ void ObjectFeaturesThread::run()
     double encoderValue;
     _armPoseMutex.lock();
     _armCartesianCtrl->getPose(_armPosition, _armOrientation);
-    /*for (int i = 0; i < 3; i++)
-        _armPosition[i] = armPose->get(i).asDouble();
-    for (int i = 3; i < 7; i++)
-        _armOrientation[i-3] = armPose->get(i).asDouble();*/
-
     if(_armEncoder->getEncoder(_proximalJoint_index, &encoderValue))
         _proximalJointAngle = encoderValue;
     else
@@ -70,11 +65,7 @@ void ObjectFeaturesThread::run()
 
     _armPoseMutex.unlock();
 
-    //cout << _armPosition.toString() << " : " << _proximalJoint_index << " : " << encoderValue << endl;
 
-    //cout << armPose->toString() << endl << endl;
-    //cout << _armPosition.toString() << endl;
-    //cout << _armOrientation.toString() << endl << endl;
 
     _tactileMutex.lock();
     _contactForce = contactForceCoP->get(0).asDouble(); // Contact force field is the first one
@@ -177,7 +168,7 @@ bool ObjectFeaturesThread::prepHand()
     ret = fingerMovePosition(7, 0);
     ret = fingerMovePosition(9, 30);
     ret = fingerMovePosition(10, 170);
-    setProximalAngle(40);
+    setProximalAngle(30);
     //ret = fingerMovePosition(11, 10);
     //ret = fingerMovePosition(12, 70);
 
@@ -223,13 +214,15 @@ bool ObjectFeaturesThread::openHand()
 
 
 bool ObjectFeaturesThread::setProximalAngle(double angle){
-    bool ret = false;
+    bool ret = true;
     if(_armJointPositionCtrl != NULL )
     {
 
-        ret = _armJointModeCtrl->setPositionMode(11);
-        ret = _armJointPositionCtrl->positionMove(_proximalJoint_index, angle);
-        _armJointPositionCtrl->positionMove(12, 90-angle);
+        ret = ret && _armJointModeCtrl->setPositionMode(11);
+        ret = ret && _armJointModeCtrl->setPositionMode(12);
+        ret = ret && _armJointPositionCtrl->positionMove(_proximalJoint_index, angle);
+        ret = ret && _armJointPositionCtrl->positionMove(12, 90-angle);
+
     }
     else
     {
@@ -327,6 +320,30 @@ void ObjectFeaturesThread::adjustMinMax(const double currentVal, double &min, do
         max = currentVal;
     if(currentVal < min)
         min = currentVal;
+}
+
+bool ObjectFeaturesThread::getIndexFingerAngles(yarp::sig::Vector &angles)
+{
+    Vector fingerEncoders;
+    angles.resize(3);
+
+    getIndexFingerEncoder(fingerEncoders);
+
+    //cout << fingerEncoders.toString() << endl;
+
+    adjustMinMax(fingerEncoders[0], _minIndexProximal, _maxIndexProximal);
+    adjustMinMax(fingerEncoders[1], _minIndexMiddle, _maxIndexMiddle);
+    adjustMinMax(fingerEncoders[2], _minIndexDistal, _maxIndexDistal);
+
+
+
+    // Replace the joins with the encoder readings
+
+    angles[0] = 90 * (1 - (fingerEncoders[0] - _minIndexProximal) / (_maxIndexProximal - _minIndexProximal) );
+    angles[1] = 90 * (1 - (fingerEncoders[1] - _minIndexMiddle) / (_maxIndexMiddle - _minIndexMiddle) );
+    angles[2] = 90 * (1 - (fingerEncoders[2] - _minIndexDistal) / (_maxIndexDistal - _minIndexDistal) );
+
+    return true;
 }
 
 bool ObjectFeaturesThread::getIndexFingerEncoder(yarp::sig::Vector &encoderValues)

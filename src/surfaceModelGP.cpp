@@ -247,6 +247,7 @@ void SurfaceModelGP::setBoundingBox(const unsigned int nPoints, const double off
         return;
     }
 
+
     linspace(inputMin->at(0) + offset, inputMax->at(0) - offset, nPoints, xlin);
     linspace(inputMin->at(1) + offset, inputMax->at(1) - offset, nPoints, ylin);
 
