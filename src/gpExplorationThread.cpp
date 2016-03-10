@@ -150,8 +150,8 @@ bool GPExplorationThread::initialiseGP(Vector startingPos, Vector startingOrient
     }
 
 
-    double xMin = startingPos[0];
-    double xMax = startingPos[0] + startingPos[0] + xSteps * nXGrid;
+    double xMax = startingPos[0];
+    double xMin = startingPos[0] + xSteps * nXGrid;
     double yMin, yMax;
 
     if(startingPos[1] < endingPos[1])
@@ -166,13 +166,48 @@ bool GPExplorationThread::initialiseGP(Vector startingPos, Vector startingOrient
     }
 
     _surfaceModel->trainModel();
-    //_surfaceModel->setBoundingBox(xMin, xMax, yMin, yMax, 120, 10.0/1000);
-    _surfaceModel->setBoundingBox(120, 10.0/1000);
+   // _surfaceModel->setBoundingBox(xMin, xMax, yMin, yMax, 120, 5.0/1000);
+    _surfaceModel->setBoundingBox(120, 5.0/1000);
     _surfaceModel->updateSurfaceEstimate();
 
 
 
     return ret;
+}
+
+
+void GPExplorationThread::moveArmUp()
+{
+    Vector startingPos, startingOrient;
+    Vector armPos, orient;
+    _curProximal = 10;
+    _curDistal = 90 - _curProximal;
+   _objectFeatures->setProximalAngle(_curProximal);
+
+    _objectFeatures->getArmPose(armPos, orient);
+    _objectFeatures->getStartingPose(startingPos, startingOrient);
+
+    armPos[2] = startingPos[2]; // Move the fingertip up to avoid collisiont
+    _objectFeatures->moveArmToPosition(armPos, orient);
+
+
+
+  // while(_objectFeatures->checkOpenHandDone())
+   //    ;
+   // Now make sure the tactile data is sane
+
+    cout << "Waiting for force to return to normal value...";
+    double force = _objectFeatures->getContactForce();
+
+    while(force > 0.5)
+    {
+        force = _objectFeatures->getContactForce();
+        for( int i = 0; i < 9; i++)
+            force += _objectFeatures->getContactForce();
+        force = force/10;
+    }
+
+    cout << "done!" << endl;
 }
 
 void GPExplorationThread::makeSingleContact(Vector pos, Vector orient)
@@ -182,6 +217,7 @@ void GPExplorationThread::makeSingleContact(Vector pos, Vector orient)
     _objectFeatures->setWayPointGP(pos, orient);
     _contactState = APPROACH_OBJECT;
 
+    moveArmUp();
     while((_contactState != FINISHED) && !isStopping() && !(_contactState == STOP))
     {
         switch (_contactState)
@@ -228,6 +264,7 @@ void GPExplorationThread::makeSingleContact(Vector pos, Vector orient)
             break;
         case FINISHED:
             cout << "Contact state is: finished" << endl;
+
             // I have to implement exit the thread procedure here
             //TappingExplorationThread::finshExploration();
             break;
@@ -288,14 +325,9 @@ void GPExplorationThread::setWayPoint_GP()
     // Get the position of the hand
     // This cannot be done in parallel with indexFinger2ArmPosition calcuation
 
-    Vector startingPos, startingOrient;
-    _objectFeatures->getArmPose(armPos, orient);
-    _objectFeatures->getStartingPose(startingPos, startingOrient);
+    moveArmUp();
 
-    armPos[2] = startingPos[2]; // Move the fingertip up to avoid collisiont
-    _objectFeatures->moveArmToPosition(armPos, orient);
-    //_objectFeatures->
-    if(ret)
+     if(ret)
         _contactState = APPROACH_OBJECT;
     else
         _contactState = FINISHED;

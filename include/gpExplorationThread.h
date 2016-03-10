@@ -26,6 +26,8 @@ protected:
      void setWayPoint_GP();
      void maintainContact();
      void moveToNewLocation();
+     void moveArmUp();
+
 
 private:
      void makeSingleContact(yarp::sig::Vector pos, yarp::sig::Vector orient);
