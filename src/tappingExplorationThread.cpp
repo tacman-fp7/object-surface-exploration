@@ -353,6 +353,50 @@ void TappingExplorationThread::logFingertipControl()
     _objectFeatures->publishFingertipControl(msg);
 }
 
+void TappingExplorationThread::moveArmToWayPoint(yarp::sig::Vector pos, yarp::sig::Vector orient)
+{
+    Vector indexFingerAngles;
+    if(_robotCartesianController->goToPoseSync(pos, orient))
+    {
+        bool motionDone = false;
+        while(!motionDone)
+        {
+            if(_objectFeatures->getContactForce() > _forceThreshold)
+            {
+                cout  << "Abandoned motion due to force" << endl;
+                _robotCartesianController->stopControl();
+                break;
+            }
+
+            _objectFeatures->getIndexFingerAngles(indexFingerAngles);
+
+            if(indexFingerAngles[1] < 20 )
+            {
+                cout << "Abandoned motion due to angles" << endl;
+                _robotCartesianController->stopControl();
+                cout << "Angles: " << indexFingerAngles.toString() << endl;
+                break;
+            }
+            _robotCartesianController->checkMotionDone(&motionDone);
+        }
+    }
+}
+
+void TappingExplorationThread::moveIndexFingerBlocking(double angle)
+{
+    moveIndexFinger(angle);
+    while(!_objectFeatures->checkOpenHandDone() && !isStopping() )
+        ;
+}
+
+void TappingExplorationThread::moveIndexFinger(double angle)
+{
+    _curProximal = angle;
+    _curDistal = 90 - _curProximal;
+    logFingertipControl();
+    _objectFeatures->setProximalAngle(_curProximal);
+}
+
 void TappingExplorationThread::approachObject()
 {
 
@@ -360,112 +404,32 @@ void TappingExplorationThread::approachObject()
     Vector px, ox;
     px.resize(3);
     ox.resize(4);
-    Vector indexFingerAngles;
+    //Vector indexFingerAngles;
     double maxProximal = 50;
-    // Put the fingers in the right position
 
-    // TODO: fix the logging, this approach is error prone
-    _curProximal = 10;
-    _curDistal = 90 - _curProximal;
-    logFingertipControl();
-    _objectFeatures->setProximalAngle(_curProximal);
+    ///// Put the index finger in the starting position /////
+    moveIndexFingerBlocking(10);
 
-    while(!_objectFeatures->checkOpenHandDone() && !isStopping())
-        ;
 
-    //cout << "Here 1" << endl;
+    // Go to the wayPoint if only it is a valid wayPoint.
     if(_objectFeatures->getWayPoint(px, ox, false))
     {
-       //_objectFeatures->getIndexFingerAngles(indexFingerAngles);
-
-
-
-        // Go to the wayPoint if only it is a valid wayPoint.
-        if(_robotCartesianController->goToPoseSync(px, ox))
-        {
-            bool motionDone = false;
-            while(!motionDone)
-            {
-                //cout << "Here 2" << endl;
-                if(_objectFeatures->getContactForce() > _forceThreshold)
-                {
-                    cout  << "Abandoned motion due to force" << endl;
-                    _robotCartesianController->stopControl();
-                    break;
-                }
-
-                _objectFeatures->getIndexFingerAngles(indexFingerAngles);
-
-                if(indexFingerAngles[1] < 20 )
-                {
-                    cout << "Abandoned motion due to angles" << endl;
-                    _robotCartesianController->stopControl();
-                    cout << "Angles: " << indexFingerAngles.toString() << endl;
-                    break;
-                }
-                _robotCartesianController->checkMotionDone(&motionDone);
-            }
-            //_robotCartesianController->waitMotionDone(0.1, 20);
-
-        }
-
-
-
-
-
-    }else if(_contactState != UNDEFINED)
+        moveArmToWayPoint(px, ox);
+    }
+    else if(_contactState != UNDEFINED)
     {
         // If the contact point is not valid, then it is time to move to a new location
         // TODO: is this intuitive?
         _contactState = MOVE_LOCATION;
-
     }
 
     if(_contactState == APPROACH_OBJECT)
     {
-        /// Tell the finger controller to approach the object
-        _curProximal = 60; // this is the max proximal
-        _curDistal = 90 - _curProximal;
-        logFingertipControl();
+        // Tell the finger controller to approach the object
+        moveIndexFinger(maxProximal);
 
-        std::clock_t time = std::clock();
-
-
-        _objectFeatures->setProximalAngle(maxProximal);
-        while((_objectFeatures->getContactForce()) < _forceThreshold) // TODO: Write a proper contact detctor
-        {
-            // Get the angles
-            _objectFeatures->getIndexFingerAngles(indexFingerAngles);
-            if(indexFingerAngles[1] < 5)
-            {
-                // We have contact without force
-                cout << indexFingerAngles.toString() << endl;
-                cout << "No froce but angle exceeded the limit " << endl;
-                _contactState = MAINTAIN_CONTACT;
-                break;
-            }
-
-            if(isStopping())
-            {
-                break;
-            }
-            else if(_objectFeatures->getProximalJointAngle() > maxProximal * 0.95)
-            {
-                cout << "No contact detected." << endl;
-                _contactState = CALCULATE_NEWWAYPONT;
-                break;
-            }
-            else if( (std::clock() - time) / (double)(CLOCKS_PER_SEC) > 1)
-            {
-                cout << "No contact was detected -- timed out" << endl;
-                _contactState = CALCULATE_NEWWAYPONT;
-                break;
-            }
-        }
-
-        // This is used later to move the relative to the contact
-        // and prep position.
-        _objectFeatures->getIndexFingerEncoder(_indexFingerEncoders);
+        // Wait for contact event
+        detectContact(maxProximal);
 
         if(_contactState != CALCULATE_NEWWAYPONT)
         {
@@ -475,74 +439,120 @@ void TappingExplorationThread::approachObject()
         else if(_contactState == CALCULATE_NEWWAYPONT)
         {
             // No contact detected put the hand in prep position
-            // _objectFeatures->prepHand();
-            _curProximal = 10;
-            _curDistal = 90 - _curProximal;
-            logFingertipControl();
-            _objectFeatures->setProximalAngle(_curProximal);
-
-            // Wait for the hand to open;
-            while(!_objectFeatures->checkOpenHandDone() && !isStopping())
-                ;
+            moveIndexFingerBlocking(10);
         }
     }
 
-
-    // Re approach to make sure the
-
-
+    // Confirm cotntact
     if(_contactState == MAINTAIN_CONTACT)
     {
-        cout << "Checking the contact...";
-        _curProximal = 10;
-        _curDistal = 90 - _curProximal;
-        _contactState = APPROACH_OBJECT;
-        _objectFeatures->setProximalAngle(_curProximal);
-        while(!_objectFeatures->checkOpenHandDone())
-            ;
+        confrimContact(maxProximal);
+    }
+    return;
+}
 
-        double angle;
-        for (int i = 10; i < maxProximal * 5; i++)
+void TappingExplorationThread::detectContact(double maxAngle)
+{
+    Vector indexFingerAngles;
+    std::clock_t time = std::clock();
+    while((_objectFeatures->getContactForce()) < _forceThreshold)
+    {
+        // Get the angles
+        _objectFeatures->getIndexFingerAngles(indexFingerAngles);
+
+
+        if(isStopping() || (_contactState == STOP))
         {
-            angle = i/5;
-            _objectFeatures->setProximalAngle(angle);
-            //yarp::os::Time::delay(1); // Slow down the movement
-
-            //bool done = false;
-
-            while(!_objectFeatures->checkOpenHandDone())
-            {
-                _objectFeatures->getIndexFingerAngles(indexFingerAngles);
-
-
-                if(_objectFeatures->getContactForce() >= _forceThreshold)
-                {
-                    cout << "Contact confirmed" << endl;
-                    _contactState = MAINTAIN_CONTACT;
-                    break;
-                }
-                else if(indexFingerAngles[1] < 1)
-                {
-                   cout << "Conact not confirmed: change of angle" << endl;
-                   cout << indexFingerAngles.toString() << endl;
-                   cout << "Force: " << _objectFeatures->getContactForce() << endl;
-                   _contactState = MOVE_LOCATION;
-                   break;
-                }
-            }
-
-            if(_contactState == MAINTAIN_CONTACT || _contactState == MOVE_LOCATION)
-                break;
-
-
-
+            break;
         }
-        if(_contactState == APPROACH_OBJECT)
-            cout << "Contact NOT confirmed" << endl;
+        else if(_objectFeatures->getProximalJointAngle() > maxAngle * 0.95)
+        {
+            cout << "No contact detected." << endl;
+            _contactState = CALCULATE_NEWWAYPONT;
+            break;
+        }
+        else if( (std::clock() - time) / (double)(CLOCKS_PER_SEC) > 1)
+        {
+            cout << "No contact was detected -- timed out" << endl;
+            _contactState = CALCULATE_NEWWAYPONT;
+            break;
+        }
+        else if(indexFingerAngles[1] < 3)
+        {
+            // We have contact without force
+            cout << "No froce but angle exceeded the limit " << endl;
+            _contactState = EXCEEDED_ANGLE;//MAINTAIN_CONTACT;
+            break;
+        }
     }
 
+    // This is used later to move the relative to the contact
+    // and prep position.
+    _objectFeatures->getIndexFingerEncoder(_indexFingerEncoders);
+}
 
-    return;
+void TappingExplorationThread::confrimContact(double maxAngle)
+{
+    cout << "Checking the contact...";
+    moveIndexFingerBlocking(10/5);
+    //cout << "Move done" << endl;
+    //yarp::os::Time::delay(1);
+    _contactState = APPROACH_OBJECT;
+
+    Vector indexFingerAngles;
+    double angle;
+    for (int i = 10; i < maxAngle * 5; i++)
+    {
+        angle = i/5;
+        moveIndexFinger(angle);
+        //cout << "Moving finger" << endl;
+
+        while(!_objectFeatures->checkOpenHandDone())
+        {
+            _objectFeatures->getIndexFingerAngles(indexFingerAngles);
+
+            if(_objectFeatures->getContactForce() >= _forceThreshold)
+            {
+                cout << "contact confirmed" << endl;
+                _contactState = MAINTAIN_CONTACT;
+                break;
+            }
+            else if(indexFingerAngles[1] < 1)
+            {
+                cout << "...[exceeded angle]..." << endl;
+                _contactState = EXCEEDED_ANGLE;
+                break;
+            }
+        }
+        if(_contactState == MAINTAIN_CONTACT || _contactState == EXCEEDED_ANGLE)
+            break;
+
+    }
+
+    if(_contactState == EXCEEDED_ANGLE)
+    {
+        // If contact cannot be confirmed by tactile sensor
+        // But the angle exceeds, then add a little jitter to the
+        // position and reapproach the point.
+        double r = ((double) rand() / (RAND_MAX)) - 0.5;
+        Vector pos, orient;
+        _objectFeatures->getWayPoint(pos, orient, false);
+        cout << "Pos: " << pos.toString() << endl;
+        pos[0] += r * 0.002;
+        pos[1] += r * 0.002;
+        cout << "Pos: " << pos.toString() << endl;
+
+        _objectFeatures->setWayPoint(pos, orient);
+        cout << "contact NOT confirmed" << endl;
+        _contactState = APPROACH_OBJECT;
+    }
+    else if( _contactState == APPROACH_OBJECT)
+    {
+
+        _contactState = CALCULATE_NEWWAYPONT;
+        cout << "contact NOT confirmed" << endl;
+    }
+
 }
 
 void TappingExplorationThread::moveToNewLocation()

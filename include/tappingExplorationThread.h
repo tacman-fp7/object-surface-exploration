@@ -18,7 +18,8 @@ enum State{
     MOVE_LOCATION = 4,
     FINISHED = 5,
     STOP = 6,
-    SET_WAYPOINT_GP = 7
+    SET_WAYPOINT_GP = 7,
+    EXCEEDED_ANGLE = 8
 };
 
 class TappingExplorationThread: public ExplorationStrategyThread
@@ -54,6 +55,13 @@ protected:
     virtual void calculateNewWaypoint();
     virtual void maintainContact();
     void finshExploration();
+    void moveIndexFinger(double angle);
+    void moveIndexFingerBlocking(double angle);
+
+private:
+    void moveArmToWayPoint(Vector pos, Vector orient);
+    void confrimContact(double maxAngle);
+    void detectContact(double maxAngle);
 
 
 };

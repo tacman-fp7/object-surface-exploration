@@ -135,6 +135,8 @@ bool GPExplorationThread::initialiseGP(Vector startingPos, Vector startingOrient
     else
         ySteps = -20.0/1000;
 
+    // Make sure the first point is valid
+    _objectFeatures->setWayPoint(pos, orient);
     while(pos[0] >= (startingPos[0] + xSteps * nXGrid))
     {
 
@@ -180,9 +182,8 @@ void GPExplorationThread::moveArmUp()
 {
     Vector startingPos, startingOrient;
     Vector armPos, orient;
-    _curProximal = 10;
-    _curDistal = 90 - _curProximal;
-   _objectFeatures->setProximalAngle(_curProximal);
+    TappingExplorationThread::moveIndexFinger(10);
+
 
     _objectFeatures->getArmPose(armPos, orient);
     _objectFeatures->getStartingPose(startingPos, startingOrient);
@@ -190,11 +191,6 @@ void GPExplorationThread::moveArmUp()
     armPos[2] = startingPos[2]; // Move the fingertip up to avoid collisiont
     _objectFeatures->moveArmToPosition(armPos, orient);
 
-
-
-  // while(_objectFeatures->checkOpenHandDone())
-   //    ;
-   // Now make sure the tactile data is sane
 
     cout << "Waiting for force to return to normal value...";
     double force = _objectFeatures->getContactForce();
