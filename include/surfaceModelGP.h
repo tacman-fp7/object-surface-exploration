@@ -30,16 +30,17 @@ public:
     bool saveModel(); //to the disk
     bool updateModel();
     void saveModelOutput();
-    bool updateSurfaceEstimate(const unsigned int nGrid = 120, const double offset = 10/1000);
+    bool updateSurfaceEstimate(const unsigned int nGrid = 120, const double offset = 5/1000);
     //bool saveMeshCSV();
 
     void loadContactData(const std::string type);
     void addContactPoint(const Vector fingertipPosition);
     void addContactPoint(gVec<double> posXY, gVec<double> posZ);
     void saveContactPoints();
-    void setBoundingBox(const unsigned int nPoints = 120, const double offset = 10/1000);
+    void padBoundingBox();
+    void setBoundingBox(const unsigned int nPoints = 120, const double offset = 5/1000);
     void setBoundingBox(const double xMin, const double xMax, const double yMin, const double yMax,
-                        const unsigned int nPoints = 120, const double offset = 10/1000);
+                        const unsigned int nPoints = 120, const double offset = 5/1000);
 
     bool getMaxVariancePose(Vector &maxVariancePos);
 
@@ -50,7 +51,8 @@ private:
     gMat2D<double>* eval(const gMat2D<double> &X, gMat2D<double> &vars, gurls::GurlsOptionsList *opt);
     bool getMaxVariancePose(const gMat2D <double> &positions, const gMat2D <double> &variance,
                             const gMat2D <double> &means, Vector &maxVariancePos);
-     void printTrainingData();
+    void printTrainingData();
+    //void addPaddingPoints(double startPoint, double endPoint, double constAxis, double targetValue);
 
 
 private:
@@ -68,7 +70,7 @@ private:
     std::vector <double> _xPoints;
     std::vector <double> _yPoints;
     std::vector <double> _zPoints;
-
+    int _paddingPoints;
 
 }; // end of class
 } // end of namespace objectExploration

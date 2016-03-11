@@ -122,6 +122,16 @@ bool GPExplorationThread::initialiseGP(Vector startingPos, Vector startingOrient
 {
     bool ret = true;
 
+    _surfaceModel->loadContactData("boundingBox");
+    _surfaceModel->trainModel();
+    _surfaceModel->setBoundingBox(120, 5.0/1000);
+    _surfaceModel->updateSurfaceEstimate();
+
+    return true;
+
+
+
+    //////
     Vector pos, orient;
     pos = startingPos;
     orient = startingOrient;
@@ -167,6 +177,7 @@ bool GPExplorationThread::initialiseGP(Vector startingPos, Vector startingOrient
         yMax = startingPos[1];
     }
 
+    _surfaceModel->padBoundingBox();
     _surfaceModel->trainModel();
    // _surfaceModel->setBoundingBox(xMin, xMax, yMin, yMax, 120, 5.0/1000);
     _surfaceModel->setBoundingBox(120, 5.0/1000);

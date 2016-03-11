@@ -365,6 +365,7 @@ void TappingExplorationThread::moveArmToWayPoint(yarp::sig::Vector pos, yarp::si
             {
                 cout  << "Abandoned motion due to force" << endl;
                 _robotCartesianController->stopControl();
+
                 break;
             }
 
@@ -375,6 +376,7 @@ void TappingExplorationThread::moveArmToWayPoint(yarp::sig::Vector pos, yarp::si
                 cout << "Abandoned motion due to angles" << endl;
                 _robotCartesianController->stopControl();
                 cout << "Angles: " << indexFingerAngles.toString() << endl;
+
                 break;
             }
             _robotCartesianController->checkMotionDone(&motionDone);
@@ -538,8 +540,9 @@ void TappingExplorationThread::confrimContact(double maxAngle)
         Vector pos, orient;
         _objectFeatures->getWayPoint(pos, orient, false);
         cout << "Pos: " << pos.toString() << endl;
-        pos[0] += r * 0.002;
-        pos[1] += r * 0.002;
+        pos[0] += r * 0.05;
+        pos[1] += r * 0.05;
+        pos[2] += 0.001;
         cout << "Pos: " << pos.toString() << endl;
 
         _objectFeatures->setWayPoint(pos, orient);

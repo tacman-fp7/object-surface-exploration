@@ -32,9 +32,19 @@ int main(int argc, char *argv[])
   rf.configure(argc, argv);
 
 
+
   /////////////////////////////////////
   /// \brief surfModel
   ///
+
+  /*objectExploration::SurfaceModelGP surfModel("hut");
+  surfModel.loadContactData("GP");
+  surfModel.padBoundingBox();
+  surfModel.saveContactPoints();
+
+  return 1;
+
+  */
 
  /* gurls::gMat2D <double> a;
   for(int i = 0; i < 10; i++){

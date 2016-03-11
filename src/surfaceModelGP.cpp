@@ -23,6 +23,7 @@ SurfaceModelGP::SurfaceModelGP(const std::string objectName)
     _isValidModel = false;
     _isValidMaxVar = false;
     _inputTraining.resize(0,2);
+    _paddingPoints = 0;
 
 }
 
@@ -43,7 +44,17 @@ void SurfaceModelGP::loadContactData(const std::string type)
     _inputTraining.readCSV(inputTrainingFileName);
     _outputTraining.readCSV(outputTrainingFileName);
 
-    setBoundingBox();
+
+    _paddingPoints = _inputTraining.rows();
+    // Updtate the internal vectors
+    for(int i = 0; i < _inputTraining.rows(); i++)
+    {
+        _xPoints.push_back(_inputTraining[i].at(0));
+        _yPoints.push_back(_inputTraining[i].at(1));
+        _zPoints.push_back(_outputTraining[i].at(0));
+    }
+
+    //setBoundingBox();
 
 }
 
@@ -66,8 +77,8 @@ void SurfaceModelGP::addContactPoint(const Vector fingertipPosition)
 void SurfaceModelGP::addContactPoint(gVec<double> posXY, gVec<double> posZ)
 {
     // Add the new point to the matrix
-    cout << "Adding a new contact point: " << _inputTraining.rows() << ", " << _inputTraining.cols() << endl;
-    cout << posXY.at(0) << ", " << posXY.at(1) << " " << posZ.at(0) << endl;
+    cout << "Adding a new contact point: " << _inputTraining.rows() - _paddingPoints  << endl;
+    //cout << posXY.at(0) << ", " << posXY.at(1) << " " << posZ.at(0) << endl;
     //cout << "Size: " << posXY.getSize() << endl;
     //cout << "Data: " << *(posXY.getData()) << "," << *(posXY.getData()+1) << endl;
 
@@ -75,8 +86,8 @@ void SurfaceModelGP::addContactPoint(gVec<double> posXY, gVec<double> posZ)
     _outputTraining.resize(_outputTraining.rows() + 1, 1);//_outputTraining.cols());
     _inputTraining.setRow(posXY, _inputTraining.rows()-1);
     _outputTraining.setRow(posZ, _outputTraining.rows()-1);
-     //_inputTraining[_inputTraining.rows() -1].at(0) = posXY.at(0);
-     // _inputTraining[_inputTraining.rows() -1].at(0) = posXY.at(1);
+    //_inputTraining[_inputTraining.rows() -1].at(0) = posXY.at(0);
+    // _inputTraining[_inputTraining.rows() -1].at(0) = posXY.at(1);
     //cout << "T: " << _inputTraining[_inputTraining.rows() -1].at(0) << ", "
     //     << _inputTraining[_inputTraining.rows() -1].at(1) << endl;
 
@@ -221,6 +232,84 @@ void SurfaceModelGP::printTrainingData()
 
 
 }
+
+void SurfaceModelGP::padBoundingBox()
+{
+    // padd the bounding box
+
+    //Get the minmum and maximums
+
+    gVec<double> *inputMax = _inputTraining.max(COLUMNWISE);
+    gVec<double> *inputMin = _inputTraining.min(COLUMNWISE);
+    gVec<double> *targetMin = _outputTraining.min(COLUMNWISE);
+
+    double xMin, xMax, yMin, yMax, zMin;
+
+    xMin = inputMin->at(0);
+    xMax = inputMax->at(0);
+    yMin = inputMin->at(1);
+    yMax = inputMax->at(1);
+    zMin = targetMin->at(0);
+
+    cout << "xMin:" << xMin << " xMax: " << yMax << " yMin: " << yMin << " yMax: " << yMax << endl;
+    cout << "Target Min: " << zMin << endl;
+
+    double xSteps = (xMax - xMin)/5;
+    double ySteps = (yMax - yMin)/5;
+
+    double yValue = yMin;
+    while (yValue <= yMax )
+    {
+        _xPoints.push_back(xMin);
+        _yPoints.push_back(yValue);
+        _zPoints.push_back(zMin);
+        yValue += ySteps;
+    }
+
+    yValue = yMin;
+    while (yValue <= yMax )
+    {
+        _xPoints.push_back(xMax);
+        _yPoints.push_back(yValue);
+        _zPoints.push_back(zMin);
+        yValue += ySteps;
+    }
+
+    double xValue = xMin;
+    while(xValue <= xMax)
+    {
+        _xPoints.push_back(xValue);
+        _yPoints.push_back(yMin);
+        _zPoints.push_back(zMin);
+        xValue += xSteps;
+    }
+
+    xValue = xMin;
+    while(xValue <= xMax)
+    {
+        _xPoints.push_back(xValue);
+        _yPoints.push_back(yMax);
+        _zPoints.push_back(zMin);
+        xValue += xSteps;
+    }
+
+
+    // Update the gvectors
+    _inputTraining.resize(_xPoints.size(),2);
+    _outputTraining.resize(_zPoints.size(),1);
+
+
+    for(int i =0; i < _xPoints.size(); i++ )
+    {
+        _inputTraining(i, 1) =  _yPoints.at(i);
+        _inputTraining(i, 0) = _xPoints.at(i);
+        _outputTraining(i,0) = _zPoints.at(i);
+    }
+
+
+}
+
+
 
 void SurfaceModelGP::setBoundingBox(const double xMin, const double xMax, const double yMin, const double yMax,
                                     const unsigned int nPoints, const double offset)
@@ -367,7 +456,7 @@ bool SurfaceModelGP::getMaxVariancePose(const gMat2D<double> &positions,
 
     cout << "Max var location ("<< maxVariancePos.toString() << ")" << endl;
 
-     _isValidMaxVar = true;
+    _isValidMaxVar = true;
 
     return true;
 
