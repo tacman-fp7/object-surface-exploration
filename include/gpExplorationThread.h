@@ -4,6 +4,8 @@
 #include "tappingExplorationThread.h"
 #include "surfaceModelGP.h"
 
+#define FORCE_TH 1.6
+
 namespace objectExploration
 {
 
@@ -14,7 +16,8 @@ public:
     GPExplorationThread(int period, ICartesianControl* robotCartesianController,
                             ObjectFeaturesThread* objectFeatures):
         TappingExplorationThread(period, robotCartesianController,
-                                  objectFeatures){ _surfaceModel = objectFeatures->getGPSurfaceModel();}
+                                  objectFeatures){ _surfaceModel = objectFeatures->getGPSurfaceModel();
+                                                 _forceThreshold = FORCE_TH;}
 
     virtual void run();
     virtual bool threadInit();

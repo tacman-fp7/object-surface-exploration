@@ -6,6 +6,8 @@
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Bottle.h>
 
+#define FORCE_TH 1.6
+
 namespace objectExploration
 {
 
@@ -28,7 +30,7 @@ public:
     TappingExplorationThread(int period, ICartesianControl* robotCartesianController,
                             ObjectFeaturesThread* objectFeatures):
         ExplorationStrategyThread(period, robotCartesianController,
-                                  objectFeatures){ _nGrid = 0;}
+                                  objectFeatures){ _nGrid = 0; _forceThreshold = FORCE_TH;}
     virtual void run();
     virtual bool threadInit();
     virtual void threadRelease();
