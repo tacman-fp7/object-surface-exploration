@@ -108,7 +108,29 @@ void GPExplorationThread::maintainContact()
     // _objectFeatures->getFingertipPose(fingertipPosition, fingertipOrientation);
     //cout << "Position of the fingertip: " << fingertipPosition.toString();
 
+    // Check if finger position is close to the waypoint
+    Vector pos, orient;
+    Vector posInArm;
+
+    _objectFeatures->getWayPoint(pos, orient, false);
+
+    _objectFeatures->indexFinger2ArmPosition(fingertipPosition, posInArm);
+
+    double dist;
+
+    dist = sqrt(pow(pos[0] - posInArm[0], 2) +
+            pow(pos[1] - posInArm[1], 2));
+    if(dist > 8.0/1000)
+    {
+        cout << "Too far from the requested position: " << dist << endl;
+    }
+
+
+
     _surfaceModel->addContactPoint(fingertipPosition);
+    //_surfaceModel->addContactPoint(fingertipPosition);
+
+
 
     // Maintain contact
     TappingExplorationThread::maintainContact();
@@ -124,7 +146,7 @@ bool GPExplorationThread::initialiseGP(Vector startingPos, Vector startingOrient
 
     //_surfaceModel->loadContactData("boundingBox");
     double xMin, xMax, yMin, yMax, zMin;
-    int nSteps = 5;
+    int nSteps = 20;
     xMax = startingPos[0];
     xMin = xMax - 60.0/1000;
 
@@ -141,10 +163,10 @@ bool GPExplorationThread::initialiseGP(Vector startingPos, Vector startingOrient
     }
 
     _surfaceModel->padBoundingBox(xMin, xMax, yMin, yMax, zMin, nSteps, 0.0/1000);
-    _surfaceModel->setBoundingBox(120, 0/1000);
+    _surfaceModel->setBoundingBox(nSteps, 0/1000);
     _surfaceModel->trainModel();
     _surfaceModel->updateSurfaceEstimate();
-    _surfaceModel->padBoundingBox(xMin, xMax, yMin, yMax, zMin, nSteps, 0.0/1000);
+    //_surfaceModel->padBoundingBox(xMin, xMax, yMin, yMax, zMin, nSteps, 0.0/1000);
 
     // Set the waypoint to the midpoint
     Vector pos;
@@ -165,7 +187,7 @@ bool GPExplorationThread::initialiseGP(Vector startingPos, Vector startingOrient
 
 
 
- /*   //////
+    /*   //////
     Vector pos, orient;
     pos = startingPos;
     orient = startingOrient;
@@ -373,7 +395,7 @@ void GPExplorationThread::setWayPoint_GP()
 
     moveArmUp();
 
-     if(ret)
+    if(ret)
         _contactState = APPROACH_OBJECT;
     else
         _contactState = FINISHED;

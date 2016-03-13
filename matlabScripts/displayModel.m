@@ -21,7 +21,7 @@ while(true)
     
     
     
-    nPoints = 120;
+    nPoints = 20;
     
     modelInput = dlmread(modelInputFileName);
     modelOutput = dlmread(modelOutputFileName);
