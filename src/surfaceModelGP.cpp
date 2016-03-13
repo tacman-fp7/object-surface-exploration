@@ -25,6 +25,7 @@ SurfaceModelGP::SurfaceModelGP(const std::string objectName)
     _inputTraining.resize(0,2);
     _paddingPoints = 0;
     _maxX = _minX = _maxY = _minY = 0;
+    _repeatVar = false;
 
 }
 
@@ -260,7 +261,7 @@ void SurfaceModelGP::padBoundingBox()
     padBoundingBox(xMin, xMax, yMin, yMax, zMin, 5, 0/1000);
 
 
-/*    cout << "xMin:" << xMin << " xMax: " << yMax << " yMin: " << yMin << " yMax: " << yMax << endl;
+    /*    cout << "xMin:" << xMin << " xMax: " << yMax << " yMin: " << yMin << " yMax: " << yMax << endl;
     cout << "Target Min: " << zMin << endl;
 
     double xSteps = (xMax - xMin)/5;
@@ -334,8 +335,8 @@ void SurfaceModelGP::padBoundingBox(double xMin, double xMax, double yMin, doubl
     double xSteps = (xMax - xMin)/nSteps;
     double ySteps = (yMax - yMin)/nSteps;
 
-    cout << "xSteps: " << xSteps << endl;
-    cout << "ySteps: " << ySteps << endl;
+    //cout << "xSteps: " << xSteps << endl;
+    //cout << "ySteps: " << ySteps << endl;
 
     double yValue = yMin;
     while (yValue <= yMax )
@@ -356,7 +357,7 @@ void SurfaceModelGP::padBoundingBox(double xMin, double xMax, double yMin, doubl
     }
 
     double xValue = xMin + xSteps;
-    while(xValue <= xMax)
+    while(xValue < xMax)
     {
         _xPoints.push_back(xValue);
         _yPoints.push_back(yMin);
@@ -365,7 +366,7 @@ void SurfaceModelGP::padBoundingBox(double xMin, double xMax, double yMin, doubl
     }
 
     xValue = xMin + xSteps;
-    while(xValue <= xMax)
+    while(xValue < xMax)
     {
         _xPoints.push_back(xValue);
         _yPoints.push_back(yMax);
@@ -473,7 +474,18 @@ bool SurfaceModelGP::updateSurfaceEstimate(const unsigned int nPoints, const dou
 
 
     //yarp::sig::Vector maxVariancePos;
-    getMaxVariancePose(_inputTesting, vars, *means, _maxVariancePos);
+
+    while(true){
+        getMaxVariancePose(_inputTesting, vars, *means, _maxVariancePos);
+        if(!_repeatVar)
+        {
+
+            break;
+         }
+
+
+
+    }
 
 
     // Save the data for matlab visualisation
@@ -509,26 +521,35 @@ bool SurfaceModelGP::getMaxVariancePose(yarp::sig::Vector &maxVariancePos)
 }
 
 bool SurfaceModelGP::getMaxVariancePose(const gMat2D<double> &positions,
-                                        const gMat2D<double> &variances,
+                                        gMat2D<double> &variances,
                                         const gMat2D<double> &means,
                                         yarp::sig::Vector &maxVariancePos)
 {
+    _repeatVar = false;
     //yarp::sig::Vector maxVariancePos;
     maxVariancePos.clear();
     maxVariancePos.resize(3); // x, y  and z
     maxVariancePos.zero();
 
     unsigned long maxVarianceIndex = 0;
+    double minVariance;
     double maxVariance;
 
     if(variances.getSize() > 0)
+    {
         maxVariance = variances.max(gurls::COLUMNWISE)->at(0);
+        //maxVarianceIndex = variances.argmax(gurls::COLUMNWISE)->at(0);
+        minVariance = variances.min(gurls::COLUMNWISE)->at(0);
 
+    }
+
+    // cout << "Argmax:  " << maxVarianceIndex << endl;
     // Search for the index of the maxVariance
     for( const double *var = variances.begin(); var != variances.end(); var++)
     {
         if(*var == maxVariance)
             break;
+
 
         maxVarianceIndex++;
     }
@@ -536,6 +557,37 @@ bool SurfaceModelGP::getMaxVariancePose(const gMat2D<double> &positions,
     maxVariancePos[0] = positions(maxVarianceIndex,0);
     maxVariancePos[1] = positions(maxVarianceIndex,1);
     maxVariancePos[2] = means(maxVarianceIndex,0);
+
+    // Check if it is in the corners
+    if( fabs(_maxX - maxVariancePos[0]) < 10.0/1000){
+        //cout << "At the edge" << endl;
+        variances(maxVarianceIndex, 0) = minVariance;
+        _repeatVar = true;
+        return false;
+
+    }
+
+    if(fabs(_minX - maxVariancePos[0]) < 1.0/1000){
+        //cout << "At the edge" << endl;
+        variances(maxVarianceIndex, 0) = minVariance;
+        _repeatVar = true;
+        return false;
+    }
+
+    if( fabs(_maxY - maxVariancePos[1]) < 1.0/1000){
+        //cout << "At the edge" << endl;
+        variances(maxVarianceIndex, 0) = minVariance;
+        _repeatVar = true;
+        return false;
+    }
+
+    if(fabs(_minY - maxVariancePos[1]) < 1.0/1000){
+        //cout << "At the edge" << endl;
+        variances(maxVarianceIndex, 0) = minVariance;
+        _repeatVar = true;
+        return false;
+    }
+
 
     cout << "Max var location ("<< maxVariancePos.toString() << ")" << endl;
 

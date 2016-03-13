@@ -143,8 +143,9 @@ bool GPExplorationThread::initialiseGP(Vector startingPos, Vector startingOrient
     _surfaceModel->padBoundingBox(xMin, xMax, yMin, yMax, zMin, nSteps, 0.0/1000);
     //_surfaceModel->padBoundingBox(xMin, xMax, yMin, yMax, zMin, nSteps, 0.0/1000);
 
-    _surfaceModel->trainModel();
     _surfaceModel->setBoundingBox(120, 0/1000);
+
+    _surfaceModel->trainModel();
     _surfaceModel->updateSurfaceEstimate();
 
     // Set the waypoint to the midpoint
@@ -154,7 +155,12 @@ bool GPExplorationThread::initialiseGP(Vector startingPos, Vector startingOrient
     pos[1] = (yMin + yMax)/2.0;
     pos[2] = startingPos[2];
     makeSingleContact(pos, startingOrient);
+    _surfaceModel->trainModel();
+    _surfaceModel->updateSurfaceEstimate();
     makeSingleContact(pos, startingOrient);
+    _surfaceModel->trainModel();
+    _surfaceModel->updateSurfaceEstimate();
+
 
 
     return true;

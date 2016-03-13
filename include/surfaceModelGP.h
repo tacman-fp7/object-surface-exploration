@@ -50,7 +50,7 @@ private:
     bool init(ResourceFinder& rf);
     double readOption(const string& main, const string& sub,  gurls::GurlsOptionsList *opt);
     gMat2D<double>* eval(const gMat2D<double> &X, gMat2D<double> &vars, gurls::GurlsOptionsList *opt);
-    bool getMaxVariancePose(const gMat2D <double> &positions, const gMat2D <double> &variance,
+    bool getMaxVariancePose(const gMat2D <double> &positions, gMat2D <double> &variance,
                             const gMat2D <double> &means, Vector &maxVariancePos);
     void printTrainingData();
     //void addPaddingPoints(double startPoint, double endPoint, double constAxis, double targetValue);
@@ -72,7 +72,7 @@ private:
     std::vector <double> _yPoints;
     std::vector <double> _zPoints;
     int _paddingPoints;
-
+    bool _repeatVar;
     double _maxX, _maxY, _minX, _minY;
 }; // end of class
 } // end of namespace objectExploration
