@@ -520,8 +520,8 @@ bool ObjectFeaturesThread::indexFinger2ArmPosition(Vector &fingertipPosition, Ve
     retArmpPosition[1] = fingertipPosition[1] + tip_x[1];
     retArmpPosition[2] = fingertipPosition[2] - tip_x[2];
     //cout << "Arm pos: " << armPos.toString() << endl;
-    cout << "Ftp pos: " << tip_x.toString() << endl;
-    cout << "Ret pos: " << retArmpPosition.toString() << endl;
+    //cout << "Ftp pos: " << tip_x.toString() << endl;
+    //cout << "Ret pos: " << retArmpPosition.toString() << endl;
 
     //_armCartesianCtrl->goToPoseSync(retArmpPosition, _desiredStartingOrientation);
     //_armCartesianCtrl->waitMotionDone();

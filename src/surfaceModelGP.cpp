@@ -84,7 +84,7 @@ void SurfaceModelGP::addContactPoint(gVec<double> posXY, gVec<double> posZ)
         return;
     }
     // Add the new point to the matrix
-    cout << "Adding a new contact point: " << _inputTraining.rows() - _paddingPoints  << endl;
+    cout << "Adding a new contact point: " << _inputTraining.rows() - _paddingPoints + 1 << endl;
     //cout << posXY.at(0) << ", " << posXY.at(1) << " " << posZ.at(0) << endl;
     //cout << "Size: " << posXY.getSize() << endl;
     //cout << "Data: " << *(posXY.getData()) << "," << *(posXY.getData()+1) << endl;
@@ -215,7 +215,7 @@ bool SurfaceModelGP::trainModel(){
 
     string jobId0("train");
 
-    cout << "Training the model with size: " << _inputTraining.getSize() << endl;
+    //cout << "Training the model with size: " << _inputTraining.getSize() << endl;
     // run gurls for training
     _objectModel.run(_inputTraining, _outputTraining, *_opt, jobId0);
 
@@ -345,6 +345,7 @@ void SurfaceModelGP::padBoundingBox(double xMin, double xMax, double yMin, doubl
         _yPoints.push_back(yValue);
         _zPoints.push_back(zMin);
         yValue += ySteps;
+        _paddingPoints ++;
     }
 
     yValue = yMin;
@@ -354,6 +355,7 @@ void SurfaceModelGP::padBoundingBox(double xMin, double xMax, double yMin, doubl
         _yPoints.push_back(yValue);
         _zPoints.push_back(zMin);
         yValue += ySteps;
+        _paddingPoints ++;
     }
 
     double xValue = xMin + xSteps;
@@ -363,6 +365,7 @@ void SurfaceModelGP::padBoundingBox(double xMin, double xMax, double yMin, doubl
         _yPoints.push_back(yMin);
         _zPoints.push_back(zMin);
         xValue += xSteps;
+        _paddingPoints ++;
     }
 
     xValue = xMin + xSteps;
@@ -372,6 +375,7 @@ void SurfaceModelGP::padBoundingBox(double xMin, double xMax, double yMin, doubl
         _yPoints.push_back(yMax);
         _zPoints.push_back(zMin);
         xValue += xSteps;
+        _paddingPoints ++;
     }
 
 
@@ -558,8 +562,9 @@ bool SurfaceModelGP::getMaxVariancePose(const gMat2D<double> &positions,
     maxVariancePos[1] = positions(maxVarianceIndex,1);
     maxVariancePos[2] = means(maxVarianceIndex,0);
 
+    double epsilon = 5.0/1000;
     // Check if it is in the corners
-    if( fabs(_maxX - maxVariancePos[0]) < 10.0/1000){
+    if( fabs(_maxX - maxVariancePos[0]) < epsilon){
         //cout << "At the edge" << endl;
         variances(maxVarianceIndex, 0) = minVariance;
         _repeatVar = true;
@@ -567,21 +572,21 @@ bool SurfaceModelGP::getMaxVariancePose(const gMat2D<double> &positions,
 
     }
 
-    if(fabs(_minX - maxVariancePos[0]) < 1.0/1000){
+    if(fabs(_minX - maxVariancePos[0]) < epsilon){
         //cout << "At the edge" << endl;
         variances(maxVarianceIndex, 0) = minVariance;
         _repeatVar = true;
         return false;
     }
 
-    if( fabs(_maxY - maxVariancePos[1]) < 1.0/1000){
+    if( fabs(_maxY - maxVariancePos[1]) < epsilon){
         //cout << "At the edge" << endl;
         variances(maxVarianceIndex, 0) = minVariance;
         _repeatVar = true;
         return false;
     }
 
-    if(fabs(_minY - maxVariancePos[1]) < 1.0/1000){
+    if(fabs(_minY - maxVariancePos[1]) < epsilon){
         //cout << "At the edge" << endl;
         variances(maxVarianceIndex, 0) = minVariance;
         _repeatVar = true;
@@ -589,7 +594,7 @@ bool SurfaceModelGP::getMaxVariancePose(const gMat2D<double> &positions,
     }
 
 
-    cout << "Max var location ("<< maxVariancePos.toString() << ")" << endl;
+    //cout << "Max var location ("<< maxVariancePos.toString() << ")" << endl;
 
     _isValidMaxVar = true;
 
