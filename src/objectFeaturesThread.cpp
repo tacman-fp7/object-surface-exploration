@@ -1314,8 +1314,8 @@ void ObjectFeaturesThread::updateRobotReachableSpace()
 {
     if(_desiredStartingPose_isValid) // && _desiredEndPose_isValid)
     {
-        _robotReachableSpace.minX = _desiredStartingPosition[0] - 0.20; //Maximum width 13 cm + 2 cm leeway
-        _robotReachableSpace.maxX = _desiredStartingPosition[0] + 0.02;
+        _robotReachableSpace.minX = _desiredStartingPosition[0] - 0.30; //Maximum width 13 cm + 2 cm leeway
+        _robotReachableSpace.maxX = _desiredStartingPosition[0] + 0.10;
         _robotReachableSpace.minZ = _desiredStartingPosition[2] - 0.05;
         _robotReachableSpace.maxZ = _desiredStartingPosition[2] + 0.05;
 
@@ -1325,14 +1325,14 @@ void ObjectFeaturesThread::updateRobotReachableSpace()
     {
         if(_desiredStartingPosition[1] < _desiredEndPosition[1])
         {
-            _robotReachableSpace.minY = _desiredStartingPosition[1] - 0.04;
-            _robotReachableSpace.maxY = _desiredEndPosition[1] + 0.04;
+            _robotReachableSpace.minY = _desiredStartingPosition[1] - 0.08;
+            _robotReachableSpace.maxY = _desiredEndPosition[1] + 0.08;
 
         }
         else
         {
-            _robotReachableSpace.minY = _desiredEndPosition[1] - 0.04;
-            _robotReachableSpace.maxY = _desiredStartingPosition[1] + 0.04;
+            _robotReachableSpace.minY = _desiredEndPosition[1] - 0.08;
+            _robotReachableSpace.maxY = _desiredStartingPosition[1] + 0.08;
 
         }
     }

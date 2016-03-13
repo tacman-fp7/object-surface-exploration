@@ -125,34 +125,23 @@ ExploreObject::~ExploreObject()
 
 bool ExploreObject::goToStartingPose()
 {
-    Vector pos, orient;
-    Vector armPos, armOrient;
-    pos.resize(3);
-    orient.resize(4);
-    if(_objectFeaturesThread->getStartingPose(pos, orient))
+    Vector desiredFingerPos;
+    Vector desiredArmPos, desiredArmOrient;
+    Vector currentArmPos, currentArmOrient;
+
+
+    if(_objectFeaturesThread->getStartingPose(desiredFingerPos, desiredArmOrient))
     {
 
-        /*        // Quick test
-       double armJoints[16];
-       memset(armJoints, 0, sizeof(armJoints));
-       armJoints[0] = -20;
-       armJoints[1] = 29;
-       armJoints[2] = 42;
-       armJoints[3] = 46;
-       armJoints[4] = 57;
-       armJoints[5] = -14;
-       armJoints[6] = -7;
-       armJoints[7] = 39;
-       armJoints[8] = 11;
+      // Move the arm up before moving sideways
+        _objectFeaturesThread->indexFinger2ArmPosition(desiredFingerPos, desiredArmPos);
+        _objectFeaturesThread->getArmPose(currentArmPos, currentArmOrient);
+        currentArmPos[2] = desiredArmPos[2];
+        _objectFeaturesThread->moveArmToPosition(currentArmPos, currentArmOrient);
 
-       _armJointPositionController->positionMove(armJoints);
 
-*/
-        _objectFeaturesThread->getArmPose(armPos, armOrient);
-        armPos[2] = pos[2];
-        _objectFeaturesThread->moveArmToPosition(armPos, armOrient);
 
-        _armCartesianController->goToPoseSync(pos, orient);
+        _armCartesianController->goToPoseSync(desiredArmPos, desiredArmOrient);
         return true;
     }
 
@@ -183,17 +172,20 @@ bool ExploreObject::goToHomePose()
 
 bool ExploreObject::goToEndPose()
 {
-    Vector pos, orient;
-    Vector armPos, armOrient;
-    pos.resize(3); // x,y,z position
-    orient.resize(4); // x,y,z,w prientation
-    if(_objectFeaturesThread->getDesiredEndPose(pos, orient))
-    {
-        _objectFeaturesThread->getArmPose(armPos, armOrient);
-        armPos[2] = pos[2];
-        _objectFeaturesThread->moveArmToPosition(armPos, armOrient);
+    Vector desiredFingerPos;
+    Vector desiredArmPos, desiredArmOrient;
+    Vector currentArmPos, currentArmOrient;
 
-        _armCartesianController->goToPoseSync(pos, orient);
+    if(_objectFeaturesThread->getDesiredEndPose(desiredFingerPos, desiredArmOrient))
+    {
+        _objectFeaturesThread->indexFinger2ArmPosition(desiredFingerPos, desiredArmPos);
+        // Move the hand up before moving sidways.
+        _objectFeaturesThread->getArmPose(currentArmPos, currentArmOrient);
+        currentArmPos[2] = desiredArmPos[2];
+        _objectFeaturesThread->moveArmToPosition(currentArmPos, currentArmOrient);
+
+
+        _armCartesianController->goToPoseSync(desiredArmPos, desiredArmOrient);
         return true;
     }
     return false;

@@ -120,18 +120,48 @@ void GPExplorationThread::maintainContact()
 bool GPExplorationThread::initialiseGP(Vector startingPos, Vector startingOrient,
                                        Vector endingPos, Vector endingOrient)
 {
-    bool ret = true;
+    //bool ret = true;
 
-    _surfaceModel->loadContactData("boundingBox");
+    //_surfaceModel->loadContactData("boundingBox");
+    double xMin, xMax, yMin, yMax, zMin;
+    int nSteps = 5;
+    xMax = startingPos[0];
+    xMin = xMax - 60.0/1000;
+
+    zMin = -0.15; // TODO: fix it! Maybe take it form reachable space
+    if(startingPos[1] < endingPos[1])
+    {
+        yMin = startingPos[1];
+        yMax = endingPos[1];
+    }
+    else
+    {
+        yMin = endingPos[1];
+        yMax = startingPos[1];
+    }
+
+    _surfaceModel->padBoundingBox(xMin, xMax, yMin, yMax, zMin, nSteps, 0.0/1000);
+    //_surfaceModel->padBoundingBox(xMin, xMax, yMin, yMax, zMin, nSteps, 0.0/1000);
+
     _surfaceModel->trainModel();
-    _surfaceModel->setBoundingBox(120, 5.0/1000);
+    _surfaceModel->setBoundingBox(120, 0/1000);
     _surfaceModel->updateSurfaceEstimate();
+
+    // Set the waypoint to the midpoint
+    Vector pos;
+    pos.resize(3);
+    pos[0] = (xMin + xMax)/2.0;
+    pos[1] = (yMin + yMax)/2.0;
+    pos[2] = startingPos[2];
+    makeSingleContact(pos, startingOrient);
+    makeSingleContact(pos, startingOrient);
+
 
     return true;
 
 
 
-    //////
+ /*   //////
     Vector pos, orient;
     pos = startingPos;
     orient = startingOrient;
@@ -185,7 +215,7 @@ bool GPExplorationThread::initialiseGP(Vector startingPos, Vector startingOrient
 
 
 
-    return ret;
+    return ret; */
 }
 
 
@@ -199,7 +229,9 @@ void GPExplorationThread::moveArmUp()
     _objectFeatures->getArmPose(armPos, orient);
     _objectFeatures->getStartingPose(startingPos, startingOrient);
 
-    armPos[2] = startingPos[2]; // Move the fingertip up to avoid collisiont
+    Vector desiredArmPos;
+    _objectFeatures->indexFinger2ArmPosition(startingPos, desiredArmPos);
+    armPos[2] = desiredArmPos[2]; // Move the fingertip up to avoid collisiont
     _objectFeatures->moveArmToPosition(armPos, orient);
 
 
@@ -219,9 +251,10 @@ void GPExplorationThread::moveArmUp()
 
 void GPExplorationThread::makeSingleContact(Vector pos, Vector orient)
 {
-    //Vector armPos;
-     //_objectFeatures->indexFinger2ArmPosition(pos, armPos);
-    _objectFeatures->setWayPointGP(pos, orient);
+    Vector desiredArmPos;
+    _objectFeatures->indexFinger2ArmPosition(pos, desiredArmPos);
+
+    _objectFeatures->setWayPointGP(desiredArmPos, orient);
     _contactState = APPROACH_OBJECT;
 
     moveArmUp();
@@ -278,7 +311,7 @@ void GPExplorationThread::makeSingleContact(Vector pos, Vector orient)
         }
     }
 
-    Vector  armPos, armOrient;
+    Vector armPos, armOrient;
     Vector startingPos, startingOrient;
     //_objectFeatures->prepHand();
     _curProximal = 10;
@@ -289,7 +322,9 @@ void GPExplorationThread::makeSingleContact(Vector pos, Vector orient)
     _objectFeatures->getArmPose(armPos, armOrient);
     _objectFeatures->getStartingPose(startingPos, startingOrient);
 
-    armPos[2] = startingPos[2]; // Move the fingertip up to avoid collisiont
+
+    _objectFeatures->indexFinger2ArmPosition(startingPos, desiredArmPos);
+    armPos[2] = desiredArmPos[2]; // Move the fingertip up to avoid collisiont
     _objectFeatures->moveArmToPosition(armPos, orient);
 
 

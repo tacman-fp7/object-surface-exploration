@@ -38,6 +38,7 @@ public:
     void addContactPoint(gVec<double> posXY, gVec<double> posZ);
     void saveContactPoints();
     void padBoundingBox();
+    void padBoundingBox(double xMin, double xMax, double yMin, double yMax, double zMin, int nSteps = 5, double offset = 0/1000);
     void setBoundingBox(const unsigned int nPoints = 120, const double offset = 5/1000);
     void setBoundingBox(const double xMin, const double xMax, const double yMin, const double yMax,
                         const unsigned int nPoints = 120, const double offset = 5/1000);
@@ -72,5 +73,6 @@ private:
     std::vector <double> _zPoints;
     int _paddingPoints;
 
+    double _maxX, _maxY, _minX, _minY;
 }; // end of class
 } // end of namespace objectExploration

@@ -24,6 +24,7 @@ SurfaceModelGP::SurfaceModelGP(const std::string objectName)
     _isValidMaxVar = false;
     _inputTraining.resize(0,2);
     _paddingPoints = 0;
+    _maxX = _minX = _maxY = _minY = 0;
 
 }
 
@@ -76,6 +77,11 @@ void SurfaceModelGP::addContactPoint(const Vector fingertipPosition)
 
 void SurfaceModelGP::addContactPoint(gVec<double> posXY, gVec<double> posZ)
 {
+    if(posXY.at(0) <= _minX || posXY.at(0) >= _maxX || posXY.at(1) <= _minY || posXY.at(1) >= _maxY)
+    {
+        cout << "Contact outside the bounding box, skipping it!" << endl;
+        return;
+    }
     // Add the new point to the matrix
     cout << "Adding a new contact point: " << _inputTraining.rows() - _paddingPoints  << endl;
     //cout << posXY.at(0) << ", " << posXY.at(1) << " " << posZ.at(0) << endl;
@@ -251,7 +257,10 @@ void SurfaceModelGP::padBoundingBox()
     yMax = inputMax->at(1);
     zMin = targetMin->at(0);
 
-    cout << "xMin:" << xMin << " xMax: " << yMax << " yMin: " << yMin << " yMax: " << yMax << endl;
+    padBoundingBox(xMin, xMax, yMin, yMax, zMin, 5, 0/1000);
+
+
+/*    cout << "xMin:" << xMin << " xMax: " << yMax << " yMin: " << yMin << " yMax: " << yMax << endl;
     cout << "Target Min: " << zMin << endl;
 
     double xSteps = (xMax - xMin)/5;
@@ -266,7 +275,7 @@ void SurfaceModelGP::padBoundingBox()
         yValue += ySteps;
     }
 
-    yValue = yMin;
+    yValue = yMin + ySteps;
     while (yValue <= yMax )
     {
         _xPoints.push_back(xMax);
@@ -284,7 +293,7 @@ void SurfaceModelGP::padBoundingBox()
         xValue += xSteps;
     }
 
-    xValue = xMin;
+    xValue = xMin + xSteps;
     while(xValue <= xMax)
     {
         _xPoints.push_back(xValue);
@@ -306,10 +315,79 @@ void SurfaceModelGP::padBoundingBox()
         _outputTraining(i,0) = _zPoints.at(i);
     }
 
-
+*/
 }
 
+void SurfaceModelGP::padBoundingBox(double xMin, double xMax, double yMin, double yMax, double zMin, int nSteps, double offset)
+{
+    cout << "xMin:" << xMin << " xMax: " << xMax  << " yMin: " << yMin << " yMax: " << yMax << endl;
+    cout << "Target Min: " << zMin << endl;
 
+    xMin += offset;
+    xMax -= offset;
+    yMin += offset;
+    yMax -= offset;
+
+    assert(xMax > xMin);
+    assert(yMax > yMin);
+
+    double xSteps = (xMax - xMin)/nSteps;
+    double ySteps = (yMax - yMin)/nSteps;
+
+    cout << "xSteps: " << xSteps << endl;
+    cout << "ySteps: " << ySteps << endl;
+
+    double yValue = yMin;
+    while (yValue <= yMax )
+    {
+        _xPoints.push_back(xMin);
+        _yPoints.push_back(yValue);
+        _zPoints.push_back(zMin);
+        yValue += ySteps;
+    }
+
+    yValue = yMin;
+    while (yValue <= yMax )
+    {
+        _xPoints.push_back(xMax);
+        _yPoints.push_back(yValue);
+        _zPoints.push_back(zMin);
+        yValue += ySteps;
+    }
+
+    double xValue = xMin + xSteps;
+    while(xValue <= xMax)
+    {
+        _xPoints.push_back(xValue);
+        _yPoints.push_back(yMin);
+        _zPoints.push_back(zMin);
+        xValue += xSteps;
+    }
+
+    xValue = xMin + xSteps;
+    while(xValue <= xMax)
+    {
+        _xPoints.push_back(xValue);
+        _yPoints.push_back(yMax);
+        _zPoints.push_back(zMin);
+        xValue += xSteps;
+    }
+
+
+    //cout << "Here" << endl;
+    // Update the gvectors
+    _inputTraining.resize(_xPoints.size(),2);
+    _outputTraining.resize(_zPoints.size(),1);
+
+
+    for(int i =0; i < _xPoints.size(); i++ )
+    {
+        _inputTraining(i, 1) =  _yPoints.at(i);
+        _inputTraining(i, 0) = _xPoints.at(i);
+        _outputTraining(i,0) = _zPoints.at(i);
+    }
+    //cout << "Here 2" << endl;
+}
 
 void SurfaceModelGP::setBoundingBox(const double xMin, const double xMax, const double yMin, const double yMax,
                                     const unsigned int nPoints, const double offset)
@@ -317,6 +395,11 @@ void SurfaceModelGP::setBoundingBox(const double xMin, const double xMax, const 
 
     double *xlin = NULL;
     double *ylin = NULL;
+    _maxX = xMax - offset;
+    _maxY = yMax - offset;
+    _minX = xMin + offset;
+    _minY = yMin + offset;
+
     xlin = new (std::nothrow) double[nPoints];
     ylin = new (std::nothrow) double[nPoints];
 
