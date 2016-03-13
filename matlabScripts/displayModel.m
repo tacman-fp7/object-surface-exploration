@@ -4,6 +4,8 @@ nextPointFileName = [objectName '_model_nextPoint.csv'];
 modelInputFileName = [objectName '_model_input.csv'];
 modelOutputFileName = [objectName '_model_output_GP.csv'];
 modelVarianceFileName = [objectName '_model_variance_GP.csv'];
+trainingInputFileName = [objectName '_training_input_GP.csv'];
+trainingTargetFileName = [objectName '_training_target_GP.csv'];
 viewVars = [140, 35];
 
 while(true)
@@ -24,6 +26,8 @@ while(true)
     modelInput = dlmread(modelInputFileName);
     modelOutput = dlmread(modelOutputFileName);
     modelVariance = dlmread(modelVarianceFileName);
+    trainingInput = dlmread(trainingInputFileName);
+    trainingTarget = dlmread(trainingTargetFileName);
     
     x = modelInput(:, 1);% - min(inputTesting(:, 1));
     y = modelInput(:, 2);% - min(inputTesting(:, 2));
@@ -51,7 +55,13 @@ while(true)
     
     hold on
     h_cp = scatter3(maxVarPoint(1), maxVarPoint(2),...
-        maxVarPoint(3), 'fill', 'markerFaceColor', 'blue', 'sizeData', [100]);
+        maxVarPoint(3), 'fill', 'markerFaceColor', 'green', 'sizeData', [100]);
+    hold off
+    
+    trainingTarget = trainingTarget - min(trainingTarget);
+     hold on
+    h_cp = scatter3(trainingInput(:,1), trainingInput(:,2),...
+        trainingTarget(:,1), 'fill', 'markerFaceColor', 'blue', 'sizeData', [50]);
     hold off
     
     figure(2)
@@ -66,9 +76,10 @@ while(true)
     
     hold on
     h_cp = scatter3(maxVarPoint(1), maxVarPoint(2),...
-        maxVarPoint(4), 'fill', 'markerFaceColor', 'blue', 'sizeData', [100]);
+        maxVarPoint(4), 'fill', 'markerFaceColor', 'green', 'sizeData', [100]);
     hold off
     
+    %regressGPML([trainingInput(2:end,:) trainingTarget(2:end, :)], viewVars)
     drawnow;
     
 end
