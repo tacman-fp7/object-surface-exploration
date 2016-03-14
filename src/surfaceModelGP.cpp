@@ -348,6 +348,16 @@ void SurfaceModelGP::padBoundingBox(double xMin, double xMax, double yMin, doubl
         _paddingPoints ++;
     }
 
+    // Check if the last point added is at maximum
+    // Othrewise add at maximum
+    if(fabs(yValue - yMax) < fabs(ySteps))
+    {
+        _xPoints.push_back(xMin);
+        _yPoints.push_back(yValue);
+        _zPoints.push_back(zMin);
+        _paddingPoints ++;
+    }
+
     yValue = yMin;
     while (yValue <= yMax )
     {
@@ -355,6 +365,16 @@ void SurfaceModelGP::padBoundingBox(double xMin, double xMax, double yMin, doubl
         _yPoints.push_back(yValue);
         _zPoints.push_back(zMin);
         yValue += ySteps;
+        _paddingPoints ++;
+    }
+
+    // Check if the last point added is at maximum
+    // Othrewise add at maximum
+    if(fabs(yValue - yMax) < fabs(ySteps))
+    {
+        _xPoints.push_back(xMax);
+        _yPoints.push_back(yValue);
+        _zPoints.push_back(zMin);
         _paddingPoints ++;
     }
 
