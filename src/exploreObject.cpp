@@ -15,6 +15,14 @@ using std::endl;
 using yarp::os::Value;
 
 
+bool ExploreObject::exploreGPSurface(const std::string objectName)
+{
+
+    cout << "Exploring GP generated surface: " << objectName << "." << endl;
+
+    return true;
+}
+
 bool ExploreObject::openHand()
 {
 

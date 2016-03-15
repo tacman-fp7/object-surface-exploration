@@ -111,6 +111,15 @@ public:
   virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
+class robotControl_exploreGPSurface : public yarp::os::Portable {
+public:
+  std::string objectName;
+  bool _return;
+  void init(const std::string& objectName);
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
+};
+
 class robotControl_quit : public yarp::os::Portable {
 public:
   bool _return;
@@ -394,6 +403,29 @@ void robotControl_startExploringGP::init() {
   _return = false;
 }
 
+bool robotControl_exploreGPSurface::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(2)) return false;
+  if (!writer.writeTag("exploreGPSurface",1,1)) return false;
+  if (!writer.writeString(objectName)) return false;
+  return true;
+}
+
+bool robotControl_exploreGPSurface::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void robotControl_exploreGPSurface::init(const std::string& objectName) {
+  _return = false;
+  this->objectName = objectName;
+}
+
 bool robotControl_quit::write(yarp::os::ConnectionWriter& connection) {
   yarp::os::idl::WireWriter writer(connection);
   if (!writer.writeListHeader(1)) return false;
@@ -544,6 +576,16 @@ bool robotControl::startExploringGP() {
   helper.init();
   if (!yarp().canWrite()) {
     yError("Missing server method '%s'?","bool robotControl::startExploringGP()");
+  }
+  bool ok = yarp().write(helper,helper);
+  return ok?helper._return:_return;
+}
+bool robotControl::exploreGPSurface(const std::string& objectName) {
+  bool _return = false;
+  robotControl_exploreGPSurface helper;
+  helper.init(objectName);
+  if (!yarp().canWrite()) {
+    yError("Missing server method '%s'?","bool robotControl::exploreGPSurface(const std::string& objectName)");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
@@ -716,6 +758,22 @@ bool robotControl::read(yarp::os::ConnectionReader& connection) {
       reader.accept();
       return true;
     }
+    if (tag == "exploreGPSurface") {
+      std::string objectName;
+      if (!reader.readString(objectName)) {
+        reader.fail();
+        return false;
+      }
+      bool _return;
+      _return = exploreGPSurface(objectName);
+      yarp::os::idl::WireWriter writer(reader);
+      if (!writer.isNull()) {
+        if (!writer.writeListHeader(1)) return false;
+        if (!writer.writeBool(_return)) return false;
+      }
+      reader.accept();
+      return true;
+    }
     if (tag == "quit") {
       bool _return;
       _return = quit();
@@ -774,6 +832,7 @@ std::vector<std::string> robotControl::help(const std::string& functionName) {
     helpString.push_back("openHand");
     helpString.push_back("calibrateHand");
     helpString.push_back("startExploringGP");
+    helpString.push_back("exploreGPSurface");
     helpString.push_back("quit");
     helpString.push_back("help");
   }
@@ -816,6 +875,9 @@ std::vector<std::string> robotControl::help(const std::string& functionName) {
     }
     if (functionName=="startExploringGP") {
       helpString.push_back("bool startExploringGP() ");
+    }
+    if (functionName=="exploreGPSurface") {
+      helpString.push_back("bool exploreGPSurface(const std::string& objectName) ");
     }
     if (functionName=="quit") {
       helpString.push_back("bool quit() ");

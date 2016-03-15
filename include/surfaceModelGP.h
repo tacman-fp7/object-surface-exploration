@@ -30,7 +30,8 @@ public:
     bool saveModel(); //to the disk
     bool updateModel();
     void saveModelOutput();
-    bool updateSurfaceEstimate(const unsigned int nGrid = 120, const double offset = 5/1000);
+    //void clearModel();
+    bool updateSurfaceEstimate(const unsigned int nGrid = 120, const double offset = 0.0/1000);
     //bool saveMeshCSV();
 
     void loadContactData(const std::string type);
@@ -38,10 +39,10 @@ public:
     void addContactPoint(gVec<double> posXY, gVec<double> posZ);
     void saveContactPoints();
     void padBoundingBox();
-    void padBoundingBox(double xMin, double xMax, double yMin, double yMax, double zMin, int nSteps = 5, double offset = 0/1000);
-    void setBoundingBox(const unsigned int nPoints = 120, const double offset = 5/1000);
+    void padBoundingBox(double xMin, double xMax, double yMin, double yMax, double zMin, int nSteps = 5, double offset = 0.0/1000);
+    void setBoundingBox(const unsigned int nPoints = 120, const double offset = 0.0/1000);
     void setBoundingBox(const double xMin, const double xMax, const double yMin, const double yMax,
-                        const unsigned int nPoints = 120, const double offset = 5/1000);
+                        const unsigned int nPoints = 120, const double offset = 0.0/1000);
 
     bool getMaxVariancePose(Vector &maxVariancePos);
 

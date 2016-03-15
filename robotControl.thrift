@@ -13,6 +13,7 @@ service robotControl {
 	bool openHand();
 	bool calibrateHand();
 	bool startExploringGP();
+	bool exploreGPSurface(1: string objectName);
 	bool quit();
 	
 }

@@ -13,6 +13,7 @@
 #include <yarp/dev/IControlMode2.h>
 #include <yarp/os/RFModule.h>
 #include <robotControl.h>
+#include <surfaceModelGP.h>
 
 using yarp::os::RFModule;
 
@@ -42,6 +43,7 @@ public: // Methods related to the robot control
     bool prepHand();
     bool calibrateHand();
     bool startExploringGP();
+    bool exploreGPSurface(const string objectName);
     bool quit();
     
 public: // Methods related to the RF module
@@ -54,6 +56,7 @@ public: // Methods related to the RF module
 private: // members related to the rf module
     // The port for the robot control server
     yarp::os::Port _robotControl_port;
+
     
 private: // Private members
     // It has to be instantiated with the desired approachObject instance

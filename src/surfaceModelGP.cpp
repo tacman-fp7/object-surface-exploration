@@ -14,6 +14,10 @@ using namespace gurls;
 using std::string;
 
 
+//void SurfaceModelGP::clearModel()
+//{
+    //_objectModel.
+//}
 
 SurfaceModelGP::SurfaceModelGP(const std::string objectName)
 {
