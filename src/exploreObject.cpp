@@ -15,13 +15,7 @@ using std::endl;
 using yarp::os::Value;
 
 
-bool ExploreObject::exploreGPSurface(const std::string objectName)
-{
 
-    cout << "Exploring GP generated surface: " << objectName << "." << endl;
-
-    return true;
-}
 
 bool ExploreObject::openHand()
 {
@@ -74,6 +68,7 @@ ExploreObject::ExploreObject(yarp::os::ResourceFinder& rf)
     //    _maintainContactThread = NULL;
     _exploreObjectThread = NULL;
     _exploreObjectGP_thread = NULL;
+    _exploreGPSurface_thread = NULL;
 
     //// TODO: I save system parameters here that I use in this module.
     /// This is not a good idea. I should change it.
@@ -108,6 +103,14 @@ ExploreObject::~ExploreObject()
             _exploreObjectGP_thread->stop();
         delete(_exploreObjectGP_thread);
         _exploreObjectGP_thread = NULL;
+    }
+
+    if(_exploreGPSurface_thread != NULL)
+    {
+        if(_exploreGPSurface_thread->isRunning())
+            _exploreGPSurface_thread->stop();
+        delete(_exploreGPSurface_thread);
+        _exploreGPSurface_thread = NULL;
     }
     /*    if(_maintainContactThread != NULL)
     {
@@ -240,6 +243,66 @@ bool ExploreObject::setEndPose()
 //   _approachObjectCntrl->updateHomePose(pos, orient);
 // return true;
 // }
+
+bool ExploreObject::exploreGPSurface(const std::string objectName)
+{
+
+    bool ret = true;
+    cout << "Exploring GP generated surface: " << objectName << "." << endl;
+
+    if(!_exploreObjectValid || !_objectFeaturesThread->isExplorationValid())
+    {
+        cerr << _dbgtag << "Cannot start exploring, one or more of the dependencies have not been met" << endl;
+        return false;
+    }
+
+
+    if(_exploreObjectOnOff)
+    {
+        prepHand();
+        if(!this->goToStartingPose())
+            ret = false;
+        _armCartesianController->waitMotionDone(0.1, 5);
+
+        // Ge the current position of the arm.
+        Vector pos, orient;
+        pos.resize(3);
+        orient.resize(4);
+        if(!_objectFeaturesThread->getArmPose(pos, orient))
+        {
+            cerr << _dbgtag << "Could not read the arm position, cannot start exploration" << endl;
+            return false;
+        }
+
+
+        // Setting the way point to the start of the exploration
+        if(!_objectFeaturesThread->setWayPoint(pos, orient))
+        {
+            cerr << _dbgtag << "Failed to set the initial waypoint. Aborting exploration!" << endl;
+            return false;
+        }
+
+
+        if(!_exploreGPSurface_thread->start())
+            ret = false;
+
+        _exploreObjectOnOff = false;
+
+        cout << "Exoploring the GP Surface\n" << endl;
+
+    }
+    else{
+
+        cout << "Warning! Already exploring." << endl;
+    }
+
+
+
+    return ret;
+
+
+
+}
 
 
 bool ExploreObject::startExploringGP()
@@ -386,6 +449,8 @@ bool ExploreObject::stopExploring()
             _exploreObjectThread->stop();
         if(_exploreObjectGP_thread->isRunning())
             _exploreObjectGP_thread->stop();
+        if(_exploreGPSurface_thread->isRunning())
+            _exploreGPSurface_thread->stop();
 
 
         cout << "stopped" << endl;
@@ -568,6 +633,9 @@ bool ExploreObject::configure(yarp::os::ResourceFinder& rf )
 
     _exploreObjectGP_thread = new GPExplorationThread(systemParameters.getExplorationThreadPeriod(),
                                                       _armCartesianController, _objectFeaturesThread);
+
+    _exploreGPSurface_thread = new ExploreGPSurfaceThread(systemParameters.getExplorationThreadPeriod(),
+                                                          _armCartesianController, _objectFeaturesThread);
 
 
     std::string portName= "/";

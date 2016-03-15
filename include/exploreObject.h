@@ -14,6 +14,7 @@
 #include <yarp/os/RFModule.h>
 #include <robotControl.h>
 #include <surfaceModelGP.h>
+#include <exploreGPSurfaceThread.h>
 
 using yarp::os::RFModule;
 
@@ -64,6 +65,7 @@ private: // Private members
 //    MaintainContactThread* _maintainContactThread; // maintain contact
     ExplorationStrategyThread *_exploreObjectThread; // run appropriate exploration strategy
     GPExplorationThread *_exploreObjectGP_thread;
+    ExploreGPSurfaceThread * _exploreGPSurface_thread;
 
 //    ObjectClassifierThread* _objectClassifierThread; // run appropriate classifier
     yarp::os::ResourceFinder _rf;
