@@ -31,6 +31,9 @@ protected:
     virtual void setWayPoint_GP();
     virtual void maintainContact();
 
+private:
+    void moveArmToWayPoint(yarp::sig::Vector pos, yarp::sig::Vector orient);
+
 };
 }
 

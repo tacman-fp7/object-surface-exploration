@@ -136,7 +136,7 @@ public:
         }
                 //ret = false;
 
-        return (ret & ret2);
+        return (ret && ret2);
     }
     //bool getFingertipRelativeToHand(Vector& pos, Vector& orient);
     //bool getFingertipPose(Vector& pos, Vector& orient);

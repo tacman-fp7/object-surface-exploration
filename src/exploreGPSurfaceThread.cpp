@@ -36,14 +36,14 @@ void ExploreGPSurfaceThread::run()
     while(!isStopping() && !(_contactState == STOP)) // Keep running this
     {
 
-       /* Vector maxPoint;
+        /* Vector maxPoint;
         if(_surfaceModel->getNextSamplingPosition(maxPoint))
         {
             cout << maxPoint.toString() << endl;
         }
         */
 
-       // yarp::os::Time::delay(1);
+        // yarp::os::Time::delay(1);
 
         //_objectFeatures->updateContactState(_contactState);
 
@@ -118,9 +118,61 @@ bool ExploreGPSurfaceThread::initialiseGP(yarp::sig::Vector startingPos, yarp::s
 void ExploreGPSurfaceThread::maintainContact()
 {
 
-    _contactState =  SET_WAYPOINT_GP;
+    // Get the fingertip position
+    Vector fingertipPositon;
+    _objectFeatures->getIndexFingertipPosition(fingertipPositon);
+
+    // set the current fingertip position as the next waypoint;
+    Vector desiredArmPos, desiredArmOrient;
+    _objectFeatures->getStartingPose(desiredArmPos, desiredArmOrient);
+
+    // Open the fingertip
+
+    _objectFeatures->fingerMovePosition(11, 0);
+    _objectFeatures->fingerMovePosition(12, 30);
+    while (!_objectFeatures->checkOpenHandDone())
+        ;
+
+    // Get the current desired arm positionw with the new fingertip configuration
+    _objectFeatures->indexFinger2ArmPosition(fingertipPositon, desiredArmPos);
+
+    moveArmToWayPoint(desiredArmPos, desiredArmOrient);
+
+
+
+    _contactState =  STOP; //SET_WAYPOINT_GP;
 }
 
+void ExploreGPSurfaceThread::moveArmToWayPoint(yarp::sig::Vector pos, yarp::sig::Vector orient)
+{
+    Vector indexFingerAngles;
+    if(_robotCartesianController->goToPoseSync(pos, orient))
+    {
+        bool motionDone = false;
+        while(!motionDone)
+        {
+            if(_objectFeatures->getContactForce() > _forceThreshold)
+            {
+                cout  << "Abandoned motion due to force" << endl;
+                _robotCartesianController->stopControl();
+
+                break;
+            }
+
+            _objectFeatures->getIndexFingerAngles(indexFingerAngles);
+
+            if(indexFingerAngles[1] < 5 )
+            {
+                cout << "Abandoned motion due to angles" << endl;
+                _robotCartesianController->stopControl();
+                cout << "Angles: " << indexFingerAngles.toString() << endl;
+
+                break;
+            }
+            _robotCartesianController->checkMotionDone(&motionDone);
+        }
+    }
+}
 void ExploreGPSurfaceThread::setWayPoint_GP()
 {
     // Use the GP model to calculate a new waypoint
