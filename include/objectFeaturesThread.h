@@ -129,14 +129,14 @@ public:
             std::cerr << _dbgtag << "CheckMotionDone failed on network comms" << std::endl;
             ret = true;
         }
-        /*if(!_armJointPositionCtrl->checkMotionDone(12, &ret2))
+        if(!_armJointPositionCtrl->checkMotionDone(12, &ret2))
         {
             std::cerr << _dbgtag << "CheckMotionDone failed on network comms" << std::endl;
             ret2 = true;
-        }*/
+        }
                 //ret = false;
 
-        return ret;
+        return (ret & ret2);
     }
     //bool getFingertipRelativeToHand(Vector& pos, Vector& orient);
     //bool getFingertipPose(Vector& pos, Vector& orient);
