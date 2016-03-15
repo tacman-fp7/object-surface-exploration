@@ -45,6 +45,8 @@ public:
                         const unsigned int nPoints = 120, const double offset = 0.0/1000);
 
     bool getMaxVariancePose(Vector &maxVariancePos);
+    bool getMaxEstimatePos(Vector &maxEstimatePos);
+    bool getNextSamplingPosition(Vector &nextSamplingPosition);
 
 private:
 
@@ -53,6 +55,7 @@ private:
     gMat2D<double>* eval(const gMat2D<double> &X, gMat2D<double> &vars, gurls::GurlsOptionsList *opt);
     bool getMaxVariancePose(const gMat2D <double> &positions, gMat2D <double> &variance,
                             const gMat2D <double> &means, Vector &maxVariancePos);
+
     void printTrainingData();
     //void addPaddingPoints(double startPoint, double endPoint, double constAxis, double targetValue);
 
@@ -69,11 +72,13 @@ private:
     string _dbgtg;
     bool _isValidModel;
     gMat2D < double > _inputTesting;
+    gMat2D < double > _outputTesting;
     std::vector <double> _xPoints;
     std::vector <double> _yPoints;
     std::vector <double> _zPoints;
     int _paddingPoints;
     bool _repeatVar;
+    unsigned long _nextSamplingIndex;
     double _maxX, _maxY, _minX, _minY;
 }; // end of class
 } // end of namespace objectExploration

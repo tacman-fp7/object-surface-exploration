@@ -27,6 +27,9 @@ public:
                       Vector endingPos, Vector endingOrient);
 
 
+protected:
+    virtual void setWayPoint_GP();
+    virtual void maintainContact();
 
 };
 }

@@ -244,7 +244,7 @@ bool ExploreObject::setEndPose()
 // return true;
 // }
 
-bool ExploreObject::exploreGPSurface(const std::string objectName)
+bool ExploreObject::exploreGPSurface(const std::string& objectName)
 {
 
     bool ret = true;

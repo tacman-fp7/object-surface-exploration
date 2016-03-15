@@ -16,7 +16,7 @@ using std::string;
 
 //void SurfaceModelGP::clearModel()
 //{
-    //_objectModel.
+//_objectModel.
 //}
 
 SurfaceModelGP::SurfaceModelGP(const std::string objectName)
@@ -30,7 +30,7 @@ SurfaceModelGP::SurfaceModelGP(const std::string objectName)
     _paddingPoints = 0;
     _maxX = _minX = _maxY = _minY = 0;
     _repeatVar = false;
-
+    _nextSamplingIndex = 0;
 }
 
 
@@ -499,7 +499,8 @@ bool SurfaceModelGP::updateSurfaceEstimate(const unsigned int nPoints, const dou
     }
 
 
-
+    _outputTesting.resize(means->rows(),means->cols());
+    _outputTesting = *means;
 
     //yarp::sig::Vector maxVariancePos;
 
@@ -509,13 +510,14 @@ bool SurfaceModelGP::updateSurfaceEstimate(const unsigned int nPoints, const dou
         {
 
             break;
-         }
+        }
 
 
 
     }
 
 
+    _outputTesting.saveCSV("test.csv");
     // Save the data for matlab visualisation
     //_inputTraining.saveCSV("newTraining.csv");
     _inputTesting.saveCSV(_objectName + "_model_input.csv");
@@ -547,6 +549,58 @@ bool SurfaceModelGP::getMaxVariancePose(yarp::sig::Vector &maxVariancePos)
 
 
 }
+
+bool SurfaceModelGP::getNextSamplingPosition(yarp::sig::Vector &nextSamplingPosition)
+{
+
+    nextSamplingPosition.resize(3);
+    nextSamplingPosition.zero();
+    if(_nextSamplingIndex == 0)
+        getMaxEstimatePos(nextSamplingPosition);
+
+    if(_inputTesting(_nextSamplingIndex, 1) <= _minY || _inputTesting(_nextSamplingIndex, 1) >= _maxY )
+        return false;
+
+    nextSamplingPosition[0] = _inputTesting(_nextSamplingIndex, 0);
+    nextSamplingPosition[1] = _inputTesting(_nextSamplingIndex, 1);
+    nextSamplingPosition[2] = _outputTesting(_nextSamplingIndex,0);
+
+    std::ofstream myFile;
+    myFile.open( (_objectName + "_model_nextPoint.csv").c_str());
+    myFile << nextSamplingPosition.toString(10);
+    //myFile << nextSamplingPosition[2] << endl;
+    myFile.flush();
+    myFile.close();
+
+    _nextSamplingIndex++;
+    return true;
+}
+
+bool SurfaceModelGP::getMaxEstimatePos(yarp::sig::Vector &maxEstimatePos)
+{
+
+
+    //unsigned long maxIndex;
+
+    maxEstimatePos.resize(3);
+    _nextSamplingIndex = static_cast<unsigned long>( _outputTesting.argmax(COLUMNWISE)->at(0));
+
+    maxEstimatePos[0] = _inputTesting(_nextSamplingIndex, 0);
+    maxEstimatePos[1] = _inputTesting(_nextSamplingIndex, 1);
+    maxEstimatePos[2] = _outputTesting(_nextSamplingIndex,0);
+
+
+    std::ofstream myFile;
+    myFile.open( (_objectName + "_nextPoint.csv").c_str());
+    myFile << maxEstimatePos.toString(10) << endl;
+    myFile.flush();
+    myFile.close();
+    return true;
+
+    //getMaxEstimatePos(_inputTesting, *vars)
+}
+
+
 
 bool SurfaceModelGP::getMaxVariancePose(const gMat2D<double> &positions,
                                         gMat2D<double> &variances,

@@ -26,7 +26,7 @@ public:
                       Vector endingPos, Vector endingOrient);
 
 protected:
-     void setWayPoint_GP();
+     virtual void setWayPoint_GP();
      virtual void maintainContact();
      void moveToNewLocation();
      void moveArmUp();

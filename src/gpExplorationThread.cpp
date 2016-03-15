@@ -148,7 +148,7 @@ bool GPExplorationThread::initialiseGP(Vector startingPos, Vector startingOrient
     double xMin, xMax, yMin, yMax, zMin;
     int nSteps = 20;
     xMax = startingPos[0];
-    xMin = xMax - 60.0/1000;
+    xMin = xMax - 70.0/1000;
 
     zMin = -0.15; // TODO: fix it! Maybe take it form reachable space
     if(startingPos[1] < endingPos[1])

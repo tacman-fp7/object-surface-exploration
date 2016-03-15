@@ -6,7 +6,9 @@ modelOutputFileName = [objectName '_model_output_GP.csv'];
 modelVarianceFileName = [objectName '_model_variance_GP.csv'];
 trainingInputFileName = [objectName '_training_input_GP.csv'];
 trainingTargetFileName = [objectName '_training_target_GP.csv'];
-viewVars = [140, 35];
+nextSamplePointFileName = [objectName '_nextPoint.csv'];
+viewVars = [45, 55];
+viewVars = [90, 90];
 
 while(true)
     
@@ -28,6 +30,7 @@ while(true)
     modelVariance = dlmread(modelVarianceFileName);
     trainingInput = dlmread(trainingInputFileName);
     trainingTarget = dlmread(trainingTargetFileName);
+    %nextSamplePoint = dlmread(nextSamplePointFileName);
     
     x = modelInput(:, 1);% - min(inputTesting(:, 1));
     y = modelInput(:, 2);% - min(inputTesting(:, 2));
@@ -39,6 +42,7 @@ while(true)
     ylin = linspace(min(y), max(y), nPoints);
     [XT,YT] = meshgrid(xlin,ylin);
     maxVarPoint(3) = maxVarPoint(3) - min(modelOutput);
+    %nextSamplePoint(3) = nextSamplePoint(3) - min(modelOutput);
     modelOutput = modelOutput - min(modelOutput);
     
     ZT = reshape(modelOutput, nPoints, nPoints);
@@ -51,11 +55,14 @@ while(true)
 %     ylabel('Length [mm]','fontsize', 35, 'interpreter', 'tex', 'verticalAlignment', 'top');
 %     zlabel('Height [mm]','fontsize', 35, 'interpreter', 'tex', 'verticalAlignment', 'bottom');
 %     title('Surface', 'fontsize', 35, 'interpreter', 'tex');
-    %view(viewVars);
+    view(viewVars);
     
     hold on
     h_cp = scatter3(maxVarPoint(1), maxVarPoint(2),...
-        maxVarPoint(3), 'fill', 'markerFaceColor', 'green', 'sizeData', [100]);
+        maxVarPoint(3), 'fill', 'markerFaceColor', 'black', 'sizeData', [100]);
+    
+%     scatter3(nextSamplePoint(1), nextSamplePoint(2), nextSamplePoint(3),...
+%         'fill', 'markerFaceColor', 'black', 'sizeData', [100]);
     hold off
     
     trainingTarget = trainingTarget - min(trainingTarget);
@@ -64,6 +71,7 @@ while(true)
         trainingTarget(:,1), 'fill', 'markerFaceColor', 'blue', 'sizeData', [50]);
     hold off
     
+    
     figure(2)
     mesh(XT,YT, ZV);
 %     set(gca, 'fontname', 'Bitstream Charter','fontsize', 35);
@@ -71,15 +79,17 @@ while(true)
 %     ylabel('Length [mm]','fontsize', 35, 'interpreter', 'tex', 'verticalAlignment', 'top');
 %     zlabel('Variance [mm]','fontsize', 35, 'interpreter', 'tex', 'verticalAlignment', 'bottom');
 %     title('Variance', 'fontsize', 35, 'interpreter', 'tex');
-    %view(viewVars);
+    view(viewVars);
     
     
-    hold on
-    h_cp = scatter3(maxVarPoint(1), maxVarPoint(2),...
-        maxVarPoint(4), 'fill', 'markerFaceColor', 'green', 'sizeData', [100]);
-    hold off
+% %     hold on
+% %     h_cp = scatter3(maxVarPoint(1), maxVarPoint(2),...
+% %         maxVarPoint(4), 'fill', 'markerFaceColor', 'green', 'sizeData', [100]);
+% %     hold off
     
-    %regressGPML([trainingInput(2:end,:) trainingTarget(2:end, :)], viewVars)
+    %regressGPML([trainingInput(1:end,:) trainingTarget(1:end, :)], viewVars);
+    
+    
     drawnow;
     
 end

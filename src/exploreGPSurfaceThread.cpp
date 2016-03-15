@@ -1,6 +1,9 @@
 #include <exploreGPSurfaceThread.h>
 
+#include <yarp/os/Time.h>
+
 #define FORCE_TH 1.6
+
 
 namespace objectExploration
 {
@@ -27,9 +30,24 @@ void ExploreGPSurfaceThread::run()
     // Get a new waypoint from the GP model
     _contactState = SET_WAYPOINT_GP;
 
+
+
+
     while(!isStopping() && !(_contactState == STOP)) // Keep running this
     {
-        _objectFeatures->updateContactState(_contactState);
+
+       /* Vector maxPoint;
+        if(_surfaceModel->getNextSamplingPosition(maxPoint))
+        {
+            cout << maxPoint.toString() << endl;
+        }
+        */
+
+       // yarp::os::Time::delay(1);
+
+        //_objectFeatures->updateContactState(_contactState);
+
+
 
 
         switch (_contactState)
@@ -64,7 +82,7 @@ void ExploreGPSurfaceThread::run()
             cout << "Contact state is: move location" << endl;
             // Update the GP
             // Set the waypoint to the next waypoint suggested by the GP
-            moveToNewLocation();
+            //GPExplorationThread::moveToNewLocation();
             break;
         case SET_WAYPOINT_GP:
             // Use the GP Model to set the next waypoint
@@ -79,10 +97,10 @@ void ExploreGPSurfaceThread::run()
             break;
         }
 
-        }
-
-
     }
+
+
+}
 
 bool ExploreGPSurfaceThread::initialiseGP(yarp::sig::Vector startingPos, yarp::sig::Vector startingOrient, yarp::sig::Vector endingPos, yarp::sig::Vector endingOrient)
 {
@@ -97,5 +115,53 @@ bool ExploreGPSurfaceThread::initialiseGP(yarp::sig::Vector startingPos, yarp::s
 
 }
 
+void ExploreGPSurfaceThread::maintainContact()
+{
+
+    _contactState =  SET_WAYPOINT_GP;
+}
+
+void ExploreGPSurfaceThread::setWayPoint_GP()
+{
+    // Use the GP model to calculate a new waypoint
+
+    Vector nextSamplingPos;
+    Vector orient;
+    Vector armPos;
+    bool ret;
+
+    _curProximal = 10;
+    _curDistal = 90 - _curProximal;
+    _objectFeatures->setProximalAngle(_curProximal);
+
+    //_objectFeatures->prepHand();
+    while(!_objectFeatures->checkOpenHandDone() && !isStopping())
+        ;
+    // Get the valid point from object features
+    _objectFeatures->getWayPoint(armPos, orient, false);
+
+    // I have to make sure the new waypoint is valid
+    if(_surfaceModel->getNextSamplingPosition(nextSamplingPos))
+    {
+        //Get the current fingertip position
+        //Vector tipPos, tipOrient;
+        _objectFeatures->indexFinger2ArmPosition(nextSamplingPos, armPos);
+        ret = _objectFeatures->setWayPointGP(armPos, orient);
+    }
+
+
+    // Get the position of the hand
+    // This cannot be done in parallel with indexFinger2ArmPosition calcuation
+
+    moveArmUp();
+
+    if(ret)
+        _contactState = APPROACH_OBJECT;
+    else
+        _contactState = FINISHED;
+
+    //return ret;
+
+}
 
 } // end of namespace

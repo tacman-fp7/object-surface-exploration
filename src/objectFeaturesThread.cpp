@@ -222,6 +222,7 @@ bool ObjectFeaturesThread::setProximalAngle(double angle){
 
         ret = ret && _armJointModeCtrl->setPositionMode(11);
         ret = ret && _armJointModeCtrl->setPositionMode(12);
+
         ret = ret && _armJointPositionCtrl->positionMove(_proximalJoint_index, angle);
         ret = ret && _armJointPositionCtrl->positionMove(12, 90-angle);
 
