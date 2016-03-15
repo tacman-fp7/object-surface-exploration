@@ -129,16 +129,17 @@ void ExploreGPSurfaceThread::maintainContact()
     // Open the fingertip
 
     _objectFeatures->fingerMovePosition(11, 0);
-    _objectFeatures->fingerMovePosition(12, 30);
+    _objectFeatures->fingerMovePosition(12, 10);
     while (!_objectFeatures->checkOpenHandDone())
         ;
 
     // Get the current desired arm positionw with the new fingertip configuration
     _objectFeatures->indexFinger2ArmPosition(fingertipPositon, desiredArmPos);
 
+    desiredArmPos[2] -= 5.0/1000; // offset from the middle
     moveArmToWayPoint(desiredArmPos, desiredArmOrient);
 
-
+    // I  should move the inger a little here
 
     _contactState =  STOP; //SET_WAYPOINT_GP;
 }
@@ -161,7 +162,7 @@ void ExploreGPSurfaceThread::moveArmToWayPoint(yarp::sig::Vector pos, yarp::sig:
 
             _objectFeatures->getIndexFingerAngles(indexFingerAngles);
 
-            if(indexFingerAngles[1] < 5 )
+            if(indexFingerAngles[1] < 3 )
             {
                 cout << "Abandoned motion due to angles" << endl;
                 _robotCartesianController->stopControl();
