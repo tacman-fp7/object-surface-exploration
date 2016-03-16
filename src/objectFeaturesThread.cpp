@@ -277,9 +277,13 @@ void ObjectFeaturesThread::calibrateHand()
     Bottle *fingerEnc;
     for(int i = 0; i < _fingerEncoders.getPendingReads(); i++)
         fingerEnc = _fingerEncoders.read();
-    _maxIndexProximal = fingerEnc->get(3).asDouble();
-    _minIndexMiddle = fingerEnc->get(4).asDouble();
-    _minIndexDistal = fingerEnc->get(5).asDouble();
+
+    if(!fingerEnc->isNull())
+    {
+        _maxIndexProximal = fingerEnc->get(3).asDouble();
+        _minIndexMiddle = fingerEnc->get(4).asDouble();
+        _minIndexDistal = fingerEnc->get(5).asDouble();
+    }
 
 
 
@@ -291,15 +295,17 @@ void ObjectFeaturesThread::calibrateHand()
 
     while(!checkOpenHandDone())
         ;
-    yarp::os::Time::delay(5);
-    cout << "Motion done";
+   // yarp::os::Time::delay(5);
+    //cout << "Motion done";
 
     for(int i = 0; i < _fingerEncoders.getPendingReads(); i++)
         fingerEnc = _fingerEncoders.read();
-
-    _minIndexProximal = fingerEnc->get(3).asDouble();
-    _maxIndexMiddle = fingerEnc->get(4).asDouble();
-    _maxIndexDistal = fingerEnc->get(5).asDouble();
+    if(!fingerEnc->isNull())
+    {
+        _minIndexProximal = fingerEnc->get(3).asDouble();
+        _maxIndexMiddle = fingerEnc->get(4).asDouble();
+        _maxIndexDistal = fingerEnc->get(5).asDouble();
+    }
 
     _armJointPositionCtrl->positionMove(11,0);
     while(!checkOpenHandDone())
@@ -799,11 +805,11 @@ bool ObjectFeaturesThread::setWayPointGP(yarp::sig::Vector pos, yarp::sig::Vecto
     }
 
 
-  pos[2] = _desiredStartingPosition[2];
-  setWayPoint (pos, orient );
-  _wayPoint_isValid = true;
+    pos[2] = _desiredStartingPosition[2];
+    setWayPoint (pos, orient );
+    _wayPoint_isValid = true;
 
-  return true;
+    return true;
 }
 
 bool ObjectFeaturesThread::setWayPoint ( Vector pos, Vector orient )
@@ -1262,7 +1268,7 @@ bool ObjectFeaturesThread::readParameters()
 
         _desiredStartingPose_isValid = true;
     }
- /////////////////////////// Naiwd fix this! ////////
+    /////////////////////////// Naiwd fix this! ////////
     if(endPose->size() < 7)
         cout << "End pose is invalid!" << endl;
     else
@@ -1273,7 +1279,7 @@ bool ObjectFeaturesThread::readParameters()
             _desiredEndOrientation[i-3] = endPose->get(i).asDouble();
 
         _desiredEndPose_isValid = true;
-         updateRobotReachableSpace();
+        updateRobotReachableSpace();
     }
 
     cout << "Read the following configuration from the file:" << endl;
