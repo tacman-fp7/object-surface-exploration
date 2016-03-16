@@ -8,7 +8,7 @@ trainingInputFileName = [objectName '_training_input_GP.csv'];
 trainingTargetFileName = [objectName '_training_target_GP.csv'];
 nextSamplePointFileName = [objectName '_nextPoint.csv'];
 viewVars = [45, 55];
-viewVars = [90, 90];
+%viewVars = [90, 90];
 
 while(true)
     

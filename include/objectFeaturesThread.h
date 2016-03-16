@@ -115,6 +115,7 @@ public:
     void updateContactState(int contactState){_contactState = contactState;
                                              publishContactState(_contactState);}
     bool setProximalAngle(double angle);
+    bool setIndexFingerAngles(double proximal, double distal);
     objectExploration::SurfaceModelGP* getGPSurfaceModel(){
         return _objectSurfaceModelGP;
     }

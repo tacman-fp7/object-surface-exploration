@@ -171,13 +171,6 @@ bool ObjectFeaturesThread::prepHand()
     ret = fingerMovePosition(9,0); // with idle thumb position
     ret = fingerMovePosition(10, 65);
     setProximalAngle(10);
-    //ret = fingerMovePosition(11, 10);
-    //ret = fingerMovePosition(12, 70);
-
-
-
-
-
 
     return true;
 
@@ -215,16 +208,22 @@ bool ObjectFeaturesThread::openHand()
 }
 
 
-bool ObjectFeaturesThread::setProximalAngle(double angle){
+bool ObjectFeaturesThread::setIndexFingerAngles(double proximal, double distal)
+{
     bool ret = true;
     if(_armJointPositionCtrl != NULL )
     {
 
         ret = ret && _armJointModeCtrl->setPositionMode(11);
         ret = ret && _armJointModeCtrl->setPositionMode(12);
+        Bottle msg;
+        msg.clear();
+        msg.addDouble(proximal);
+        msg.addDouble(distal);
+        publishFingertipControl(msg);
 
-        ret = ret && _armJointPositionCtrl->positionMove(_proximalJoint_index, angle);
-        ret = ret && _armJointPositionCtrl->positionMove(12, 90-angle);
+        ret = ret && _armJointPositionCtrl->positionMove(_proximalJoint_index, proximal);
+        ret = ret && _armJointPositionCtrl->positionMove(12, distal);
 
     }
     else
@@ -232,11 +231,14 @@ bool ObjectFeaturesThread::setProximalAngle(double angle){
         std::cerr << _dbgtag << "The joint controller is not initialised" << std::endl;
         ret = false;
     }
-
-
-    //maintainContactPose();
-
     return ret;
+}
+
+bool ObjectFeaturesThread::setProximalAngle(double angle){
+
+    double distal = 90-angle;
+    return setIndexFingerAngles(angle, distal);
+
 }
 
 

@@ -31,7 +31,10 @@ SurfaceModelGP::SurfaceModelGP(const std::string objectName)
     _maxX = _minX = _maxY = _minY = 0;
     _repeatVar = false;
     _nextSamplingIndex = 0;
+    _dummyIndex = 0;
 
+ _currentRow = 4;
+_currentCol = 1;
 
 
 }
@@ -264,6 +267,8 @@ void SurfaceModelGP::padBoundingBox()
     yMin = inputMin->at(1);
     yMax = inputMax->at(1);
     zMin = targetMin->at(0);
+
+
 
     padBoundingBox(xMin, xMax, yMin, yMax, zMin, 5, 0/1000);
 
@@ -553,11 +558,54 @@ bool SurfaceModelGP::getMaxVariancePose(yarp::sig::Vector &maxVariancePos)
 
 }
 
-bool SurfaceModelGP::getNextSamplingPosition(yarp::sig::Vector &nextSamplingPosition)
+bool SurfaceModelGP::getNextSamplingPosition(yarp::sig::Vector &nextSamplingPosition, bool nextRow)
 {
 
-    //////
 
+    ////// Hack to get surface data
+    if(nextRow)
+    {
+        _currentRow--;
+        _currentCol = 0;
+        _nextSamplingIndex = _currentRow * 8;
+    }
+
+    _currentCol++;
+
+
+    if(_currentCol > 5){
+        if((--_currentRow) < 2)
+            return false;
+        else
+            _currentCol = 1;
+
+    }
+
+    _nextSamplingIndex = _currentRow * 8 + _currentCol;
+    cout << "Next:" << _nextSamplingIndex << endl;
+
+
+
+    nextSamplingPosition.resize(3);
+    nextSamplingPosition.zero();
+
+    nextSamplingPosition[0] = _inputTesting(_nextSamplingIndex, 0);
+    nextSamplingPosition[1] = _inputTesting(_nextSamplingIndex, 1);
+    nextSamplingPosition[2] = _outputTesting(_nextSamplingIndex,0);
+
+    std::ofstream myFile;
+    myFile.open( (_objectName + "_model_nextPoint.csv").c_str());
+    myFile << nextSamplingPosition.toString(10);
+    //myFile << nextSamplingPosition[2] << endl;
+    myFile.flush();
+    myFile.close();
+
+
+    return true;
+
+
+    // Next sampling point is
+    /*
 
     if(_dummyIndex > 7)
     {
@@ -585,6 +633,8 @@ bool SurfaceModelGP::getNextSamplingPosition(yarp::sig::Vector &nextSamplingPosi
 
     return true;
     ////////
+
+    */
     nextSamplingPosition.resize(3);
     nextSamplingPosition.zero();
     if(_nextSamplingIndex == 0)
@@ -623,7 +673,7 @@ bool SurfaceModelGP::getMaxEstimatePos(yarp::sig::Vector &maxEstimatePos)
 
 
     std::ofstream myFile;
-    myFile.open( (_objectName + "_nextPoint.csv").c_str());
+    myFile.open( (_objectName + "_model_nextPoint.csv").c_str());
     myFile << maxEstimatePos.toString(10) << endl;
     myFile.flush();
     myFile.close();

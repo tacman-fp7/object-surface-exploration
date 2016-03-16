@@ -46,7 +46,7 @@ public:
 
     bool getMaxVariancePose(Vector &maxVariancePos);
     bool getMaxEstimatePos(Vector &maxEstimatePos);
-    bool getNextSamplingPosition(Vector &nextSamplingPosition);
+    bool getNextSamplingPosition(Vector &nextSamplingPosition, bool nextRow = false);
 
 private:
 
@@ -80,19 +80,21 @@ private:
     bool _repeatVar;
     unsigned long _nextSamplingIndex;
     double _maxX, _maxY, _minX, _minY;
+    int _currentRow;
+    int _currentCol;
     //unsigned long _nextY;
     //unsigned long _nextX;
     //unsigned long _maxNextY;
 
-    double _table[8][2] = {{3,4},
-                           {3,6},
-                           {4,4},
-                           {4,6},
-                           {5,2},
-                           {6,7},
-                           {6,2},
-                           {6,7}};
-    int _dummyIndex = 0;
+    /*double _table[8][2] =
+    {
+        {6,2}, {6,7},
+        {5,7}, {5,2},
+        {4,3}, {4,6},
+        {3,5}, {3,4},
+    };
+*/
+    int _dummyIndex;
 
 }; // end of class
 } // end of namespace objectExploration
