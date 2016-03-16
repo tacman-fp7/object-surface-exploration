@@ -125,6 +125,9 @@ void ExploreGPSurfaceThread::maintainContact()
 
         Vector fingertipPositon;
         _objectFeatures->getIndexFingertipPosition(fingertipPositon);
+        // Hack for smoot motion
+        fingertipPositon[0] = _nextSamplingPos[0];
+        fingertipPositon[1] = _nextSamplingPos[1];
         _wayPointList.push_back(fingertipPositon);
         _contactState = SET_WAYPOINT_GP;
         return;
@@ -150,11 +153,11 @@ void ExploreGPSurfaceThread::maintainContact()
         for (int i = 0; i < _wayPointList.size(); i++)
         {
             fingertipPosition = _wayPointList.at(i);
-            cout << "Fingertip: " << fingertipPosition.toString();
+            cout << "Fingertip: " << fingertipPosition.toString() << endl;
             // Get the current desired arm positionw with the new fingertip configuration
             _objectFeatures->indexFinger2ArmPosition(fingertipPosition, desiredArmPos);
 
-            desiredArmPos[2] += 5.0/1000; // offset from the middle
+            desiredArmPos[2] += 0.0/1000; // offset from the middle
             _robotCartesianController->goToPoseSync(desiredArmPos, desiredArmOrient);
             _robotCartesianController->waitMotionDone(0.1, 2);
             //moveArmToWayPoint(desiredArmPos, desiredArmOrient);
@@ -175,6 +178,21 @@ void ExploreGPSurfaceThread::maintainContact()
             */
         }
 
+        // Just to be safe
+       //////////////////// move the arm up
+       ///
+        Vector startingPos, startingOrient;
+        Vector armPos, orient;
+
+
+
+        _objectFeatures->getArmPose(armPos, orient);
+        _objectFeatures->getStartingPose(startingPos, startingOrient);
+
+
+        _objectFeatures->indexFinger2ArmPosition(startingPos, desiredArmPos);
+        armPos[2] = desiredArmPos[2]; // Move the fingertip up to avoid collisiont
+        _objectFeatures->moveArmToPosition(armPos, orient);
 
         _contactState = STOP;
 
@@ -241,7 +259,7 @@ void ExploreGPSurfaceThread::setWayPoint_GP()
 {
     // Use the GP model to calculate a new waypoint
 
-    Vector nextSamplingPos;
+    //Vector nextSamplingPos;
     Vector orient;
     Vector armPos;
     bool ret;
@@ -258,11 +276,11 @@ void ExploreGPSurfaceThread::setWayPoint_GP()
     _objectFeatures->getWayPoint(armPos, orient, false);
 
     // I have to make sure the new waypoint is valid
-    if(_surfaceModel->getNextSamplingPosition(nextSamplingPos))
+    if(_surfaceModel->getNextSamplingPosition(_nextSamplingPos))
     {
         //Get the current fingertip position
         //Vector tipPos, tipOrient;
-        _objectFeatures->indexFinger2ArmPosition(nextSamplingPos, armPos);
+        _objectFeatures->indexFinger2ArmPosition(_nextSamplingPos, armPos);
         _objectFeatures->setWayPointGP(armPos, orient);
     }
     else
