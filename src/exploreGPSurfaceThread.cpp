@@ -138,7 +138,7 @@ void ExploreGPSurfaceThread::maintainContact()
 
         // Open the fingertip
         _objectFeatures->fingerMovePosition(11, 0);
-        _objectFeatures->fingerMovePosition(12, 10);
+        _objectFeatures->fingerMovePosition(12, 15);
         while (!_objectFeatures->checkOpenHandDone())
             ;
 
@@ -153,16 +153,19 @@ void ExploreGPSurfaceThread::maintainContact()
         for (int i = 0; i < _wayPointList.size(); i++)
         {
             fingertipPosition = _wayPointList.at(i);
-            cout << "Fingertip: " << fingertipPosition.toString() << endl;
+            cout << "DF: " << fingertipPosition.toString() << endl;
             // Get the current desired arm positionw with the new fingertip configuration
             _objectFeatures->indexFinger2ArmPosition(fingertipPosition, desiredArmPos);
 
-            desiredArmPos[2] += 0.0/1000; // offset from the middle
+            desiredArmPos[2] -= 5.0/1000; // offset from the middle
             _robotCartesianController->goToPoseSync(desiredArmPos, desiredArmOrient);
-            _robotCartesianController->waitMotionDone(0.1, 2);
+           // _robotCartesianController->waitMotionDone(0.1, 2);
+
+
+
             //moveArmToWayPoint(desiredArmPos, desiredArmOrient);
 
-           /* bool motionDone = false;
+            bool motionDone = false;
             while(!motionDone)
             {
                 if(_objectFeatures->getContactForce() > 4)
@@ -173,9 +176,12 @@ void ExploreGPSurfaceThread::maintainContact()
                     break;
                 }
 
+                _robotCartesianController->checkMotionDone(&motionDone);
             }
 
-            */
+            _objectFeatures->getIndexFingertipPosition(fingertipPosition);
+            cout << "AF: " << fingertipPosition.toString() << endl;
+
         }
 
         // Just to be safe
