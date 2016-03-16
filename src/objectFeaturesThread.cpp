@@ -271,8 +271,8 @@ void ObjectFeaturesThread::calibrateHand()
     _armJointPositionCtrl->positionMove(12, 180);
     while(!checkOpenHandDone())
         ;
-    yarp::os::Time::delay(5);
-    cout << "Motion done";
+    //yarp::os::Time::delay(5);
+    //cout << "Motion done";
 
     Bottle *fingerEnc;
     for(int i = 0; i < _fingerEncoders.getPendingReads(); i++)
