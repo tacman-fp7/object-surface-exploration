@@ -31,6 +31,9 @@ SurfaceModelGP::SurfaceModelGP(const std::string objectName)
     _maxX = _minX = _maxY = _minY = 0;
     _repeatVar = false;
     _nextSamplingIndex = 0;
+
+
+
 }
 
 
@@ -553,6 +556,35 @@ bool SurfaceModelGP::getMaxVariancePose(yarp::sig::Vector &maxVariancePos)
 bool SurfaceModelGP::getNextSamplingPosition(yarp::sig::Vector &nextSamplingPosition)
 {
 
+    //////
+
+
+    if(_dummyIndex > 7)
+    {
+        return false;
+    }
+
+    _nextSamplingIndex = _table[_dummyIndex][0] * 10 + _table[_dummyIndex][1];
+    cout << "Next:" << _nextSamplingIndex << endl;
+    _dummyIndex++;
+
+    nextSamplingPosition.resize(3);
+    nextSamplingPosition.zero();
+
+    nextSamplingPosition[0] = _inputTesting(_nextSamplingIndex, 0);
+    nextSamplingPosition[1] = _inputTesting(_nextSamplingIndex, 1);
+    nextSamplingPosition[2] = _outputTesting(_nextSamplingIndex,0);
+
+    std::ofstream myFile;
+    myFile.open( (_objectName + "_model_nextPoint.csv").c_str());
+    myFile << nextSamplingPosition.toString(10);
+    //myFile << nextSamplingPosition[2] << endl;
+    myFile.flush();
+    myFile.close();
+
+
+    return true;
+    ////////
     nextSamplingPosition.resize(3);
     nextSamplingPosition.zero();
     if(_nextSamplingIndex == 0)
@@ -565,7 +597,7 @@ bool SurfaceModelGP::getNextSamplingPosition(yarp::sig::Vector &nextSamplingPosi
     nextSamplingPosition[1] = _inputTesting(_nextSamplingIndex, 1);
     nextSamplingPosition[2] = _outputTesting(_nextSamplingIndex,0);
 
-    std::ofstream myFile;
+    //std::ofstream myFile;
     myFile.open( (_objectName + "_model_nextPoint.csv").c_str());
     myFile << nextSamplingPosition.toString(10);
     //myFile << nextSamplingPosition[2] << endl;

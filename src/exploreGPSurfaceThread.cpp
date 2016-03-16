@@ -105,7 +105,7 @@ void ExploreGPSurfaceThread::run()
 bool ExploreGPSurfaceThread::initialiseGP(yarp::sig::Vector startingPos, yarp::sig::Vector startingOrient, yarp::sig::Vector endingPos, yarp::sig::Vector endingOrient)
 {
     //double xMin, xMax, yMin, yMax, zMin;
-    int nSteps = 20;
+    int nSteps = 10;
 
 
     _surfaceModel->loadContactData("GP");
@@ -144,12 +144,14 @@ void ExploreGPSurfaceThread::maintainContact()
 
         // Go to the first position in the list
         Vector fingertipPosition;
+        Vector indexFingerAngles;
         Vector desiredArmPos, desiredArmOrient;
         _objectFeatures->getStartingPose(desiredArmPos, desiredArmOrient);
 
         if(_wayPointList.empty())
             return;
 
+        double offset = 6.0/1000;
         for (int i = 0; i < _wayPointList.size(); i++)
         {
             fingertipPosition = _wayPointList.at(i);
@@ -157,7 +159,7 @@ void ExploreGPSurfaceThread::maintainContact()
             // Get the current desired arm positionw with the new fingertip configuration
             _objectFeatures->indexFinger2ArmPosition(fingertipPosition, desiredArmPos);
 
-            desiredArmPos[2] -= 5.0/1000; // offset from the middle
+            desiredArmPos[2] -= offset; // offset from the middle
             _robotCartesianController->goToPoseSync(desiredArmPos, desiredArmOrient);
            // _robotCartesianController->waitMotionDone(0.1, 2);
 
@@ -181,6 +183,25 @@ void ExploreGPSurfaceThread::maintainContact()
 
             _objectFeatures->getIndexFingertipPosition(fingertipPosition);
             cout << "AF: " << fingertipPosition.toString() << endl;
+
+
+
+            _objectFeatures->getIndexFingerAngles(indexFingerAngles);
+
+            if(indexFingerAngles[1] > 0 )
+            {
+                cout << "No contact!" << endl;
+                cout << "Angles: " << indexFingerAngles.toString() << endl;
+
+                offset += 3.0/1000;
+                i -= 1;
+                continue;
+            }
+            else
+            {
+                offset = 6.0/1000;
+            }
+
 
         }
 
