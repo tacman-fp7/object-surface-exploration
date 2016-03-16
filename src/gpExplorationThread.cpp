@@ -174,9 +174,8 @@ bool GPExplorationThread::initialiseGP(Vector startingPos, Vector startingOrient
     pos[0] = (xMin + xMax)/2.0;
     pos[1] = (yMin + yMax)/2.0;
     pos[2] = startingPos[2];
-    makeSingleContact(pos, startingOrient);
-    //_surfaceModel->trainModel();
-    //_surfaceModel->updateSurfaceEstimate();
+   makeSingleContact(pos, startingOrient);
+
     makeSingleContact(pos, startingOrient);
     _surfaceModel->trainModel();
     _surfaceModel->updateSurfaceEstimate();

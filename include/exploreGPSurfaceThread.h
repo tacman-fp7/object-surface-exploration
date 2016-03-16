@@ -1,6 +1,7 @@
 #pragma once
 
 #include <gpExplorationThread.h>
+#include <vector>
 
 #define FORCE_TH 1.6
 
@@ -17,6 +18,7 @@ public:
     {
         _surfaceModel = objectFeatures->getGPSurfaceModel();
         _forceThreshold = FORCE_TH;
+        _wayPointListComplete = false;
     }
 
     virtual void run();
@@ -30,6 +32,10 @@ public:
 protected:
     virtual void setWayPoint_GP();
     virtual void maintainContact();
+
+private:
+    std::vector < yarp::sig::Vector > _wayPointList;
+    bool _wayPointListComplete;
 
 private:
     void moveArmToWayPoint(yarp::sig::Vector pos, yarp::sig::Vector orient);

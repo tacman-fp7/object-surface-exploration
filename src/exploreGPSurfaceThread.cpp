@@ -112,14 +112,77 @@ bool ExploreGPSurfaceThread::initialiseGP(yarp::sig::Vector startingPos, yarp::s
     _surfaceModel->setBoundingBox(nSteps, 0/1000);
     _surfaceModel->trainModel();
     _surfaceModel->updateSurfaceEstimate();
+    _wayPointList.clear();
+    _wayPointListComplete = false;
 
 }
 
 void ExploreGPSurfaceThread::maintainContact()
 {
 
+    if(!_wayPointListComplete)
+    {
+
+        Vector fingertipPositon;
+        _objectFeatures->getIndexFingertipPosition(fingertipPositon);
+        _wayPointList.push_back(fingertipPositon);
+        _contactState = SET_WAYPOINT_GP;
+        return;
+    }
+    else
+    {
+        moveArmUp();
+
+        // Open the fingertip
+        _objectFeatures->fingerMovePosition(11, 0);
+        _objectFeatures->fingerMovePosition(12, 10);
+        while (!_objectFeatures->checkOpenHandDone())
+            ;
+
+        // Go to the first position in the list
+        Vector fingertipPosition;
+        Vector desiredArmPos, desiredArmOrient;
+        _objectFeatures->getStartingPose(desiredArmPos, desiredArmOrient);
+
+        if(_wayPointList.empty())
+            return;
+
+        for (int i = 0; i < _wayPointList.size(); i++)
+        {
+            fingertipPosition = _wayPointList.at(i);
+            cout << "Fingertip: " << fingertipPosition.toString();
+            // Get the current desired arm positionw with the new fingertip configuration
+            _objectFeatures->indexFinger2ArmPosition(fingertipPosition, desiredArmPos);
+
+            desiredArmPos[2] += 5.0/1000; // offset from the middle
+            _robotCartesianController->goToPoseSync(desiredArmPos, desiredArmOrient);
+            _robotCartesianController->waitMotionDone(0.1, 2);
+            //moveArmToWayPoint(desiredArmPos, desiredArmOrient);
+
+           /* bool motionDone = false;
+            while(!motionDone)
+            {
+                if(_objectFeatures->getContactForce() > 4)
+                {
+                    cout  << "Abandoned motion due to force" << endl;
+                    _robotCartesianController->stopControl();
+
+                    break;
+                }
+
+            }
+
+            */
+        }
+
+
+        _contactState = STOP;
+
+
+        return;
+    }
     // Get the fingertip position
-    Vector fingertipPositon;
+  /*  Vector fingertipPositon;
     _objectFeatures->getIndexFingertipPosition(fingertipPositon);
 
     // set the current fingertip position as the next waypoint;
@@ -141,7 +204,7 @@ void ExploreGPSurfaceThread::maintainContact()
 
     // I  should move the inger a little here
 
-    _contactState =  STOP; //SET_WAYPOINT_GP;
+    _contactState =  STOP; //SET_WAYPOINT_GP;*/
 }
 
 void ExploreGPSurfaceThread::moveArmToWayPoint(yarp::sig::Vector pos, yarp::sig::Vector orient)
@@ -183,6 +246,7 @@ void ExploreGPSurfaceThread::setWayPoint_GP()
     Vector armPos;
     bool ret;
 
+    ret = true;
     _curProximal = 10;
     _curDistal = 90 - _curProximal;
     _objectFeatures->setProximalAngle(_curProximal);
@@ -199,19 +263,23 @@ void ExploreGPSurfaceThread::setWayPoint_GP()
         //Get the current fingertip position
         //Vector tipPos, tipOrient;
         _objectFeatures->indexFinger2ArmPosition(nextSamplingPos, armPos);
-        ret = _objectFeatures->setWayPointGP(armPos, orient);
+        _objectFeatures->setWayPointGP(armPos, orient);
+    }
+    else
+    {
+        _wayPointListComplete = true;
     }
 
 
     // Get the position of the hand
     // This cannot be done in parallel with indexFinger2ArmPosition calcuation
 
-    moveArmUp();
+    //moveArmUp();
 
     if(ret)
         _contactState = APPROACH_OBJECT;
     else
-        _contactState = FINISHED;
+        _contactState = STOP;
 
     //return ret;
 
