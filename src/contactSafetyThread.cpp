@@ -27,9 +27,11 @@ void ContactSafetyThread::run()
                     pow(forceTorqueData->get(2).asDouble(), 2));
         //cout << "FT: " << resultant << " BL: "  << _baseLine << endl;
 
-        if(fabs(resultant - _baseLine) > 5){
-            //_robotCartesianController->stopControl();
+        if(fabs(resultant - _baseLine) > 4){
+            _robotCartesianController->stopControl();
+            _collisionDetected = true;
             cout << "Force toque exceeded" << endl;
+
         }
     }
 
@@ -74,6 +76,12 @@ void ContactSafetyThread::resetBaseline()
         //cout << "FT: " << resultant << endl;
 
     }
+    _collisionDetected = false;
+}
+
+bool ContactSafetyThread::collisionDetected()
+{
+    return _collisionDetected;
 }
 
 void ContactSafetyThread::setMinDistalAngle(double minDistalAngle)

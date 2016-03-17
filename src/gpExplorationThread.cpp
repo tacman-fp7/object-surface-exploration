@@ -146,9 +146,9 @@ void GPExplorationThread::maintainContact()
 
 
         // Wiggle
-       // _contactSafetyThread->start();
+        // _contactSafetyThread->start();
         sampleSurface_wiggleFingers();
-       // _contactSafetyThread->stop();
+        // _contactSafetyThread->stop();
 
     }
     //_contactState = MOVE_LOCATION;
@@ -201,7 +201,10 @@ bool GPExplorationThread::confrimContact(double maxAngle)
 
 
 
- return contact;
+    if (indexFingerAngles[0] > 3)
+        contact = false;
+
+    return contact;
 
 }
 
@@ -227,15 +230,55 @@ void GPExplorationThread::sampleSurface_wiggleFingers()
     // Get the current desired arm positionw with the new fingertip configuration
     _objectFeatures->indexFinger2ArmPosition(fingertipPosition, desiredArmPos);
 
-   // cout << "move to way point" << endl;
-    desiredArmPos[2] -= 5.0/1000; // offset from the middle
-    moveArmToWayPoint(desiredArmPos, desiredArmOrient);
 
-    //cout << "confirming contact" << endl;
-    confrimContact(30);
+    // Sotore current arm position
+    Vector prevArmPos, prevArmOrient;
+    _objectFeatures->getArmPose(prevArmPos, prevArmOrient);
+
+    desiredArmPos[2] -= 4.0/1000; // offset from the middle
+    moveArmToWayPoint(desiredArmPos, desiredArmOrient);
+    bool contact = false;
+
+    while(!contact && !_contactSafetyThread->collisionDetected())
+    {
+        // cout << "move to way point" << endl;
+
+
+
+        //cout << "confirming contact" << endl;
+
+        desiredArmPos[2] -= 1.0/1000; // offset from the middle
+        _objectFeatures->fingerMovePosition(11, 0, 50);
+        _objectFeatures->fingerMovePosition(12, 15, 50);
+        while (!_objectFeatures->checkOpenHandDone())
+            ;
+        moveArmToWayPoint(desiredArmPos, desiredArmOrient);
+        contact = confrimContact(30);
+
+    }
+
+    if(contact)
+    {
+        cout << "We can sample the surface" << endl;
+        _objectFeatures->fingerMovePosition(11, 10, 10);
+
+        _objectFeatures->fingerMovePosition(7, 60, 30);
+        yarp::os::Time::delay(2);
+        _objectFeatures->fingerMovePosition(7, 0, 30);
+        yarp::os::Time::delay(2);
+    }
+
+    // Move up
+
+    //desiredArmPos[2] += 15.0/1000; // offset from the middle
+    _objectFeatures->moveArmToPosition(prevArmPos, desiredArmOrient);
+
+
+    _robotCartesianController->waitMotionDone(0.1, 20);
+
 
     // Now  make contact
-    double offset = 3.0/1000;
+
     _contactState = STOP;
 
     /*
@@ -338,11 +381,11 @@ void GPExplorationThread::moveArmToWayPoint(yarp::sig::Vector pos, yarp::sig::Ve
 
             if(indexFingerAngles[1] < 5 )
             {
-                cout << "Abandoned motion due to angles" << endl;
-                _robotCartesianController->stopControl();
+                //cout << "Abandoned motion due to angles" << endl;
+                //_robotCartesianController->stopControl();
                 cout << "Angles: " << indexFingerAngles.toString() << endl;
 
-                break;
+               // break;
             }
             _robotCartesianController->checkMotionDone(&motionDone);
         }

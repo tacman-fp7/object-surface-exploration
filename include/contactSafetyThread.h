@@ -12,13 +12,17 @@ public:
 
     ContactSafetyThread(int period, ObjectFeaturesThread* objectFeatures, ICartesianControl* robotCartesianController):RateThread(period), _desiredForce(0),
         _objectFeatures(objectFeatures), _minDistalAngle(0), _dbgtag("Contact safety: "),
-    _robotCartesianController(robotCartesianController){}
+    _robotCartesianController(robotCartesianController){
+        _collisionDetected = false;
+    }
     void setDesiredForce(double desiredForce);
     void setMinDistalAngle(double minDistalAngle);
     void resetBaseline();
     void run();
     bool threadInit();
     void threadRelease();
+    bool collisionDetected();
+
 private:
     // things
     double _desiredForce;
@@ -29,6 +33,8 @@ private:
     ICartesianControl* _robotCartesianController;
     BufferedPort<Bottle> _forceTorque_in;
     BufferedPort<Bottle> _forceTorque_out;
+
+    bool _collisionDetected;
 };
 
 } // namespace objectExploration
