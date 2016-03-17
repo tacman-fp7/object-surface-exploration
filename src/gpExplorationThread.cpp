@@ -133,10 +133,220 @@ void GPExplorationThread::maintainContact()
 
 
     // Maintain contact
+
     TappingExplorationThread::maintainContact();
+
+
+    // Wiggle wiggle
+
+    _objectFeatures->getIndexFingertipPosition(fingertipPosition);
+    if((fabs(fingertipPosition[2]  + 0.15) > 10.0/1000))
+    {
+        cout << "wiggle wiggle" << endl;
+
+
+        // Wiggle
+       // _contactSafetyThread->start();
+        sampleSurface_wiggleFingers();
+       // _contactSafetyThread->stop();
+
+    }
     //_contactState = MOVE_LOCATION;
 
 
+}
+
+bool GPExplorationThread::confrimContact(double maxAngle)
+{
+    cout << "Checking the contact(wiggle wiggle)...";
+    cout.flush();
+
+    // Move the finger s
+    _objectFeatures->fingerMovePosition(11, 0);
+    _objectFeatures->fingerMovePosition(12, 15);
+    while (!_objectFeatures->checkOpenHandDone())
+        ;
+
+
+    Vector indexFingerAngles;
+    double angle;
+    bool contact = false;
+    for (int i = 0; i < maxAngle * 5; i++)
+    {
+        angle = i/5;
+        _objectFeatures->fingerMovePosition(11, angle);
+
+
+        while(!_objectFeatures->checkOpenHandDone())
+        {
+            _objectFeatures->getIndexFingerAngles(indexFingerAngles);
+
+            if(_objectFeatures->getContactForce() >= _forceThreshold)
+            {
+                cout << "contact confirmed" << endl;
+                contact = true;
+                break;
+            }
+            else if(indexFingerAngles[1] < 3)
+            {
+                cout << "...[exceeded angle]..." << endl;
+                contact = true;
+                break;
+            }
+        }
+        if(contact)
+            break;
+
+    }
+
+
+
+ return contact;
+
+}
+
+void GPExplorationThread::sampleSurface_wiggleFingers()
+{
+
+    // Get the fingertip position
+    Vector indexFingerAngles;
+    Vector fingertipPosition;
+    _objectFeatures->getIndexFingertipPosition(fingertipPosition);
+
+    // set the current fingertip position as the next waypoint;
+    Vector desiredArmPos, desiredArmOrient;
+    _objectFeatures->getStartingPose(desiredArmPos, desiredArmOrient);
+
+    // Open the fingertip
+
+    _objectFeatures->fingerMovePosition(11, 0);
+    _objectFeatures->fingerMovePosition(12, 15);
+    while (!_objectFeatures->checkOpenHandDone())
+        ;
+
+    // Get the current desired arm positionw with the new fingertip configuration
+    _objectFeatures->indexFinger2ArmPosition(fingertipPosition, desiredArmPos);
+
+   // cout << "move to way point" << endl;
+    desiredArmPos[2] -= 5.0/1000; // offset from the middle
+    moveArmToWayPoint(desiredArmPos, desiredArmOrient);
+
+    //cout << "confirming contact" << endl;
+    confrimContact(30);
+
+    // Now  make contact
+    double offset = 3.0/1000;
+    _contactState = STOP;
+
+    /*
+     * /////
+
+    double offset = 3.0/1000;
+
+
+    while(true){
+        desiredArmPos[2] -= offset; // offset from the middle
+        _robotCartesianController->goToPoseSync(desiredArmPos, desiredArmOrient);
+       // _robotCartesianController->waitMotionDone(0.1, 2);
+
+
+
+
+
+        bool motionDone = false;
+        while(!motionDone)
+        {
+            if(_objectFeatures->getContactForce() > 3)
+            {
+                cout  << "Abandoned motion due to force" << endl;
+                _robotCartesianController->stopControl();
+
+                break;
+            }
+
+            _robotCartesianController->checkMotionDone(&motionDone);
+        }
+
+        _objectFeatures->getIndexFingertipPosition(fingertipPosition);
+        cout << "AF: " << fingertipPosition.toString() << endl;
+
+
+
+        _objectFeatures->getIndexFingerAngles(indexFingerAngles);
+
+        if(indexFingerAngles[1] > 3 )
+        {
+            cout << "No contact!" << endl;
+            cout << "Angles: " << indexFingerAngles.toString() << endl;
+
+            offset += 3.0/1000;
+
+            continue;
+        }
+        else
+        {
+            offset = 3.0/1000;
+            break;
+        }
+
+
+    }
+
+   _objectFeatures->fingerMovePosition(7, 60);
+   yarp::os::Time::delay(2);
+   _objectFeatures->fingerMovePosition(7, 0);
+   yarp::os::Time::delay(2);
+
+    // Just to be safe
+   //////////////////// move the arm up
+
+    Vector startingPos, startingOrient;
+    Vector armPos, orient;
+
+
+
+    _objectFeatures->getArmPose(armPos, orient);
+    _objectFeatures->getStartingPose(startingPos, startingOrient);
+
+
+    _objectFeatures->indexFinger2ArmPosition(startingPos, desiredArmPos);
+    armPos[2] = desiredArmPos[2] + 10.0/1000; // Move the fingertip up to avoid collisiont
+    _objectFeatures->moveArmToPosition(armPos, orient);
+
+
+    _objectFeatures->setProximalAngle(10); // Needed by apporach object method */
+
+}
+
+void GPExplorationThread::moveArmToWayPoint(yarp::sig::Vector pos, yarp::sig::Vector orient)
+{
+    Vector indexFingerAngles;
+    if(_robotCartesianController->goToPoseSync(pos, orient))
+    {
+        bool motionDone = false;
+        while(!motionDone)
+        {
+            if(_objectFeatures->getContactForce() > _forceThreshold)
+            {
+                cout  << "Abandoned motion due to force" << endl;
+                _robotCartesianController->stopControl();
+
+                break;
+            }
+
+            _objectFeatures->getIndexFingerAngles(indexFingerAngles);
+
+            if(indexFingerAngles[1] < 5 )
+            {
+                cout << "Abandoned motion due to angles" << endl;
+                _robotCartesianController->stopControl();
+                cout << "Angles: " << indexFingerAngles.toString() << endl;
+
+                break;
+            }
+            _robotCartesianController->checkMotionDone(&motionDone);
+        }
+    }
 }
 
 bool GPExplorationThread::initialiseGP(Vector startingPos, Vector startingOrient,
@@ -174,13 +384,13 @@ bool GPExplorationThread::initialiseGP(Vector startingPos, Vector startingOrient
     pos[0] = (xMin + xMax)/2.0;
     pos[1] = (yMin + yMax)/2.0;
     pos[2] = startingPos[2];
-   makeSingleContact(pos, startingOrient);
+    /* makeSingleContact(pos, startingOrient);
 
     makeSingleContact(pos, startingOrient);
     _surfaceModel->trainModel();
     _surfaceModel->updateSurfaceEstimate();
 
-
+*/
 
     return true;
 
@@ -261,6 +471,7 @@ void GPExplorationThread::moveArmUp()
 
 
     cout << "Waiting for force to return to normal value...";
+    cout.flush();
     double force = _objectFeatures->getContactForce();
 
     while(force > 0.5)
@@ -338,12 +549,10 @@ void GPExplorationThread::makeSingleContact(Vector pos, Vector orient)
 
     Vector armPos, armOrient;
     Vector startingPos, startingOrient;
-    //_objectFeatures->prepHand();
-    _curProximal = 10;
-    _curDistal = 90 - _curProximal;
-    logFingertipControl();
 
-    _objectFeatures->setProximalAngle(_curProximal);
+
+    //_objectFeatures->prepHand();
+
     _objectFeatures->getArmPose(armPos, armOrient);
     _objectFeatures->getStartingPose(startingPos, startingOrient);
 
@@ -351,6 +560,12 @@ void GPExplorationThread::makeSingleContact(Vector pos, Vector orient)
     _objectFeatures->indexFinger2ArmPosition(startingPos, desiredArmPos);
     armPos[2] = desiredArmPos[2]; // Move the fingertip up to avoid collisiont
     _objectFeatures->moveArmToPosition(armPos, orient);
+
+    _curProximal = 10;
+    _curDistal = 90 - _curProximal;
+    logFingertipControl();
+
+    _objectFeatures->setProximalAngle(_curProximal);
 
 
 
@@ -402,11 +617,22 @@ void GPExplorationThread::setWayPoint_GP()
 
 bool GPExplorationThread::threadInit()
 {
+    if(_contactSafetyThread == NULL)
+        _contactSafetyThread = new ContactSafetyThread(5, _objectFeatures, _robotCartesianController );
+    _contactSafetyThread->start();
     return TappingExplorationThread::threadInit();
 }
 
 void GPExplorationThread::threadRelease()
 {
+    if(_contactSafetyThread != NULL)
+    {
+        if(_contactSafetyThread->isRunning())
+            _contactSafetyThread->stop();
+        delete(_contactSafetyThread);
+        _contactSafetyThread = NULL;
+    }
+
 
 }
 

@@ -3,6 +3,7 @@
 
 #include "tappingExplorationThread.h"
 #include "surfaceModelGP.h"
+#include <contactSafetyThread.h>
 
 #define FORCE_TH 1.6
 
@@ -30,13 +31,17 @@ protected:
      virtual void maintainContact();
      void moveToNewLocation();
      void moveArmUp();
-
+     void sampleSurface_wiggleFingers();
 
 private:
      void makeSingleContact(yarp::sig::Vector pos, yarp::sig::Vector orient);
+     void moveArmToWayPoint(yarp::sig::Vector pos, yarp::sig::Vector orient);
 
 protected:
      SurfaceModelGP *_surfaceModel;
+     //MaintainContactThread *_maintainContactThread;
+     ContactSafetyThread* _contactSafetyThread;
+     bool  confrimContact(double maxAngle);
 
 
 };

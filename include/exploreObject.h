@@ -66,6 +66,7 @@ private: // Private members
     ExplorationStrategyThread *_exploreObjectThread; // run appropriate exploration strategy
     GPExplorationThread *_exploreObjectGP_thread;
     ExploreGPSurfaceThread * _exploreGPSurface_thread;
+    //ContactSafetyThread *_contactSafetyThread;
 
 //    ObjectClassifierThread* _objectClassifierThread; // run appropriate classifier
     yarp::os::ResourceFinder _rf;

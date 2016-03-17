@@ -33,12 +33,14 @@ protected:
     virtual void setWayPoint_GP();
     virtual void maintainContact();
 
+
 private:
     std::vector < yarp::sig::Vector > _wayPointList;
     bool _wayPointListComplete;
     yarp::sig::Vector _nextSamplingPos;
 private:
     void moveArmToWayPoint(yarp::sig::Vector pos, yarp::sig::Vector orient);
+
 
 };
 }

@@ -154,7 +154,7 @@ void TappingExplorationThread::maintainContact()
 {
 
     // Maintain the location for a given time period in the form of dealy
-    yarp::os::Time::delay(0.001);
+    //yarp::os::Time::delay(0.001);
 
     // This is where I should log the position
 

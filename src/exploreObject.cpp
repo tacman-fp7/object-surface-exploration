@@ -66,6 +66,7 @@ ExploreObject::ExploreObject(yarp::os::ResourceFinder& rf)
     _rf = rf;
 
     //    _maintainContactThread = NULL;
+    //_contactSafetyThread = NULL;
     _exploreObjectThread = NULL;
     _exploreObjectGP_thread = NULL;
     _exploreGPSurface_thread = NULL;
@@ -112,14 +113,15 @@ ExploreObject::~ExploreObject()
         delete(_exploreGPSurface_thread);
         _exploreGPSurface_thread = NULL;
     }
-    /*    if(_maintainContactThread != NULL)
+    /*if(_contactSafetyThread != NULL)
     {
+        if(_contactSafetyThread->isRunning())
+            _contactSafetyThread->stop();
+        delete(ContactSafetyThread);
+        _contactSafetyThread = NULL;
 
-        delete(_maintainContactThread);
-        _maintainContactThread = NULL;
-    }
-    */
-    //cout << "Here2" << endl;
+    }*/
+
     if(_objectFeaturesThread != NULL)
     {
 
@@ -624,6 +626,10 @@ bool ExploreObject::configure(yarp::os::ResourceFinder& rf )
                                                        _objectFeaturesThread);
     _maintainContactThread->setDesiredForce(systemParameters.getDesiredForce());
     */
+    //_contactSafetyThread = new ContactSafetyThread(systemParameters.getMaintainContactPeriod(),
+                                                   //_objectFeaturesThread);
+
+
     /////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////// Setting up the exploration strategy thread ///////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////////

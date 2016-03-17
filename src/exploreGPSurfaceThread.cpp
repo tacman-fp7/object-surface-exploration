@@ -281,7 +281,7 @@ void ExploreGPSurfaceThread::maintainContact()
         bool motionDone = false;
         while(!motionDone)
         {
-            if(_objectFeatures->getContactForce() > 4)
+            if(_objectFeatures->getContactForce() > 3)
             {
                 cout  << "Abandoned motion due to force" << endl;
                 _robotCartesianController->stopControl();

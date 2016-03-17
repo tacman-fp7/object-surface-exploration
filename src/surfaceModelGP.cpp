@@ -188,7 +188,7 @@ bool SurfaceModelGP::trainModel(){
     _opt->addOpt("processes", process);
 
     OptNumber *nholdouts = new OptNumber;
-    nholdouts->setValue(4);
+    nholdouts->setValue(1);
     if(_opt->hasOpt("nholdouts"))
         _opt->removeOpt("nholdouts");
     _opt->addOpt("nholdouts", nholdouts);
@@ -200,7 +200,7 @@ bool SurfaceModelGP::trainModel(){
     _opt->addOpt("hoproportion", hoproportion);
 
     OptNumber *epochs = new OptNumber;
-    epochs->setValue(1000);
+    epochs->setValue(100000);
     if(_opt->hasOpt("epochs"))
         _opt->removeOpt("epochs");
     _opt->addOpt("epochs", epochs);

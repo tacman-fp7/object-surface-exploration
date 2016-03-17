@@ -5,6 +5,7 @@
 #include <objectFeaturesThread.h>
 #include <yarp/dev/CartesianControl.h>
 
+
 using yarp::dev::ICartesianControl;
 
 namespace objectExploration
@@ -19,6 +20,7 @@ public:
 protected:
     ObjectFeaturesThread* _objectFeatures;
     ICartesianControl* _robotCartesianController;
+
     
     
 };

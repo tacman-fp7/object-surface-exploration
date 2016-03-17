@@ -1038,6 +1038,7 @@ bool ObjectFeaturesThread::threadInit()
     ///////////////////////////////
 
 
+
     if(ret)
         cout << "Object features thread configured" << endl;
     else
