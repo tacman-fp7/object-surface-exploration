@@ -496,16 +496,16 @@ void TappingExplorationThread::detectContact(double maxAngle)
 void TappingExplorationThread::confrimContact(double maxAngle)
 {
     cout << "Checking the contact...";
-    moveIndexFingerBlocking(10/5);
+    moveIndexFingerBlocking(10/2);
     //cout << "Move done" << endl;
     //yarp::os::Time::delay(1);
     _contactState = APPROACH_OBJECT;
 
     Vector indexFingerAngles;
     double angle;
-    for (int i = 10; i < maxAngle * 5; i++)
+    for (int i = 10; i < maxAngle * 2; i++)
     {
-        angle = i/5;
+        angle = i/2;
         moveIndexFinger(angle);
         //cout << "Moving finger" << endl;
 
