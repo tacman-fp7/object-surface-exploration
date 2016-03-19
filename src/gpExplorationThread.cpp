@@ -147,7 +147,18 @@ void GPExplorationThread::maintainContact()
 
         // Wiggle
         // _contactSafetyThread->start();
+       // double prevTol;
+
+       // _robotCartesianController->getInTargetTol(&prevTol);
+       // cout << "prevTol: " << prevTol << endl;
+
+        //_robotCartesianController->setInTargetTol(1.0/1000);
+
+
         sampleSurface_wiggleFingers();
+
+        //_robotCartesianController->setInTargetTol(prevTol);
+
         // _contactSafetyThread->stop();
 
     }
@@ -158,12 +169,12 @@ void GPExplorationThread::maintainContact()
 
 bool GPExplorationThread::confrimContact(double maxAngle)
 {
-    cout << "Checking the contact(wiggle wiggle)...";
-    cout.flush();
 
+
+    cout << "We are in cofirm contact" << endl;
     // Move the finger s
-    _objectFeatures->fingerMovePosition(11, 0, 50);
-    _objectFeatures->fingerMovePosition(12, 0, 50);
+    _objectFeatures->fingerMovePosition(INDEX_PROXIMAL, 0, 50);
+    _objectFeatures->fingerMovePosition(INDEX_DISTAL, 0, 50);
     while (!_objectFeatures->checkOpenHandDone())
         ;
 
@@ -171,16 +182,16 @@ bool GPExplorationThread::confrimContact(double maxAngle)
     Vector indexFingerAngles;
     double angle;
     bool contact = false;
-    for (int i = 0; i < maxAngle * 2; i++)
+    for (int i = 0; i < maxAngle ; i++)
     {
-        angle = i/2;
-        _objectFeatures->fingerMovePosition(11, angle);
+        angle = i;
+        _objectFeatures->fingerMovePosition(INDEX_PROXIMAL, angle, 10);
 
 
         while(!_objectFeatures->checkOpenHandDone())
         {
-            _objectFeatures->getIndexFingerAngles(indexFingerAngles);
 
+            //cout << "Force: " << _objectFeatures->getContactForce() << endl;
             if(_objectFeatures->getContactForce() >= _forceThreshold/2)
             {
                 cout << "contact confirmed" << endl;
@@ -202,9 +213,24 @@ bool GPExplorationThread::confrimContact(double maxAngle)
     }
 
 
+    cout << "Force: " << _objectFeatures->getContactForce() << endl;
+    if(_objectFeatures->getContactForce() >= _forceThreshold/2)
+    {
+        cout << "contact confirmed" << endl;
+        contact = true;
 
+    }
+
+   if(_objectFeatures->getIndexFingerAngles(indexFingerAngles))
+   {
     if (indexFingerAngles[0] > 2)
         contact = false;
+   }
+   else
+   {
+       cout << "Failed to read finger angles" << endl;
+       contact = true; // I don't know what to do yet
+   }
 
     return contact;
 
@@ -213,27 +239,35 @@ bool GPExplorationThread::confrimContact(double maxAngle)
 void GPExplorationThread::sampleSurface_wiggleFingers()
 {
 
+
     // Get the fingertip position
     Vector indexFingerAngles;
     Vector fingertipPosition;
     _objectFeatures->getIndexFingertipPosition(fingertipPosition);
 
-    // set the current fingertip position as the next waypoint;
+
     Vector desiredArmPos, desiredArmOrient;
     _objectFeatures->getStartingPose(desiredArmPos, desiredArmOrient);
 
     // Open the fingertip
 
-    _objectFeatures->fingerMovePosition(11, 0, 50);
-    _objectFeatures->fingerMovePosition(12, 15, 50);
+    _objectFeatures->fingerMovePosition(11, 0, 40);
+    _objectFeatures->fingerMovePosition(12, 0, 40);
     while (!_objectFeatures->checkOpenHandDone())
         ;
 
     // Get the current desired arm positionw with the new fingertip configuration
     _objectFeatures->indexFinger2ArmPosition(fingertipPosition, desiredArmPos);
 
+    desiredArmPos[0] += 7.0/1000; // This is a hack to adjust for the position being in the middle of the finger
+    _objectFeatures->fingerMovePosition(11, 0, 40);
+    _objectFeatures->fingerMovePosition(12, 15, 40);
+    while (!_objectFeatures->checkOpenHandDone())
+        ;
 
-
+    // reset the force torque sensor's basline
+    cout << "Contact safety baseline rest" << endl;
+    _contactSafetyThread->resetBaseline();
 
     desiredArmPos[2] -= 25.0/1000; // offset from the middle
     moveArmToWayPoint(desiredArmPos, desiredArmOrient);
@@ -242,9 +276,12 @@ void GPExplorationThread::sampleSurface_wiggleFingers()
     // the desired position
     Vector dummy;
     _objectFeatures->getArmPose(desiredArmPos, dummy);
+    desiredArmPos[2] -= 2.0/1000; // move just a little  more to adjust for the 15 degree angle
 
     bool contact = false;
 
+    cout << "Checking the contact(wiggle wiggle)...";
+    cout.flush();
     while(!contact && !_contactSafetyThread->collisionDetected())
     {
         // cout << "move to way point" << endl;
@@ -264,6 +301,11 @@ void GPExplorationThread::sampleSurface_wiggleFingers()
             _robotCartesianController->checkMotionDone(&done);
         }
 
+        //
+        if(_contactSafetyThread->collisionDetected())
+        {
+            cout << "Collision detected before confirming contact" << endl;
+        }
         contact = confrimContact(10);
 
         //if(_objectFeatures->getContactForce() >= _forceThreshold)

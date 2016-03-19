@@ -95,9 +95,7 @@ bool ObjectFeaturesThread::getArmPose(yarp::sig::Vector &pos, yarp::sig::Vector 
 
 bool ObjectFeaturesThread::fingerMovePosition(int joint, double angle, double speed)
 {
-    //double dummy;
-    //_armJointPositionCtrl->getRefSpeed(joint, &dummy);
-    //cout << "Ref speed" << dummy << endl;
+
     _armJointPositionCtrl->setRefSpeed(joint, speed);
     if(!_armJointPositionCtrl->positionMove(joint, angle)) //TODO: use the config file
     {
@@ -160,10 +158,13 @@ bool ObjectFeaturesThread::prepHand()
     }
 
 
-    ret = _armJointModeCtrl->setPositionMode(11);
+
+    ret = _armJointModeCtrl->setPositionMode(INDEX_DISTAL);
+    _armJointPositionCtrl->setRefSpeed(INDEX_DISTAL, 20);
+    _armJointPositionCtrl->setRefSpeed(INDEX_PROXIMAL, 20);
 
     // Put the thumb in position
-    ret = openHand();
+    //ret = openHand();
 
     ret = fingerMovePosition(7, 0);
     //ret = fingerMovePosition(9, 30);
@@ -208,22 +209,29 @@ bool ObjectFeaturesThread::openHand()
 }
 
 
-bool ObjectFeaturesThread::setIndexFingerAngles(double proximal, double distal)
+bool ObjectFeaturesThread::setIndexFingerAngles(double proximal, double distal, double speed)
 {
     bool ret = true;
     if(_armJointPositionCtrl != NULL )
     {
 
-        ret = ret && _armJointModeCtrl->setPositionMode(11);
-        ret = ret && _armJointModeCtrl->setPositionMode(12);
+        // Make sure the joins are in position mode;
+        ret = ret && _armJointModeCtrl->setPositionMode(INDEX_PROXIMAL);
+        ret = ret && _armJointModeCtrl->setPositionMode(INDEX_DISTAL);
+        ret = ret && _armJointModeCtrl->setPositionMode(ABDUCTION);
+
+        // Set the speeds
+        _armJointPositionCtrl->setRefSpeed(INDEX_PROXIMAL, speed);
+        _armJointPositionCtrl->setRefSpeed(INDEX_DISTAL, speed);
+
         Bottle msg;
         msg.clear();
         msg.addDouble(proximal);
         msg.addDouble(distal);
         publishFingertipControl(msg);
 
-        ret = ret && _armJointPositionCtrl->positionMove(_proximalJoint_index, proximal);
-        ret = ret && _armJointPositionCtrl->positionMove(12, distal);
+        ret = ret && _armJointPositionCtrl->positionMove(INDEX_PROXIMAL, proximal);
+        ret = ret && _armJointPositionCtrl->positionMove(INDEX_DISTAL, distal);
 
     }
     else
@@ -297,7 +305,7 @@ void ObjectFeaturesThread::calibrateHand()
 
     while(!checkOpenHandDone())
         ;
-   // yarp::os::Time::delay(5);
+    // yarp::os::Time::delay(5);
     //cout << "Motion done";
 
     for(int i = 0; i < _fingerEncoders.getPendingReads(); i++)
@@ -337,8 +345,9 @@ bool ObjectFeaturesThread::getIndexFingerAngles(yarp::sig::Vector &angles)
 {
     Vector fingerEncoders;
     angles.resize(3);
+    bool ret = false;
 
-    getIndexFingerEncoder(fingerEncoders);
+    ret = getIndexFingerEncoder(fingerEncoders);
 
     //cout << fingerEncoders.toString() << endl;
 
@@ -354,7 +363,7 @@ bool ObjectFeaturesThread::getIndexFingerAngles(yarp::sig::Vector &angles)
     angles[1] = 90 * (1 - (fingerEncoders[1] - _minIndexMiddle) / (_maxIndexMiddle - _minIndexMiddle) );
     angles[2] = 90 * (1 - (fingerEncoders[2] - _minIndexDistal) / (_maxIndexDistal - _minIndexDistal) );
 
-    return true;
+    return ret;
 }
 
 bool ObjectFeaturesThread::getIndexFingerEncoder(yarp::sig::Vector &encoderValues)

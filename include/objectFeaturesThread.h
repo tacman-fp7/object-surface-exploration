@@ -36,6 +36,14 @@ using yarp::os::Mutex;
 using std::string;
 using yarp::os::RpcClient;
 
+enum fingerJoints{
+    ABDUCTION = 7,
+    THUMBT_PROXIMAL = 9,
+    THUMB_DISTAL = 10,
+    INDEX_PROXIMAL = 11,
+    INDEX_DISTAL = 12
+};
+
 struct reachableSpace
 {
     double minX;
@@ -111,11 +119,11 @@ public:
     bool prepGP();
     void calibrateHand();
     bool moveArmToPosition(Vector pos, Vector orient);
-    bool fingerMovePosition(int joint, double angle, double speed = 10);
+    bool fingerMovePosition(int joint, double angle, double speed = 40);
     void updateContactState(int contactState){_contactState = contactState;
                                              publishContactState(_contactState);}
     bool setProximalAngle(double angle);
-    bool setIndexFingerAngles(double proximal, double distal);
+    bool setIndexFingerAngles(double proximal, double distal, double speed = 40);
     objectExploration::SurfaceModelGP* getGPSurfaceModel(){
         return _objectSurfaceModelGP;
     }

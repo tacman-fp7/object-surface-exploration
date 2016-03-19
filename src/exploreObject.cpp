@@ -534,6 +534,7 @@ bool ExploreObject::configure(yarp::os::ResourceFinder& rf )
     cout << "Trajectory time: " << systemParameters.getTrajectoryTime() << endl;
     _armCartesianController->setTrajTime(systemParameters.getTrajectoryTime());
 
+
     // Enable the torso movement
 
     Vector curDof;
