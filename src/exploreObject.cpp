@@ -373,6 +373,26 @@ bool ExploreObject::startExploringGP()
     return ret;
 }
 
+bool ExploreObject::enableSurfaceSampling()
+{
+    if(_exploreObjectGP_thread != NULL)
+    {
+        _exploreObjectGP_thread->enableSurfaceSampling();
+    }
+
+    return true;
+}
+
+bool ExploreObject::disableSurfaceSampling()
+{
+
+    if(_exploreObjectGP_thread != NULL)
+    {
+        _exploreObjectGP_thread->disableSurfaceSampling();
+    }
+    return true;
+}
+
 bool ExploreObject::startExploring()
 {
     bool ret = true;

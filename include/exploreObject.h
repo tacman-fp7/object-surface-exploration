@@ -45,6 +45,8 @@ public: // Methods related to the robot control
     bool calibrateHand();
     bool startExploringGP();
     bool exploreGPSurface(const string& objectName);
+    bool enableSurfaceSampling();
+    bool disableSurfaceSampling();
     bool quit();
     
 public: // Methods related to the RF module

@@ -120,6 +120,22 @@ public:
   virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
+class robotControl_enableSurfaceSampling : public yarp::os::Portable {
+public:
+  bool _return;
+  void init();
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
+};
+
+class robotControl_disableSurfaceSampling : public yarp::os::Portable {
+public:
+  bool _return;
+  void init();
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
+};
+
 class robotControl_quit : public yarp::os::Portable {
 public:
   bool _return;
@@ -426,6 +442,48 @@ void robotControl_exploreGPSurface::init(const std::string& objectName) {
   this->objectName = objectName;
 }
 
+bool robotControl_enableSurfaceSampling::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(1)) return false;
+  if (!writer.writeTag("enableSurfaceSampling",1,1)) return false;
+  return true;
+}
+
+bool robotControl_enableSurfaceSampling::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void robotControl_enableSurfaceSampling::init() {
+  _return = false;
+}
+
+bool robotControl_disableSurfaceSampling::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(1)) return false;
+  if (!writer.writeTag("disableSurfaceSampling",1,1)) return false;
+  return true;
+}
+
+bool robotControl_disableSurfaceSampling::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void robotControl_disableSurfaceSampling::init() {
+  _return = false;
+}
+
 bool robotControl_quit::write(yarp::os::ConnectionWriter& connection) {
   yarp::os::idl::WireWriter writer(connection);
   if (!writer.writeListHeader(1)) return false;
@@ -586,6 +644,26 @@ bool robotControl::exploreGPSurface(const std::string& objectName) {
   helper.init(objectName);
   if (!yarp().canWrite()) {
     yError("Missing server method '%s'?","bool robotControl::exploreGPSurface(const std::string& objectName)");
+  }
+  bool ok = yarp().write(helper,helper);
+  return ok?helper._return:_return;
+}
+bool robotControl::enableSurfaceSampling() {
+  bool _return = false;
+  robotControl_enableSurfaceSampling helper;
+  helper.init();
+  if (!yarp().canWrite()) {
+    yError("Missing server method '%s'?","bool robotControl::enableSurfaceSampling()");
+  }
+  bool ok = yarp().write(helper,helper);
+  return ok?helper._return:_return;
+}
+bool robotControl::disableSurfaceSampling() {
+  bool _return = false;
+  robotControl_disableSurfaceSampling helper;
+  helper.init();
+  if (!yarp().canWrite()) {
+    yError("Missing server method '%s'?","bool robotControl::disableSurfaceSampling()");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
@@ -774,6 +852,28 @@ bool robotControl::read(yarp::os::ConnectionReader& connection) {
       reader.accept();
       return true;
     }
+    if (tag == "enableSurfaceSampling") {
+      bool _return;
+      _return = enableSurfaceSampling();
+      yarp::os::idl::WireWriter writer(reader);
+      if (!writer.isNull()) {
+        if (!writer.writeListHeader(1)) return false;
+        if (!writer.writeBool(_return)) return false;
+      }
+      reader.accept();
+      return true;
+    }
+    if (tag == "disableSurfaceSampling") {
+      bool _return;
+      _return = disableSurfaceSampling();
+      yarp::os::idl::WireWriter writer(reader);
+      if (!writer.isNull()) {
+        if (!writer.writeListHeader(1)) return false;
+        if (!writer.writeBool(_return)) return false;
+      }
+      reader.accept();
+      return true;
+    }
     if (tag == "quit") {
       bool _return;
       _return = quit();
@@ -833,6 +933,8 @@ std::vector<std::string> robotControl::help(const std::string& functionName) {
     helpString.push_back("calibrateHand");
     helpString.push_back("startExploringGP");
     helpString.push_back("exploreGPSurface");
+    helpString.push_back("enableSurfaceSampling");
+    helpString.push_back("disableSurfaceSampling");
     helpString.push_back("quit");
     helpString.push_back("help");
   }
@@ -878,6 +980,12 @@ std::vector<std::string> robotControl::help(const std::string& functionName) {
     }
     if (functionName=="exploreGPSurface") {
       helpString.push_back("bool exploreGPSurface(const std::string& objectName) ");
+    }
+    if (functionName=="enableSurfaceSampling") {
+      helpString.push_back("bool enableSurfaceSampling() ");
+    }
+    if (functionName=="disableSurfaceSampling") {
+      helpString.push_back("bool disableSurfaceSampling() ");
     }
     if (functionName=="quit") {
       helpString.push_back("bool quit() ");

@@ -12,6 +12,7 @@ using yarp::sig::Vector;
 using std::cout;
 using std::endl;
 
+
 void GPExplorationThread::run()
 {
 
@@ -23,6 +24,7 @@ void GPExplorationThread::run()
 
     // Get a new waypoint from the GP model
     _contactState = SET_WAYPOINT_GP;
+
 
     _repeats = 0;
     _curDistal = 0;
@@ -88,6 +90,16 @@ void GPExplorationThread::run()
 
 }
 
+void GPExplorationThread::enableSurfaceSampling()
+{
+    _sampleSurface = true;
+}
+
+void GPExplorationThread::disableSurfaceSampling()
+{
+    _sampleSurface = false;
+}
+
 void GPExplorationThread::moveToNewLocation()
 {
     cout << "Contact state is: move location" << endl;
@@ -138,29 +150,32 @@ void GPExplorationThread::maintainContact()
 
 
     // Wiggle wiggle
-
-    _objectFeatures->getIndexFingertipPosition(fingertipPosition);
-    if((fabs(fingertipPosition[2]  + 0.15) > 10.0/1000))
+    if(_sampleSurface)
     {
-        cout << "wiggle wiggle" << endl;
+
+        _objectFeatures->getIndexFingertipPosition(fingertipPosition);
+        if((fabs(fingertipPosition[2]  + 0.15) > 10.0/1000))
+        {
+            cout << "wiggle wiggle" << endl;
 
 
-        // Wiggle
-        // _contactSafetyThread->start();
-       // double prevTol;
+            // Wiggle
+            // _contactSafetyThread->start();
+            // double prevTol;
 
-       // _robotCartesianController->getInTargetTol(&prevTol);
-       // cout << "prevTol: " << prevTol << endl;
+            // _robotCartesianController->getInTargetTol(&prevTol);
+            // cout << "prevTol: " << prevTol << endl;
 
-        //_robotCartesianController->setInTargetTol(1.0/1000);
+            //_robotCartesianController->setInTargetTol(1.0/1000);
 
 
-        sampleSurface_wiggleFingers();
+            sampleSurface_wiggleFingers();
 
-        //_robotCartesianController->setInTargetTol(prevTol);
+            //_robotCartesianController->setInTargetTol(prevTol);
 
-        // _contactSafetyThread->stop();
+            // _contactSafetyThread->stop();
 
+        }
     }
     //_contactState = MOVE_LOCATION;
 
@@ -221,16 +236,16 @@ bool GPExplorationThread::confrimContact(double maxAngle)
 
     }
 
-   if(_objectFeatures->getIndexFingerAngles(indexFingerAngles))
-   {
-    if (indexFingerAngles[0] > 2)
-        contact = false;
-   }
-   else
-   {
-       cout << "Failed to read finger angles" << endl;
-       contact = true; // I don't know what to do yet
-   }
+    if(_objectFeatures->getIndexFingerAngles(indexFingerAngles))
+    {
+        if (indexFingerAngles[0] > 2)
+            contact = false;
+    }
+    else
+    {
+        cout << "Failed to read finger angles" << endl;
+        contact = true; // I don't know what to do yet
+    }
 
     return contact;
 
@@ -332,7 +347,7 @@ void GPExplorationThread::sampleSurface_wiggleFingers()
     }
     {
         cout << "We had no contact with the tip" << endl;
-      /*  // Suspen safety
+        /*  // Suspen safety
         _contactSafetyThread->suspend();
         // Move the hand up
         Vector armPos, armOrient;
@@ -369,7 +384,7 @@ void GPExplorationThread::sampleSurface_wiggleFingers()
         _robotCartesianController->checkMotionDone(&done);
     }
 
-  _contactSafetyThread->resume();
+    _contactSafetyThread->resume();
 
     //_robotCartesianController->waitMotionDone(0.1, 20);
 

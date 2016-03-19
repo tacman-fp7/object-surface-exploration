@@ -18,13 +18,15 @@ public:
                             ObjectFeaturesThread* objectFeatures):
         TappingExplorationThread(period, robotCartesianController,
                                   objectFeatures){ _surfaceModel = objectFeatures->getGPSurfaceModel();
-                                                 _forceThreshold = FORCE_TH;}
+                                                 _forceThreshold = FORCE_TH; _sampleSurface = true;}
 
     virtual void run();
     virtual bool threadInit();
     virtual void threadRelease();
     virtual bool initialiseGP(Vector startingPos, Vector startingOrient,
                       Vector endingPos, Vector endingOrient);
+    void enableSurfaceSampling();
+    void disableSurfaceSampling();
 
 protected:
      virtual void setWayPoint_GP();
@@ -42,6 +44,7 @@ protected:
      //MaintainContactThread *_maintainContactThread;
      ContactSafetyThread* _contactSafetyThread;
      bool  confrimContact(double maxAngle);
+     bool _sampleSurface;
 
 
 };

@@ -14,6 +14,8 @@ service robotControl {
 	bool calibrateHand();
 	bool startExploringGP();
 	bool exploreGPSurface(1: string objectName);
+        bool enableSurfaceSampling();
+        bool disableSurfaceSampling();
 	bool quit();
 	
 }
