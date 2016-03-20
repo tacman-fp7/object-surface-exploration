@@ -154,7 +154,8 @@ void GPExplorationThread::maintainContact()
     {
 
         _objectFeatures->getIndexFingertipPosition(fingertipPosition);
-        if((fabs(fingertipPosition[2]  + 0.15) > 10.0/1000))
+        cout << "Finger position: " << fingertipPosition[2] + 0.15 << endl;
+        if((fabs(fingertipPosition[2]  + 0.15) > 15.0/1000))
         {
             cout << "wiggle wiggle" << endl;
 
@@ -320,7 +321,7 @@ void GPExplorationThread::sampleSurface_wiggleFingers()
         // while (!_objectFeatures->checkOpenHandDone())
         //     ;
 
-        cout << "confirming contact" << endl;
+        //cout << "confirming contact" << endl;
         _objectFeatures->moveArmToPosition(desiredArmPos, desiredArmOrient);
 
         bool done = false;
@@ -353,8 +354,8 @@ void GPExplorationThread::sampleSurface_wiggleFingers()
 
 
 
-        _objectFeatures->updateContactState(SAMPLE_SURFACE);
-        yarp::os::Time::delay(1);
+      // _objectFeatures->updateContactState(SAMPLE_SURFACE);
+       // yarp::os::Time::delay(1);
 
 
         _curProximal = 3;
@@ -367,7 +368,7 @@ void GPExplorationThread::sampleSurface_wiggleFingers()
         moveIndexFingerBlocking(_curProximal, curDistal, _curAbduction, 40);
         _objectFeatures->updateContactState(_contactState);
 
-        _objectFeatures->updateContactState(_contactState);
+        //_objectFeatures->updateContactState(_contactState);
         _curProximal = 0;
         moveIndexFingerBlocking(_curProximal, curDistal, _curAbduction, 40);
 
