@@ -23,7 +23,7 @@ void ExploreGPSurfaceThread::run()
     initialiseGP(startingPos, startingOrient, endingPos, endingOrient);
 
     _repeats = 0;
-    _curDistal = 0;
+    //_curDistal = 0;
     _curProximal = 0;
     _forceThreshold = FORCE_TH; //TODO: should be in a config file
 
@@ -339,7 +339,10 @@ void ExploreGPSurfaceThread::maintainContact()
     _objectFeatures->moveArmToPosition(armPos, orient);
 
 
-    _objectFeatures->setProximalAngle(10); // Needed by apporach object method
+    _curProximal = 10;
+    _curAbduction = 0;
+    moveIndexFinger(_curProximal, _curAbduction);
+   // _objectFeatures->setProximalAngle(10); // Needed by apporach object method
 
 
 
@@ -395,11 +398,13 @@ void ExploreGPSurfaceThread::setWayPoint_GP()
     ret = true;
     // I am not sure if I need to keep track of them anymore
     _curProximal = 10;
-    _curDistal = 90 - _curProximal;
+    //_curDistal = 90 - _curProximal;
+    _curAbduction = 0;
+    moveIndexFingerBlocking(_curProximal, _curAbduction, 40);
     // It also publishes it
-    _objectFeatures->setProximalAngle(_curProximal);
+   /* _objectFeatures->setProximalAngle(_curProximal);
     while(!_objectFeatures->checkOpenHandDone() && !isStopping())
-        ;
+   */     ;
     // Just to get the desired orientation
     _objectFeatures->getStartingPose(desiredArmPos, desiredArmOrient);
 

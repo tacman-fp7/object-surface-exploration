@@ -21,7 +21,8 @@ enum State{
     FINISHED = 5,
     STOP = 6,
     SET_WAYPOINT_GP = 7,
-    EXCEEDED_ANGLE = 8
+    EXCEEDED_ANGLE = 8,
+    SAMPLE_SURFACE = 9
 };
 
 class TappingExplorationThread: public ExplorationStrategyThread
@@ -30,7 +31,10 @@ public:
     TappingExplorationThread(int period, ICartesianControl* robotCartesianController,
                             ObjectFeaturesThread* objectFeatures):
         ExplorationStrategyThread(period, robotCartesianController,
-                                  objectFeatures){ _nGrid = 0; _forceThreshold = FORCE_TH;}
+                                  objectFeatures){ _nGrid = 0; _forceThreshold = FORCE_TH;
+                                                 _curAbduction = -10;
+                                                 //_curDistal = -10;
+                                                 _curAbduction = -10;}
     virtual void run();
     virtual bool threadInit();
     virtual void threadRelease();
@@ -40,7 +44,8 @@ protected:
     int _repeats;
     double _forceThreshold;
     double _curProximal;
-    double _curDistal;
+    //double _curDistal;
+    double _curAbduction;
 
 private:
     Vector _indexFingerEncoders;
@@ -49,7 +54,7 @@ private:
    // double _preContactForce;
 
 protected:
-    void logFingertipControl();
+    //void logFingertipControl();
 
 protected:
     virtual void moveToNewLocation();
@@ -57,8 +62,10 @@ protected:
     virtual void calculateNewWaypoint();
     virtual void maintainContact();
     void finshExploration();
-    void moveIndexFinger(double angle);
-    void moveIndexFingerBlocking(double angle);
+    // Rename the functions to refelect the fact that the proximal and distal are locked
+    void moveIndexFinger(double proximalAngle, double abductionAngle, double speed = 40);
+    void moveIndexFingerBlocking(double proximalAngle, double abductionAngle, double speed);
+    void moveIndexFingerBlocking(double proximalAngle, double distalAngle, double abductionAngle, double speed);
 
 private:
     void moveArmToWayPoint(Vector pos, Vector orient);

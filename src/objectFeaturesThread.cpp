@@ -160,18 +160,16 @@ bool ObjectFeaturesThread::prepHand()
 
 
     ret = _armJointModeCtrl->setPositionMode(INDEX_DISTAL);
+
     _armJointPositionCtrl->setRefSpeed(INDEX_DISTAL, 20);
     _armJointPositionCtrl->setRefSpeed(INDEX_PROXIMAL, 20);
+    _armJointPositionCtrl->setRefSpeed(ABDUCTION, 20);
 
-    // Put the thumb in position
-    //ret = openHand();
-
-    ret = fingerMovePosition(7, 0);
-    //ret = fingerMovePosition(9, 30);
-    //ret = fingerMovePosition(10, 170);
     ret = fingerMovePosition(9,0); // with idle thumb position
     ret = fingerMovePosition(10, 65);
-    setProximalAngle(10);
+
+    setIndexFingerAngles(0,0,20);
+    //setProximalAngle(10);
 
     return true;
 
@@ -208,8 +206,35 @@ bool ObjectFeaturesThread::openHand()
     return true;
 }
 
+bool ObjectFeaturesThread::checkOpenHandDone()
+{
+    bool retProximal;
+    bool retDistal;
+    bool retAbduction;
 
-bool ObjectFeaturesThread::setIndexFingerAngles(double proximal, double distal, double speed)
+    if(!_armJointPositionCtrl->checkMotionDone(INDEX_PROXIMAL, &retProximal))
+    {
+        std::cerr << _dbgtag << "CheckMotionDone failed on network comms" << std::endl;
+        retProximal = true;
+    }
+    if(!_armJointPositionCtrl->checkMotionDone(INDEX_DISTAL, &retDistal))
+    {
+        std::cerr << _dbgtag << "CheckMotionDone failed on network comms" << std::endl;
+        retDistal = true;
+    }
+
+    if(!_armJointPositionCtrl->checkMotionDone(ABDUCTION, &retAbduction))
+    {
+        std::cerr << _dbgtag << "CheckMotionDone failed on network comms" << std::endl;
+        retAbduction = true;
+    }
+            //ret = false;
+
+    return (retProximal && retDistal && retAbduction);
+}
+
+
+bool ObjectFeaturesThread::setIndexFingerAngles(double proximal, double distal, double abductionAngle, double speed)
 {
     bool ret = true;
     if(_armJointPositionCtrl != NULL )
@@ -223,15 +248,18 @@ bool ObjectFeaturesThread::setIndexFingerAngles(double proximal, double distal, 
         // Set the speeds
         _armJointPositionCtrl->setRefSpeed(INDEX_PROXIMAL, speed);
         _armJointPositionCtrl->setRefSpeed(INDEX_DISTAL, speed);
+        _armJointPositionCtrl->setRefSpeed(ABDUCTION, speed);
 
         Bottle msg;
         msg.clear();
         msg.addDouble(proximal);
         msg.addDouble(distal);
+        msg.addDouble(abductionAngle);
         publishFingertipControl(msg);
 
         ret = ret && _armJointPositionCtrl->positionMove(INDEX_PROXIMAL, proximal);
         ret = ret && _armJointPositionCtrl->positionMove(INDEX_DISTAL, distal);
+        ret = ret && _armJointPositionCtrl->positionMove(ABDUCTION, abductionAngle);
 
     }
     else
@@ -242,10 +270,16 @@ bool ObjectFeaturesThread::setIndexFingerAngles(double proximal, double distal, 
     return ret;
 }
 
+bool ObjectFeaturesThread::setIndexFingerAngles(double proximalAngle, double abductionAngle, double speed)
+{
+    double distalAngle = 90 - proximalAngle;
+    return setIndexFingerAngles(proximalAngle, distalAngle, abductionAngle, speed);
+}
+
 bool ObjectFeaturesThread::setProximalAngle(double angle){
 
     double distal = 90-angle;
-    return setIndexFingerAngles(angle, distal);
+    return setIndexFingerAngles(angle, distal, 40);
 
 }
 
@@ -1098,6 +1132,8 @@ bool ObjectFeaturesThread::prepGP()
 
 void ObjectFeaturesThread::publishFingertipControl(Bottle controlCommand)
 {
+    if(controlCommand.size() < 3)
+        cout << "Fingertip control command needs more data" << endl;
     Bottle &data = _fingertipControlPort_out.prepare();
     data.clear();
     data = controlCommand;

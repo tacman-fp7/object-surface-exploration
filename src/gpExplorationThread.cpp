@@ -27,7 +27,7 @@ void GPExplorationThread::run()
 
 
     _repeats = 0;
-    _curDistal = 0;
+    //_curDistal = 0;
     _curProximal = 0;
     _forceThreshold = FORCE_TH; //TODO: should be in a config file
 
@@ -266,19 +266,27 @@ void GPExplorationThread::sampleSurface_wiggleFingers()
 
     // Open the fingertip
 
-    _objectFeatures->fingerMovePosition(11, 0, 40);
-    _objectFeatures->fingerMovePosition(12, 0, 40);
-    while (!_objectFeatures->checkOpenHandDone())
-        ;
+    _curProximal = 0;
+    _curAbduction = 0;
+    double curDistal = 0;
+    moveIndexFingerBlocking(_curProximal, curDistal, _curAbduction, 40);
+    //_objectFeatures->fingerMovePosition(11, 0, 40);
+    //_objectFeatures->fingerMovePosition(12, 0, 40);
+    //while (!_objectFeatures->checkOpenHandDone())
+    //    ;
 
     // Get the current desired arm positionw with the new fingertip configuration
     _objectFeatures->indexFinger2ArmPosition(fingertipPosition, desiredArmPos);
 
     desiredArmPos[0] += 7.0/1000; // This is a hack to adjust for the position being in the middle of the finger
-    _objectFeatures->fingerMovePosition(11, 0, 40);
-    _objectFeatures->fingerMovePosition(12, 15, 40);
-    while (!_objectFeatures->checkOpenHandDone())
-        ;
+    _curProximal = 0;
+    curDistal = 15;
+    _curAbduction = 0;
+    moveIndexFingerBlocking(_curProximal, curDistal, _curAbduction, 40);
+    //_objectFeatures->fingerMovePosition(11, 0, 40);
+    //_objectFeatures->fingerMovePosition(12, 15, 40);
+    //while (!_objectFeatures->checkOpenHandDone())
+    //    ;
 
     // reset the force torque sensor's basline
     cout << "Contact safety baseline rest" << endl;
@@ -302,12 +310,17 @@ void GPExplorationThread::sampleSurface_wiggleFingers()
         // cout << "move to way point" << endl;
 
         // Move the fingertip up
-        _objectFeatures->fingerMovePosition(11, 0, 50);
-        _objectFeatures->fingerMovePosition(12, 0, 50);
-        while (!_objectFeatures->checkOpenHandDone())
-            ;
+        _curProximal = 0;
+        curDistal = 0;
+        _curAbduction = 0;
+        moveIndexFingerBlocking(_curProximal, curDistal, _curAbduction, 50);
 
-        //cout << "confirming contact" << endl;
+        // _objectFeatures->fingerMovePosition(11, 0, 50);
+        // _objectFeatures->fingerMovePosition(12, 0, 50);
+        // while (!_objectFeatures->checkOpenHandDone())
+        //     ;
+
+        cout << "confirming contact" << endl;
         _objectFeatures->moveArmToPosition(desiredArmPos, desiredArmOrient);
 
         bool done = false;
@@ -338,40 +351,51 @@ void GPExplorationThread::sampleSurface_wiggleFingers()
         // I should have a maintain contact thread here
         cout << "We can sample the surface" << endl;
 
-        _objectFeatures->fingerMovePosition(11, 3, 10);
 
+
+        _objectFeatures->updateContactState(SAMPLE_SURFACE);
+        yarp::os::Time::delay(1);
+
+
+        _curProximal = 3;
+        curDistal = 0;
+        _curAbduction = 40;
+
+        moveIndexFingerBlocking(_curProximal, curDistal, _curAbduction, 40);
+        yarp::os::Time::delay(1);
+        _curAbduction = 0;
+        moveIndexFingerBlocking(_curProximal, curDistal, _curAbduction, 40);
+        _objectFeatures->updateContactState(_contactState);
+
+        _objectFeatures->updateContactState(_contactState);
+        _curProximal = 0;
+        moveIndexFingerBlocking(_curProximal, curDistal, _curAbduction, 40);
+
+
+
+        /*
+        _objectFeatures->fingerMovePosition(11, 3, 10);
         _objectFeatures->fingerMovePosition(7, 60, 10);
         yarp::os::Time::delay(2);
         _objectFeatures->fingerMovePosition(7, 0, 10);
         yarp::os::Time::delay(2);
+        */
     }
-    {
+    else {
         cout << "We had no contact with the tip" << endl;
-        /*  // Suspen safety
-        _contactSafetyThread->suspend();
-        // Move the hand up
-        Vector armPos, armOrient;
-        _objectFeatures->getArmPose(armPos, armOrient);
-
-        _objectFeatures->openHand();
-        armPos[2] += 60.0/1000;
-        _objectFeatures->moveArmToPosition(armPos, armOrient);
-
-
-        bool armMoveDone = false;
-        while(!armMoveDone && !isStopping())
-        {
-            _robotCartesianController->checkMotionDone(&armMoveDone);
-        }*/
-
 
     }
+
     // Move up
 
     //desiredArmPos[2] += 15.0/1000; // offset from the middle
     // Get the starting pose
     _contactSafetyThread->suspend();
-    _objectFeatures->openHand();
+    //_objectFeatures->openHand();
+
+    _curProximal = 0; curDistal = 0; _curAbduction = 0;
+    moveIndexFingerBlocking(_curProximal, curDistal, _curAbduction, 40);
+
     Vector startingPos, startingOrient;
     _objectFeatures->getStartingPose(startingPos, startingOrient);
     desiredArmPos[2] += 60.0/1000;
@@ -385,6 +409,10 @@ void GPExplorationThread::sampleSurface_wiggleFingers()
     }
 
     _contactSafetyThread->resume();
+
+
+    _curProximal = 0; curDistal = 0; _curAbduction = 0;
+    moveIndexFingerBlocking(_curProximal, curDistal, _curAbduction, 40);
 
     //_robotCartesianController->waitMotionDone(0.1, 20);
 
@@ -613,7 +641,7 @@ void GPExplorationThread::moveArmUp()
 {
     Vector startingPos, startingOrient;
     Vector armPos, orient;
-    TappingExplorationThread::moveIndexFinger(10);
+    TappingExplorationThread::moveIndexFinger(10, _curAbduction);
 
 
     _objectFeatures->getArmPose(armPos, orient);
@@ -717,12 +745,12 @@ void GPExplorationThread::makeSingleContact(Vector pos, Vector orient)
     _objectFeatures->moveArmToPosition(armPos, orient);
 
     _curProximal = 10;
-    _curDistal = 90 - _curProximal;
-    logFingertipControl();
+    //   _curDistal = 90 - _curProximal;
+    //   logFingertipControl();
+    //
+    //    _objectFeatures->setProximalAngle(_curProximal);
 
-    _objectFeatures->setProximalAngle(_curProximal);
-
-
+    moveIndexFinger(_curProximal, _curAbduction);
 
 }
 
@@ -736,12 +764,9 @@ void GPExplorationThread::setWayPoint_GP()
     bool ret;
 
     _curProximal = 10;
-    _curDistal = 90 - _curProximal;
-    _objectFeatures->setProximalAngle(_curProximal);
+    _curAbduction = 0;
 
-    //_objectFeatures->prepHand();
-    while(!_objectFeatures->checkOpenHandDone() && !isStopping())
-        ;
+    moveIndexFingerBlocking(_curProximal, _curAbduction, 40);
     // Get the valid point from object features
     _objectFeatures->getWayPoint(armPos, orient, false);
 

@@ -114,46 +114,32 @@ public:
     bool changeOrient(double orient);
     void publishContactState(int contactState);
     void publishFingertipPosition(Vector pos);
-    void publishFingertipControl(Bottle controlCommand);
     bool openIndexFinger();
     bool prepGP();
     void calibrateHand();
     bool moveArmToPosition(Vector pos, Vector orient);
-    bool fingerMovePosition(int joint, double angle, double speed = 40);
+    bool fingerMovePosition(int joint, double angle, double speed = 40); /////
     void updateContactState(int contactState){_contactState = contactState;
-                                             publishContactState(_contactState);}
+
+                                              publishContactState(_contactState);}
+
+
     bool setProximalAngle(double angle);
-    bool setIndexFingerAngles(double proximal, double distal, double speed = 40);
+
+    bool setIndexFingerAngles(double proximalAngle, double abductionAngle, double speed);
+    bool setIndexFingerAngles(double proximal, double distal, double abductionAngle, double speed);
     objectExploration::SurfaceModelGP* getGPSurfaceModel(){
         return _objectSurfaceModelGP;
     }
 
-    bool checkOpenHandDone()
-    {
-        bool ret;
-        bool ret2;
+    bool checkOpenHandDone();
 
-        if(!_armJointPositionCtrl->checkMotionDone(11, &ret))
-        {
-            std::cerr << _dbgtag << "CheckMotionDone failed on network comms" << std::endl;
-            ret = true;
-        }
-        if(!_armJointPositionCtrl->checkMotionDone(12, &ret2))
-        {
-            std::cerr << _dbgtag << "CheckMotionDone failed on network comms" << std::endl;
-            ret2 = true;
-        }
-                //ret = false;
 
-        return (ret && ret2);
-    }
-    //bool getFingertipRelativeToHand(Vector& pos, Vector& orient);
-    //bool getFingertipPose(Vector& pos, Vector& orient);
 
 private:
     void printPose(Vector& pos, Vector& prient);
     void updateRobotReachableSpace();
-
+    void publishFingertipControl(Bottle controlCommand);
 protected:
     ResourceFinder _rf;
 
@@ -206,7 +192,7 @@ protected:
 
     //////// Object Features ////////////
     //BufferedPort<Bottle> _tactilePort;
-   // BufferedPort<Bottle> _armPositionPort;
+    // BufferedPort<Bottle> _armPositionPort;
     Mutex _tactileMutex;
     //double _tactileSum;
     BufferedPort<Bottle> _contactForceCoPPort;
