@@ -89,7 +89,26 @@ while(true)
     
     %regressGPML([trainingInput(1:end,:) trainingTarget(1:end, :)], viewVars);
     
-    
+    figure(3)
+    x = trainingInput(1:end, 1);
+y = trainingInput(1:end, 2);
+z = trainingTarget(1:end, 1);
+
+
+xlin = linspace(min(x),max(x),40);
+ylin = linspace(min(y),max(y),40);
+[XT,YT] = meshgrid(xlin,ylin);
+
+f = scatteredInterpolant(x,y,z, 'natural');
+ZT = f(XT,YT);
+
+mesh(XT, YT, ZT);
+
+hold on
+scatter3(x, y, z,...
+    'fill', 'markerFaceColor', 'blue', 'sizeData', [90]);
+hold off
+  view(viewVars);  
     drawnow;
     
 end

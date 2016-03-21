@@ -31,10 +31,12 @@ SurfaceModelGP::SurfaceModelGP(const std::string objectName)
     _maxX = _minX = _maxY = _minY = 0;
     _repeatVar = false;
     _nextSamplingIndex = 0;
+    _nextRefinementIndex = 0;
+    _maxRefinementIndex = 0;
     _dummyIndex = 0;
 
- _currentRow = 4;
-_currentCol = 1;
+    _currentRow = 4;
+    _currentCol = 1;
 
 
 }
@@ -557,6 +559,55 @@ bool SurfaceModelGP::getMaxVariancePose(yarp::sig::Vector &maxVariancePos)
 
 
 }
+
+bool SurfaceModelGP::getNextRefinementPosition(yarp::sig::Vector &nextSamplingPosition)
+{
+    // Get the next point to refine
+    // Check if the value is too far from the model
+    if(!_refinementEnabled)
+    {
+        _nextRefinementIndex = _paddingPoints;
+        _maxRefinementIndex = _zPoints.size();
+        _refinementEnabled = true;
+    }
+
+    // Evaluate the inputs with the current model
+    gMat2D<double> vars;
+    gMat2D<double>* means;
+    means = this->eval(_inputTraining, vars, _opt);
+
+    double modelEstimate = (*means)(_nextRefinementIndex,0);
+
+    while(_nextRefinementIndex < _maxRefinementIndex)
+    {
+        if(fabs(modelEstimate - _zPoints.at(_nextRefinementIndex)) < 1.0/1000)
+        {
+            cout << "Estimate is close enough. Target: " << _zPoints.at(_nextRefinementIndex)  << " Estimate: " << modelEstimate << endl;
+            _nextRefinementIndex++;
+            continue;
+        }
+        else
+        {
+            nextSamplingPosition.resize(3);
+            nextSamplingPosition[0] = _xPoints.at(_nextRefinementIndex);
+            nextSamplingPosition[1] = _yPoints.at(_nextRefinementIndex);
+            nextSamplingPosition[2] = _zPoints.at(_nextRefinementIndex);
+            //_nextRefinementIndex++;
+            return true;
+        }
+
+
+    }
+
+    _refinementEnabled = false;
+    return false;
+    // Check if the this point is very different from the model
+
+
+
+}
+
+
 
 bool SurfaceModelGP::getNextSamplingPosition(yarp::sig::Vector &nextSamplingPosition, bool nextRow)
 {

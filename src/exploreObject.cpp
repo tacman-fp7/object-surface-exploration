@@ -15,7 +15,16 @@ using std::endl;
 using yarp::os::Value;
 
 
+bool ExploreObject::refineModelEnable()
+{
+   _exploreObjectGP_thread->enableRefiningModel();
+   return true;
+}
 
+bool ExploreObject::refineModeDisable()
+{
+    _exploreObjectGP_thread->disableRefiningModel();
+}
 
 bool ExploreObject::openHand()
 {

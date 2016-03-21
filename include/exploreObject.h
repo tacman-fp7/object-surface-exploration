@@ -47,6 +47,8 @@ public: // Methods related to the robot control
     bool exploreGPSurface(const string& objectName);
     bool enableSurfaceSampling();
     bool disableSurfaceSampling();
+    bool refineModelEnable();
+    bool refineModeDisable();
     bool quit();
     
 public: // Methods related to the RF module

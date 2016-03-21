@@ -136,6 +136,22 @@ public:
   virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
+class robotControl_refineModelEnable : public yarp::os::Portable {
+public:
+  bool _return;
+  void init();
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
+};
+
+class robotControl_refineModeDisable : public yarp::os::Portable {
+public:
+  bool _return;
+  void init();
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
+};
+
 class robotControl_quit : public yarp::os::Portable {
 public:
   bool _return;
@@ -484,6 +500,48 @@ void robotControl_disableSurfaceSampling::init() {
   _return = false;
 }
 
+bool robotControl_refineModelEnable::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(1)) return false;
+  if (!writer.writeTag("refineModelEnable",1,1)) return false;
+  return true;
+}
+
+bool robotControl_refineModelEnable::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void robotControl_refineModelEnable::init() {
+  _return = false;
+}
+
+bool robotControl_refineModeDisable::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(1)) return false;
+  if (!writer.writeTag("refineModeDisable",1,1)) return false;
+  return true;
+}
+
+bool robotControl_refineModeDisable::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void robotControl_refineModeDisable::init() {
+  _return = false;
+}
+
 bool robotControl_quit::write(yarp::os::ConnectionWriter& connection) {
   yarp::os::idl::WireWriter writer(connection);
   if (!writer.writeListHeader(1)) return false;
@@ -664,6 +722,26 @@ bool robotControl::disableSurfaceSampling() {
   helper.init();
   if (!yarp().canWrite()) {
     yError("Missing server method '%s'?","bool robotControl::disableSurfaceSampling()");
+  }
+  bool ok = yarp().write(helper,helper);
+  return ok?helper._return:_return;
+}
+bool robotControl::refineModelEnable() {
+  bool _return = false;
+  robotControl_refineModelEnable helper;
+  helper.init();
+  if (!yarp().canWrite()) {
+    yError("Missing server method '%s'?","bool robotControl::refineModelEnable()");
+  }
+  bool ok = yarp().write(helper,helper);
+  return ok?helper._return:_return;
+}
+bool robotControl::refineModeDisable() {
+  bool _return = false;
+  robotControl_refineModeDisable helper;
+  helper.init();
+  if (!yarp().canWrite()) {
+    yError("Missing server method '%s'?","bool robotControl::refineModeDisable()");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
@@ -874,6 +952,28 @@ bool robotControl::read(yarp::os::ConnectionReader& connection) {
       reader.accept();
       return true;
     }
+    if (tag == "refineModelEnable") {
+      bool _return;
+      _return = refineModelEnable();
+      yarp::os::idl::WireWriter writer(reader);
+      if (!writer.isNull()) {
+        if (!writer.writeListHeader(1)) return false;
+        if (!writer.writeBool(_return)) return false;
+      }
+      reader.accept();
+      return true;
+    }
+    if (tag == "refineModeDisable") {
+      bool _return;
+      _return = refineModeDisable();
+      yarp::os::idl::WireWriter writer(reader);
+      if (!writer.isNull()) {
+        if (!writer.writeListHeader(1)) return false;
+        if (!writer.writeBool(_return)) return false;
+      }
+      reader.accept();
+      return true;
+    }
     if (tag == "quit") {
       bool _return;
       _return = quit();
@@ -935,6 +1035,8 @@ std::vector<std::string> robotControl::help(const std::string& functionName) {
     helpString.push_back("exploreGPSurface");
     helpString.push_back("enableSurfaceSampling");
     helpString.push_back("disableSurfaceSampling");
+    helpString.push_back("refineModelEnable");
+    helpString.push_back("refineModeDisable");
     helpString.push_back("quit");
     helpString.push_back("help");
   }
@@ -986,6 +1088,12 @@ std::vector<std::string> robotControl::help(const std::string& functionName) {
     }
     if (functionName=="disableSurfaceSampling") {
       helpString.push_back("bool disableSurfaceSampling() ");
+    }
+    if (functionName=="refineModelEnable") {
+      helpString.push_back("bool refineModelEnable() ");
+    }
+    if (functionName=="refineModeDisable") {
+      helpString.push_back("bool refineModeDisable() ");
     }
     if (functionName=="quit") {
       helpString.push_back("bool quit() ");

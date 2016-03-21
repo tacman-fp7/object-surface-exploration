@@ -16,6 +16,8 @@ service robotControl {
 	bool exploreGPSurface(1: string objectName);
         bool enableSurfaceSampling();
         bool disableSurfaceSampling();
+        bool refineModelEnable();
+        bool refineModeDisable();
 	bool quit();
 	
 }

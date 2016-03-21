@@ -63,7 +63,16 @@ void GPExplorationThread::run()
             // Store update the contact location in the GP
             // Maintain contact for a couple of seconds
             // Set the state to GET_WAYPOINT_GP
-            maintainContact();
+
+            if(_refineModel)
+            {
+                maintainContact_GP_Refine();
+
+            }
+            else
+            {
+                maintainContact();
+            }
             break;
         case MOVE_LOCATION:
             cout << "Contact state is: move location" << endl;
@@ -76,6 +85,12 @@ void GPExplorationThread::run()
             // TODO: determine whether we sould terminate or not
             cout << "ContactState is: get waypoint from GP" << endl;
             setWayPoint_GP();
+            break;
+        case SET_WAYPOINT_REFINE_CONTACT:
+            setWayPoint_GP_Refine();
+            break;
+        case REFINE_CONTACT:
+            maintainContact_GP_Refine();
             break;
         case FINISHED:
             cout << "Contact state is: finished" << endl;
@@ -90,8 +105,81 @@ void GPExplorationThread::run()
 
 }
 
+void GPExplorationThread::setWayPoint_GP_Refine()
+{
+    Vector refinementPosition;
+    //if(!_surfaceModel->getNextRefinementPosition(refinementPosition))
+    //    return;
+    //cout << "Got a new position: " << refinementPosition.toString() << endl;
+
+
+
+    Vector orient;
+    Vector armPos;
+    bool ret;
+
+    _curProximal = 10;
+    _curAbduction = 0;
+
+    moveIndexFingerBlocking(_curProximal, _curAbduction, 40);
+    // Get the valid point from object features
+    _objectFeatures->getWayPoint(armPos, orient, false);
+
+    // I have to make sure the new waypoint is valid
+    if( _surfaceModel->getNextRefinementPosition(refinementPosition))
+    {
+        //Get the current fingertip position
+        //Vector tipPos, tipOrient;
+        _objectFeatures->indexFinger2ArmPosition(refinementPosition, armPos);
+
+        /*maxVariancePos[0] += pos[0];
+        maxVariancePos[1] -= pos[1];
+        maxVariancePos[2] -= pos[2];*/
+        ret = _objectFeatures->setWayPointGP(armPos, orient);
+    }
+    else
+    {
+        _refineModel = false;
+        _contactState = SET_WAYPOINT_GP;
+    }
+
+
+    // Get the position of the hand
+    // This cannot be done in parallel with indexFinger2ArmPosition calcuation
+
+    moveArmUp();
+
+
+    //yarp::os::Time::delay(5);
+    if(ret)
+        _contactState = APPROACH_OBJECT;
+    else
+        _contactState = SET_WAYPOINT_GP;
+
+
+
+
+}
+
+void GPExplorationThread::maintainContact_GP_Refine()
+{
+
+    // Store the contact location
+    Vector fingertipPosition, fingertipOrientation;
+    _objectFeatures->getIndexFingertipPosition(fingertipPosition);
+
+    _surfaceModel->addContactPoint(fingertipPosition);
+    _surfaceModel->trainModel();
+    _surfaceModel->updateSurfaceEstimate();
+
+    _contactState = SET_WAYPOINT_REFINE_CONTACT;
+
+}
+
 void GPExplorationThread::enableSurfaceSampling()
 {
+    //_contactState = SET_WAYPOINT_REFINE_CONTACT;
+
     _sampleSurface = true;
 }
 
@@ -354,8 +442,8 @@ void GPExplorationThread::sampleSurface_wiggleFingers()
 
 
 
-      // _objectFeatures->updateContactState(SAMPLE_SURFACE);
-       // yarp::os::Time::delay(1);
+        // _objectFeatures->updateContactState(SAMPLE_SURFACE);
+        // yarp::os::Time::delay(1);
 
 
         _curProximal = 3;

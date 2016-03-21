@@ -22,7 +22,9 @@ enum State{
     STOP = 6,
     SET_WAYPOINT_GP = 7,
     EXCEEDED_ANGLE = 8,
-    SAMPLE_SURFACE = 9
+    SAMPLE_SURFACE = 9,
+    REFINE_CONTACT = 10,
+    SET_WAYPOINT_REFINE_CONTACT = 11
 };
 
 class TappingExplorationThread: public ExplorationStrategyThread

@@ -18,7 +18,8 @@ public:
                             ObjectFeaturesThread* objectFeatures):
         TappingExplorationThread(period, robotCartesianController,
                                   objectFeatures){ _surfaceModel = objectFeatures->getGPSurfaceModel();
-                                                 _forceThreshold = FORCE_TH; _sampleSurface = true;}
+                                                 _forceThreshold = FORCE_TH; _sampleSurface = true;
+                                                 _refineModel = false;}
 
     virtual void run();
     virtual bool threadInit();
@@ -27,6 +28,8 @@ public:
                       Vector endingPos, Vector endingOrient);
     void enableSurfaceSampling();
     void disableSurfaceSampling();
+    void enableRefiningModel(){ _refineModel = true;}
+    void disableRefiningModel(){ _refineModel = false;}
 
 protected:
      virtual void setWayPoint_GP();
@@ -34,6 +37,9 @@ protected:
      void moveToNewLocation();
      void moveArmUp();
      void sampleSurface_wiggleFingers();
+     void setWayPoint_GP_Refine();
+     void maintainContact_GP_Refine();
+
 
 private:
      void makeSingleContact(yarp::sig::Vector pos, yarp::sig::Vector orient);
@@ -45,6 +51,9 @@ protected:
      ContactSafetyThread* _contactSafetyThread;
      bool  confrimContact(double maxAngle);
      bool _sampleSurface;
+
+private:
+     bool _refineModel;
 
 
 };

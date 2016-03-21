@@ -47,6 +47,9 @@ public:
     bool getMaxVariancePose(Vector &maxVariancePos);
     bool getMaxEstimatePos(Vector &maxEstimatePos);
     bool getNextSamplingPosition(Vector &nextSamplingPosition, bool nextRow = false);
+    bool getNextRefinementPosition(Vector &nextSamplingPosition);
+    void enableRefinement(){_refinementEnabled = true; _nextRefinementIndex = _paddingPoints;}
+    void disableRefinement(){_refinementEnabled = false;}
 
 private:
 
@@ -79,6 +82,9 @@ private:
     int _paddingPoints;
     bool _repeatVar;
     unsigned long _nextSamplingIndex;
+    unsigned long _nextRefinementIndex;
+    unsigned long _maxRefinementIndex;
+    bool _refinementEnabled;
     double _maxX, _maxY, _minX, _minY;
     int _currentRow;
     int _currentCol;

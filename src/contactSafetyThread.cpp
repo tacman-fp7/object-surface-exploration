@@ -27,7 +27,7 @@ void ContactSafetyThread::run()
                     pow(forceTorqueData->get(2).asDouble(), 2));
         //cout << "FT: " << resultant << " BL: "  << _baseLine << endl;
 
-        if(fabs(resultant - _baseLine) > 6){
+        if(fabs(resultant - _baseLine) > 5){
             _robotCartesianController->stopControl();
             _collisionDetected = true;
             //cout << "Force toque exceeded" << endl;
