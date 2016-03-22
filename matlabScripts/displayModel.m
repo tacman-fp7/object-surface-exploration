@@ -1,4 +1,5 @@
-cd('/home/nawidj/software/src/object-surface-exploration/build');
+%cd('/home/nawidj/software/src/object-surface-exploration/build');
+cd('/home/nawidj/gpdata')
 objectName = 'hut';
 nextPointFileName = [objectName '_model_nextPoint.csv'];
 modelInputFileName = [objectName '_model_input.csv'];
