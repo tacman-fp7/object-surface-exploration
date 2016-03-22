@@ -190,7 +190,7 @@ bool SurfaceModelGP::trainModel(){
     _opt->addOpt("processes", process);
 
     OptNumber *nholdouts = new OptNumber;
-    nholdouts->setValue(1);
+    nholdouts->setValue(2);
     if(_opt->hasOpt("nholdouts"))
         _opt->removeOpt("nholdouts");
     _opt->addOpt("nholdouts", nholdouts);
