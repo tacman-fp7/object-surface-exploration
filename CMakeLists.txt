@@ -22,7 +22,7 @@ icubcontrib_set_default_prefix()
 
 add_definitions(${YARP_DEFINES}) # add yarp definitions - this contains also -D_REENTRANT
 
-include_directories(${YARP_INCLUDE_DIRS} ${Gurls_INCLUDE_DIRS} ./include/)
+include_directories(${YARP_INCLUDE_DIRS} ${Gurls_INCLUDE_DIRS} ${iKin_INCLUDE_DIRS} ./include/)
 
 
 set(HEADERS  include/robotControl.h include/exploreObject.h include/explorationStrategyThread.h
