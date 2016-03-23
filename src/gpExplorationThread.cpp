@@ -628,7 +628,7 @@ bool GPExplorationThread::initialiseGP(Vector startingPos, Vector startingOrient
 
     //_surfaceModel->loadContactData("boundingBox");
     double xMin, xMax, yMin, yMax, zMin;
-    int nSteps = 40;
+    int nSteps = 20;
     xMax = startingPos[0];
     xMin = xMax - 70.0/1000;
 
