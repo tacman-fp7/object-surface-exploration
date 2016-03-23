@@ -19,6 +19,8 @@ service robotControl {
         bool refineModelEnable();
         bool refineModelDisable();
         bool nRepeatsSet(1: i32 nRepeats);
+        bool validatePositionsEnable();
+        bool validatePositionsDisable();
 	bool quit();
 	
 }

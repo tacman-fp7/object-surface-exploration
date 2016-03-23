@@ -14,6 +14,13 @@ using std::cerr;
 using std::endl;
 using yarp::os::Value;
 
+bool ExploreObject::validatePositionsEnable(){
+    _exploreObjectGP_thread->enableValidatePositions();
+}
+
+bool ExploreObject::validatePositionsDisable(){
+    _exploreObjectGP_thread->disaleValidatePositions();
+}
 
 bool ExploreObject::nRepeatsSet(const int32_t nRepeats)
 {

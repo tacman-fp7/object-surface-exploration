@@ -24,7 +24,8 @@ enum State{
     EXCEEDED_ANGLE = 8,
     SAMPLE_SURFACE = 9,
     REFINE_CONTACT = 10,
-    SET_WAYPOINT_REFINE_CONTACT = 11
+    VALIDATE_CONTACT = 11
+    //SET_WAYPOINT_REFINE_CONTACT = 11
 };
 
 class TappingExplorationThread: public ExplorationStrategyThread

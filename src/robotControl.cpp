@@ -161,6 +161,22 @@ public:
   virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
+class robotControl_validatePositionsEnable : public yarp::os::Portable {
+public:
+  bool _return;
+  void init();
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
+};
+
+class robotControl_validatePositionsDisable : public yarp::os::Portable {
+public:
+  bool _return;
+  void init();
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
+};
+
 class robotControl_quit : public yarp::os::Portable {
 public:
   bool _return;
@@ -574,6 +590,48 @@ void robotControl_nRepeatsSet::init(const int32_t nRepeats) {
   this->nRepeats = nRepeats;
 }
 
+bool robotControl_validatePositionsEnable::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(1)) return false;
+  if (!writer.writeTag("validatePositionsEnable",1,1)) return false;
+  return true;
+}
+
+bool robotControl_validatePositionsEnable::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void robotControl_validatePositionsEnable::init() {
+  _return = false;
+}
+
+bool robotControl_validatePositionsDisable::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(1)) return false;
+  if (!writer.writeTag("validatePositionsDisable",1,1)) return false;
+  return true;
+}
+
+bool robotControl_validatePositionsDisable::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void robotControl_validatePositionsDisable::init() {
+  _return = false;
+}
+
 bool robotControl_quit::write(yarp::os::ConnectionWriter& connection) {
   yarp::os::idl::WireWriter writer(connection);
   if (!writer.writeListHeader(1)) return false;
@@ -784,6 +842,26 @@ bool robotControl::nRepeatsSet(const int32_t nRepeats) {
   helper.init(nRepeats);
   if (!yarp().canWrite()) {
     yError("Missing server method '%s'?","bool robotControl::nRepeatsSet(const int32_t nRepeats)");
+  }
+  bool ok = yarp().write(helper,helper);
+  return ok?helper._return:_return;
+}
+bool robotControl::validatePositionsEnable() {
+  bool _return = false;
+  robotControl_validatePositionsEnable helper;
+  helper.init();
+  if (!yarp().canWrite()) {
+    yError("Missing server method '%s'?","bool robotControl::validatePositionsEnable()");
+  }
+  bool ok = yarp().write(helper,helper);
+  return ok?helper._return:_return;
+}
+bool robotControl::validatePositionsDisable() {
+  bool _return = false;
+  robotControl_validatePositionsDisable helper;
+  helper.init();
+  if (!yarp().canWrite()) {
+    yError("Missing server method '%s'?","bool robotControl::validatePositionsDisable()");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
@@ -1032,6 +1110,28 @@ bool robotControl::read(yarp::os::ConnectionReader& connection) {
       reader.accept();
       return true;
     }
+    if (tag == "validatePositionsEnable") {
+      bool _return;
+      _return = validatePositionsEnable();
+      yarp::os::idl::WireWriter writer(reader);
+      if (!writer.isNull()) {
+        if (!writer.writeListHeader(1)) return false;
+        if (!writer.writeBool(_return)) return false;
+      }
+      reader.accept();
+      return true;
+    }
+    if (tag == "validatePositionsDisable") {
+      bool _return;
+      _return = validatePositionsDisable();
+      yarp::os::idl::WireWriter writer(reader);
+      if (!writer.isNull()) {
+        if (!writer.writeListHeader(1)) return false;
+        if (!writer.writeBool(_return)) return false;
+      }
+      reader.accept();
+      return true;
+    }
     if (tag == "quit") {
       bool _return;
       _return = quit();
@@ -1096,6 +1196,8 @@ std::vector<std::string> robotControl::help(const std::string& functionName) {
     helpString.push_back("refineModelEnable");
     helpString.push_back("refineModelDisable");
     helpString.push_back("nRepeatsSet");
+    helpString.push_back("validatePositionsEnable");
+    helpString.push_back("validatePositionsDisable");
     helpString.push_back("quit");
     helpString.push_back("help");
   }
@@ -1156,6 +1258,12 @@ std::vector<std::string> robotControl::help(const std::string& functionName) {
     }
     if (functionName=="nRepeatsSet") {
       helpString.push_back("bool nRepeatsSet(const int32_t nRepeats) ");
+    }
+    if (functionName=="validatePositionsEnable") {
+      helpString.push_back("bool validatePositionsEnable() ");
+    }
+    if (functionName=="validatePositionsDisable") {
+      helpString.push_back("bool validatePositionsDisable() ");
     }
     if (functionName=="quit") {
       helpString.push_back("bool quit() ");

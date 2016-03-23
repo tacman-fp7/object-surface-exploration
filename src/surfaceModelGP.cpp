@@ -34,7 +34,8 @@ SurfaceModelGP::SurfaceModelGP(const std::string objectName)
     _nextRefinementIndex = 0;
     _maxRefinementIndex = 0;
     _dummyIndex = 0;
-
+    _validationEnable = false;
+    _refinementEnabled = false;
     _currentRow = 4;
     _currentCol = 1;
 
@@ -558,6 +559,41 @@ bool SurfaceModelGP::getMaxVariancePose(yarp::sig::Vector &maxVariancePos)
 
 
 
+}
+
+bool SurfaceModelGP::getNextValidationPosition(yarp::sig::Vector &validationPosition)
+{
+    if(!_validationEnable)
+    {
+        _validationIndex = _paddingPoints;
+        _validationEnable = true;
+    }
+
+    if(_validationIndex < _zPoints.size()){
+        validationPosition.resize(3);
+        validationPosition[0] = _xPoints.at(_validationIndex);
+        validationPosition[1] = _yPoints.at(_validationIndex);
+        validationPosition[2] = _zPoints.at(_validationIndex);
+        _validationIndex++;
+    }
+    else{
+        _validationEnable = false;
+    }
+
+    return _validationEnable;
+
+}
+
+bool SurfaceModelGP::validatePosition(yarp::sig::Vector &validationPosition)
+{
+    bool ret = false;
+    if(fabs(_zPoints.at(_validationIndex-1) - validationPosition[3]) > 2.0/1000)
+    {
+        _zPoints.at(_validationIndex -1) = validationPosition[3];
+        ret = true;
+    }
+
+    return true;
 }
 
 bool SurfaceModelGP::getNextRefinementPosition(yarp::sig::Vector &nextSamplingPosition)

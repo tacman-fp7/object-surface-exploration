@@ -48,8 +48,12 @@ public:
     bool getMaxEstimatePos(Vector &maxEstimatePos);
     bool getNextSamplingPosition(Vector &nextSamplingPosition, bool nextRow = false);
     bool getNextRefinementPosition(Vector &nextSamplingPosition);
+    bool getNextValidationPosition(Vector &validationPosition);
     void enableRefinement(){_refinementEnabled = true; _nextRefinementIndex = _paddingPoints;}
     void disableRefinement(){_refinementEnabled = false;}
+    void enableValidation(){_validationEnable = true; _validationIndex = _paddingPoints;}
+    void disableValidation(){_validationEnable = false;}
+    bool validatePosition(Vector &validationPosition);
 
 private:
 
@@ -84,6 +88,10 @@ private:
     unsigned long _nextSamplingIndex;
     unsigned long _nextRefinementIndex;
     unsigned long _maxRefinementIndex;
+
+    unsigned long _validationIndex;
+    bool _validationEnable;
+
     bool _refinementEnabled;
     double _maxX, _maxY, _minX, _minY;
     int _currentRow;

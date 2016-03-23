@@ -49,6 +49,8 @@ public: // Methods related to the robot control
     bool disableSurfaceSampling();
     bool refineModelEnable();
     bool refineModelDisable();
+    bool validatePositionsEnable();
+    bool validatePositionsDisable();
     bool nRepeatsSet(const int32_t nRepeats);
     bool quit();
     

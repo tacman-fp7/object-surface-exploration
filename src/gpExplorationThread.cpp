@@ -51,6 +51,9 @@ void GPExplorationThread::run()
             // If the limit is reached,  set the state to MOVELOCATION <= this needs to be changed for GP
             cout << "Contact state is: approach" << endl;
             TappingExplorationThread::approachObject();
+            if(_contactState != MAINTAIN_CONTACT){
+                _stateMutex.unlock();
+            }
             break;
         case CALCULATE_NEWWAYPONT:
             // Use the current position of the fingertip as the
@@ -64,16 +67,16 @@ void GPExplorationThread::run()
             // Maintain contact for a couple of seconds
             // Set the state to GET_WAYPOINT_GP
 
-            if(_refineModel)
-            {
-
+            if(_refineModel){
                 maintainContact_GP_Refine();
-
             }
-            else
-            {
+            else if(_validatePositionsEnabled){
+                maintainContact_GP_validatePosition();
+            }
+            else{
                 maintainContact();
             }
+            _stateMutex.unlock();
             break;
         case MOVE_LOCATION:
             cout << "Contact state is: move location" << endl;
@@ -84,24 +87,74 @@ void GPExplorationThread::run()
         case SET_WAYPOINT_GP:
             // Use the GP Model to set the next waypoint
             // TODO: determine whether we sould terminate or not
+            _stateMutex.lock();
             cout << "ContactState is: get waypoint from GP" << endl;
-            setWayPoint_GP();
+            if(_refineModel){
+                setWayPoint_GP_Refine();
+            }
+            else if(_validatePositionsEnabled){
+                setWayPoint_GP_validate();
+            }
+            else{
+                setWayPoint_GP();
+            }
             break;
-        case SET_WAYPOINT_REFINE_CONTACT:
-            setWayPoint_GP_Refine();
-            break;
+        //case SET_WAYPOINT_REFINE_CONTACT:
+        //    setWayPoint_GP_Refine();
+        //    break;
         case REFINE_CONTACT:
             maintainContact_GP_Refine();
+            break;
+        case VALIDATE_CONTACT:
+            maintainContact_GP_validatePosition();
             break;
         case FINISHED:
             cout << "Contact state is: finished" << endl;
             // I have to implement exit the thread procedure here
-            TappingExplorationThread::finshExploration();
+            //TappingExplorationThread::finshExploration();
             break;
         }
     }
 
     yarp::os::Time::delay(1);
+
+
+}
+
+void GPExplorationThread::setWayPoint_GP_validate()
+{
+    Vector validationPosition;
+    Vector orient;
+    Vector armPos;
+    bool ret;
+
+    _curProximal = 10;
+    _curAbduction = 0;
+
+    moveIndexFingerBlocking(_curProximal, _curAbduction, 40);
+    // Get the valid point from object features
+    _objectFeatures->getWayPoint(armPos, orient, false);
+
+    if( _surfaceModel->getNextValidationPosition(validationPosition))
+    {
+
+        _objectFeatures->indexFinger2ArmPosition(validationPosition, armPos);
+        ret = _objectFeatures->setWayPointGP(armPos, orient);
+    }
+    else
+    {
+        _refineModel = false;
+        _contactState = SET_WAYPOINT_GP;
+    }
+
+    moveArmUp();
+
+
+    //yarp::os::Time::delay(5);
+    if(ret)
+        _contactState = APPROACH_OBJECT;
+    else
+        _contactState = SET_WAYPOINT_GP;
 
 
 }
@@ -162,6 +215,22 @@ void GPExplorationThread::setWayPoint_GP_Refine()
 
 }
 
+void GPExplorationThread::maintainContact_GP_validatePosition(){
+
+    // Read the position
+    cout << "Contact state is GP maintain contact" << endl;
+    // Store the contact location
+
+    Vector fingertipPosition;
+    _objectFeatures->getIndexFingertipPosition(fingertipPosition);
+
+    if(_surfaceModel->validatePosition(fingertipPosition)){
+        _surfaceModel->trainModel();
+        _surfaceModel->updateSurfaceEstimate();
+    }
+
+}
+
 void GPExplorationThread::maintainContact_GP_Refine()
 {
 
@@ -182,10 +251,10 @@ void GPExplorationThread::maintainContact_GP_Refine()
     this->maintainContact();
 
     // Restore to the prvious value;
-     _nRepeats = prevNRepeats;
-     _repeats = 0;
+    _nRepeats = prevNRepeats;
+    _repeats = 0;
 
-    _contactState = SET_WAYPOINT_REFINE_CONTACT;
+    _contactState = SET_WAYPOINT_GP;
 
 }
 
@@ -222,7 +291,7 @@ void GPExplorationThread::maintainContact()
     //cout << "Position of the fingertip: " << fingertipPosition.toString();
 
     // Check if finger position is close to the waypoint
-/*    Vector pos, orient;
+    /*    Vector pos, orient;
     Vector posInArm;
 
     _objectFeatures->getWayPoint(pos, orient, false);
