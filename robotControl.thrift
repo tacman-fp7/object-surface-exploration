@@ -17,7 +17,8 @@ service robotControl {
         bool enableSurfaceSampling();
         bool disableSurfaceSampling();
         bool refineModelEnable();
-        bool refineModeDisable();
+        bool refineModelDisable();
+        bool nRepeatsSet(1: i32 nRepeats);
 	bool quit();
 	
 }

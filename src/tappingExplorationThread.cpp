@@ -32,6 +32,7 @@ void TappingExplorationThread::run()
 
     _contactState = APPROACH_OBJECT;
     _repeats = 0;
+    _nRepeats = 0;
    // _curDistal = 0;
    // _curProximal = 10;
    // _curAbduction = 0;
@@ -172,7 +173,7 @@ void TappingExplorationThread::maintainContact()
     _curAbduction = 0;
     moveIndexFingerBlocking(_curProximal, _curAbduction, 40);
 
-    if(_repeats < 2) // TODO: change
+    if(_repeats < _nRepeats) // TODO: change
     {
 
         _forceThreshold = 0.7 * FORCE_TH;

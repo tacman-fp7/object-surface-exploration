@@ -30,7 +30,8 @@ public:
   virtual bool enableSurfaceSampling();
   virtual bool disableSurfaceSampling();
   virtual bool refineModelEnable();
-  virtual bool refineModeDisable();
+  virtual bool refineModelDisable();
+  virtual bool nRepeatsSet(const int32_t nRepeats);
   virtual bool quit();
   virtual bool read(yarp::os::ConnectionReader& connection);
   virtual std::vector<std::string> help(const std::string& functionName="--all");

@@ -15,13 +15,19 @@ using std::endl;
 using yarp::os::Value;
 
 
+bool ExploreObject::nRepeatsSet(const int32_t nRepeats)
+{
+    _exploreObjectGP_thread->setNRepeats(nRepeats);
+    return true;
+}
+
 bool ExploreObject::refineModelEnable()
 {
    _exploreObjectGP_thread->enableRefiningModel();
    return true;
 }
 
-bool ExploreObject::refineModeDisable()
+bool ExploreObject::refineModelDisable()
 {
     _exploreObjectGP_thread->disableRefiningModel();
 }

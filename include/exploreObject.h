@@ -48,7 +48,8 @@ public: // Methods related to the robot control
     bool enableSurfaceSampling();
     bool disableSurfaceSampling();
     bool refineModelEnable();
-    bool refineModeDisable();
+    bool refineModelDisable();
+    bool nRepeatsSet(const int32_t nRepeats);
     bool quit();
     
 public: // Methods related to the RF module

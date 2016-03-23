@@ -36,18 +36,21 @@ public:
                                   objectFeatures){ _nGrid = 0; _forceThreshold = FORCE_TH;
                                                  _curAbduction = -10;
                                                  //_curDistal = -10;
-                                                 _curAbduction = -10;}
+                                                 _curAbduction = -10; _nRepeats = 0;}
     virtual void run();
     virtual bool threadInit();
     virtual void threadRelease();
+    void setNRepeats(int nRepeats){_nRepeats = nRepeats;}
 
 protected:
     State _contactState;
     int _repeats;
+    int _nRepeats;
     double _forceThreshold;
     double _curProximal;
     //double _curDistal;
     double _curAbduction;
+
 
 private:
     Vector _indexFingerEncoders;

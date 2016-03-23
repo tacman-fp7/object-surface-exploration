@@ -66,6 +66,7 @@ void GPExplorationThread::run()
 
             if(_refineModel)
             {
+
                 maintainContact_GP_Refine();
 
             }
@@ -165,12 +166,24 @@ void GPExplorationThread::maintainContact_GP_Refine()
 {
 
     // Store the contact location
-    Vector fingertipPosition, fingertipOrientation;
+    /*Vector fingertipPosition, fingertipOrientation;
     _objectFeatures->getIndexFingertipPosition(fingertipPosition);
 
     _surfaceModel->addContactPoint(fingertipPosition);
     _surfaceModel->trainModel();
     _surfaceModel->updateSurfaceEstimate();
+
+    */
+
+    // For refine contact I do no allow multiple sampling
+    int prevNRepeats = _nRepeats;
+    _nRepeats = 0;
+    _repeats = 0;
+    this->maintainContact();
+
+    // Restore to the prvious value;
+     _nRepeats = prevNRepeats;
+     _repeats = 0;
 
     _contactState = SET_WAYPOINT_REFINE_CONTACT;
 
@@ -209,7 +222,7 @@ void GPExplorationThread::maintainContact()
     //cout << "Position of the fingertip: " << fingertipPosition.toString();
 
     // Check if finger position is close to the waypoint
-    Vector pos, orient;
+/*    Vector pos, orient;
     Vector posInArm;
 
     _objectFeatures->getWayPoint(pos, orient, false);
@@ -225,10 +238,9 @@ void GPExplorationThread::maintainContact()
         cout << "Too far from the requested position: " << dist << endl;
     }
 
-
+*/
 
     _surfaceModel->addContactPoint(fingertipPosition);
-    //_surfaceModel->addContactPoint(fingertipPosition);
 
 
 
