@@ -32,7 +32,8 @@ public:
     void disableSurfaceSampling();
     void enableRefiningModel(){ _stateMutex.lock(); _refineModel = true; _stateMutex.unlock();}
     void disableRefiningModel(){ _stateMutex.lock(); _refineModel = false;_stateMutex.unlock();}
-    void enableValidatePositions(){ _stateMutex.lock(); _validatePositionsEnabled = true;_stateMutex.unlock();}
+    void enableValidatePositions(){ _stateMutex.lock(); _validatePositionsEnabled = true; std::cout << "validate enabled" << std::endl;
+                _stateMutex.unlock();}
     void disaleValidatePositions(){ _stateMutex.lock(); _validatePositionsEnabled = false;_stateMutex.unlock();}
 
 protected:

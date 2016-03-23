@@ -16,10 +16,12 @@ using yarp::os::Value;
 
 bool ExploreObject::validatePositionsEnable(){
     _exploreObjectGP_thread->enableValidatePositions();
+    return true;
 }
 
 bool ExploreObject::validatePositionsDisable(){
     _exploreObjectGP_thread->disaleValidatePositions();
+    return true;
 }
 
 bool ExploreObject::nRepeatsSet(const int32_t nRepeats)
@@ -37,6 +39,7 @@ bool ExploreObject::refineModelEnable()
 bool ExploreObject::refineModelDisable()
 {
     _exploreObjectGP_thread->disableRefiningModel();
+    return true;
 }
 
 bool ExploreObject::openHand()

@@ -587,9 +587,16 @@ bool SurfaceModelGP::getNextValidationPosition(yarp::sig::Vector &validationPosi
 bool SurfaceModelGP::validatePosition(yarp::sig::Vector &validationPosition)
 {
     bool ret = false;
-    if(fabs(_zPoints.at(_validationIndex-1) - validationPosition[3]) > 2.0/1000)
+    if(fabs(_zPoints.at(_validationIndex - 1) - validationPosition[2]) > 3.0/1000)
     {
-        _zPoints.at(_validationIndex -1) = validationPosition[3];
+        cout << endl << "Updating the position" << endl;
+        _xPoints.at(_validationIndex - 1) = validationPosition[0];
+        _yPoints.at(_validationIndex - 1) = validationPosition[1];
+        _zPoints.at(_validationIndex - 1) = validationPosition[2];
+
+        _inputTraining(_validationIndex - 1, 0) = validationPosition[0];
+        _inputTraining(_validationIndex - 1, 1) = validationPosition[1];
+        _outputTraining(_validationIndex -1, 0) = validationPosition[2];
         ret = true;
     }
 
