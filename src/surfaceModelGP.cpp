@@ -816,7 +816,7 @@ bool SurfaceModelGP::getMaxVariancePose(const gMat2D<double> &positions,
     maxVariancePos[1] = positions(maxVarianceIndex,1);
     maxVariancePos[2] = means(maxVarianceIndex,0);
 
-    double epsilon = 5.0/1000;
+    double epsilon = 1.0/1000;
     // Check if it is in the corners
     if( fabs(_maxX - maxVariancePos[0]) < epsilon){
         //cout << "At the edge" << endl;

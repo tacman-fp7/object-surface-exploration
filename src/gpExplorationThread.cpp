@@ -157,7 +157,7 @@ void GPExplorationThread::setWayPoint_GP_validate()
         _contactState = APPROACH_OBJECT;
     }
     else{
-        _contactState = SET_WAYPOINT_GP;
+        _contactState = MOVE_LOCATION;
     }
 
 
