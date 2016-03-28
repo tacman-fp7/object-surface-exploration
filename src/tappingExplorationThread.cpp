@@ -316,7 +316,7 @@ void TappingExplorationThread::approachObject()
     px.resize(3);
     ox.resize(4);
     //Vector indexFingerAngles;
-    double maxProximal = 50;
+    double maxProximal = 40;
 
     ///// Put the index finger in the starting position /////
     moveIndexFingerBlocking(10, _curAbduction, 40);
