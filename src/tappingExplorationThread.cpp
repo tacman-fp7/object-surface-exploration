@@ -433,9 +433,9 @@ bool TappingExplorationThread::confrimContact(double maxAngle)
             else if(indexFingerAngles[1] < 1)
             {
                 cout << "...[exceeded angle]..." << endl;
-                //_contactState = EXCEEDED_ANGLE;
-                _contactState = MAINTAIN_CONTACT;
-                ret = true;
+                _contactState = EXCEEDED_ANGLE;
+                //_contactState = MAINTAIN_CONTACT;
+                ret = false;
                 break;
             }
         }
@@ -453,8 +453,8 @@ bool TappingExplorationThread::confrimContact(double maxAngle)
         Vector pos, orient;
         _objectFeatures->getWayPoint(pos, orient, false);
         cout << "Pos: " << pos.toString() << endl;
-        pos[0] += r * 0.05;
-        pos[1] += r * 0.05;
+        pos[0] += r * 0.025;
+        pos[1] += r * 0.025;
         pos[2] += 0.001;
         cout << "Pos: " << pos.toString() << endl;
 
