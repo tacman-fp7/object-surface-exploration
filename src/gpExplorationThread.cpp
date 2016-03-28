@@ -19,6 +19,7 @@ void GPExplorationThread::run()
     Vector startingPos, endingPos, startingOrient, endingOrient;
     _objectFeatures->getStartingPose(startingPos, startingOrient);
     _objectFeatures->getEndingPose(endingPos, endingOrient);
+    _contactSafetyThread->start();
     initialiseGP(startingPos, startingOrient, endingPos, endingOrient);
 
 
@@ -1075,7 +1076,7 @@ bool GPExplorationThread::threadInit()
 {
     if(_contactSafetyThread == NULL)
         _contactSafetyThread = new ContactSafetyThread(5, _objectFeatures, _robotCartesianController );
-    _contactSafetyThread->start();
+    //_contactSafetyThread->start();
     _skinManagerCommand.open("/object-exploration/skinManager/rpc:o");
     yarp::os::Network::connect("/object-exploration/skinManager/rpc:o", "/skinManager/rpc");
     return TappingExplorationThread::threadInit();
