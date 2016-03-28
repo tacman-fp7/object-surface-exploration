@@ -52,9 +52,9 @@ void GPExplorationThread::run()
             // If the limit is reached,  set the state to MOVELOCATION <= this needs to be changed for GP
             cout << "Contact state is: approach" << endl;
             TappingExplorationThread::approachObject();
-            if(_contactState == MOVE_LOCATION){
-                _stateMutex.unlock();
-            }
+            //if(_contactState == MOVE_LOCATION){
+            //    _stateMutex.unlock();
+            //}
             break;
         case CALCULATE_NEWWAYPONT:
             // Use the current position of the fingertip as the
@@ -70,19 +70,22 @@ void GPExplorationThread::run()
 
             if(_refineModel){
                 maintainContact_GP_Refine();
+                _stateMutex.unlock();
             }
             else if(_validatePositionsEnabled){
                 maintainContact_GP_validatePosition();
+                _stateMutex.unlock();
             }
             else{
                 maintainContact();
             }
-            _stateMutex.unlock();
+            //_stateMutex.unlock();
             break;
         case MOVE_LOCATION:
             cout << "Contact state is: move location" << endl;
             // Update the GP
             // Set the waypoint to the next waypoint suggested by the GP
+            _stateMutex.unlock();
             moveToNewLocation();
             break;
         case SET_WAYPOINT_GP:
