@@ -67,6 +67,7 @@ protected:
     void approachObject();
     virtual void calculateNewWaypoint();
     virtual void maintainContact();
+    bool confrimContact(double maxAngle);
     void finshExploration();
     // Rename the functions to refelect the fact that the proximal and distal are locked
     void moveIndexFinger(double proximalAngle, double abductionAngle, double speed = 40);
@@ -75,7 +76,7 @@ protected:
 
 private:
     void moveArmToWayPoint(Vector pos, Vector orient);
-    void confrimContact(double maxAngle);
+
     void detectContact(double maxAngle);
 
 

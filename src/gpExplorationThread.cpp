@@ -300,6 +300,32 @@ void GPExplorationThread::maintainContact()
     _objectFeatures->getIndexFingertipPosition(fingertipPosition);
 
     _zPoints.push_back(fingertipPosition[2]);
+
+    while (_zPoints.size() < 3) {
+
+        moveIndexFingerBlocking(0, _curAbduction, 40);
+
+        if(TappingExplorationThread::confrimContact(30))
+        {
+            _objectFeatures->getIndexFingertipPosition(fingertipPosition);
+            _zPoints.push_back(fingertipPosition[2]);
+        }
+        else
+        {
+            _contactState = CALCULATE_NEWWAYPONT;
+            _zPoints.clear();
+            return;
+        }
+
+    }
+
+    double median = getMedian(_zPoints);
+    fingertipPosition[2] = median;
+    _surfaceModel->addContactPoint(fingertipPosition);
+
+    _zPoints.clear();
+
+    /*
     if(_zPoints.size() > _nRepeats)
     {
         _zPoints.resize(3, fingertipPosition[2]);
@@ -310,7 +336,7 @@ void GPExplorationThread::maintainContact()
 
         _zPoints.clear();
 
-    }
+    }*/
 
 
 
@@ -356,7 +382,7 @@ void GPExplorationThread::maintainContact()
 
 }
 
-bool GPExplorationThread::confrimContact(double maxAngle)
+bool GPExplorationThread::confirmWiggleContact(double maxAngle)
 {
 
 
@@ -508,7 +534,7 @@ void GPExplorationThread::sampleSurface_wiggleFingers()
         {
             cout << "Collision detected before confirming contact" << endl;
         }
-        contact = confrimContact(10);
+        contact = confirmWiggleContact(10);
 
         //if(_objectFeatures->getContactForce() >= _forceThreshold)
         //    contact = true;
@@ -909,7 +935,7 @@ void GPExplorationThread::moveArmUp()
         force = force/10;
     }
 
-    cout << "done!" << endl;
+    cout << "...done!" << endl;
 }
 
 void GPExplorationThread::makeSingleContact(Vector pos, Vector orient)

@@ -402,8 +402,9 @@ void TappingExplorationThread::detectContact(double maxAngle)
     _objectFeatures->getIndexFingerEncoder(_indexFingerEncoders);
 }
 
-void TappingExplorationThread::confrimContact(double maxAngle)
+bool TappingExplorationThread::confrimContact(double maxAngle)
 {
+    bool ret = false;
     cout << "Checking the contact...";
     moveIndexFingerBlocking(10/2, _curAbduction, 40);
     //cout << "Move done" << endl;
@@ -426,6 +427,7 @@ void TappingExplorationThread::confrimContact(double maxAngle)
             {
                 cout << "contact confirmed" << endl;
                 _contactState = MAINTAIN_CONTACT;
+                ret = true;
                 break;
             }
             else if(indexFingerAngles[1] < 1)
@@ -433,6 +435,7 @@ void TappingExplorationThread::confrimContact(double maxAngle)
                 cout << "...[exceeded angle]..." << endl;
                 //_contactState = EXCEEDED_ANGLE;
                 _contactState = MAINTAIN_CONTACT;
+                ret = true;
                 break;
             }
         }
@@ -465,6 +468,8 @@ void TappingExplorationThread::confrimContact(double maxAngle)
         _contactState = CALCULATE_NEWWAYPONT;
         cout << "contact NOT confirmed" << endl;
     }
+
+    return ret;
 
 }
 

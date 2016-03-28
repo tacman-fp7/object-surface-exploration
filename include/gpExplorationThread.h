@@ -58,7 +58,7 @@ protected:
      SurfaceModelGP *_surfaceModel;
      //MaintainContactThread *_maintainContactThread;
      ContactSafetyThread* _contactSafetyThread;
-     bool  confrimContact(double maxAngle);
+     bool  confirmWiggleContact(double maxAngle);
      bool _sampleSurface;
 
 protected:
