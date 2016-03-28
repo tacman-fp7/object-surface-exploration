@@ -565,16 +565,19 @@ bool SurfaceModelGP::getNextValidationPosition(yarp::sig::Vector &validationPosi
 {
     if(!_validationEnable)
     {
-        _validationIndex = _paddingPoints;
+       // _validationIndex = _paddingPoints;
+        _validationIndex = _zPoints.size();
         _validationEnable = true;
     }
 
-    if(_validationIndex < _zPoints.size()){
+    _validationIndex--;
+    //if(_validationIndex < _zPoints.size())
+    if((_validationIndex >= _paddingPoints) && (_zPoints.size() - _validationIndex) <= 3){
         validationPosition.resize(3);
         validationPosition[0] = _xPoints.at(_validationIndex);
         validationPosition[1] = _yPoints.at(_validationIndex);
         validationPosition[2] = _zPoints.at(_validationIndex);
-        _validationIndex++;
+
     }
     else{
         _validationEnable = false;
@@ -587,16 +590,16 @@ bool SurfaceModelGP::getNextValidationPosition(yarp::sig::Vector &validationPosi
 bool SurfaceModelGP::validatePosition(yarp::sig::Vector &validationPosition)
 {
     bool ret = false;
-    if(fabs(_zPoints.at(_validationIndex - 1) - validationPosition[2]) > 3.0/1000)
+    if(fabs(_zPoints.at(_validationIndex - 1) - validationPosition[2]) > 1.0/1000)
     {
         cout << endl << "Updating the position" << endl;
-        _xPoints.at(_validationIndex - 1) = validationPosition[0];
-        _yPoints.at(_validationIndex - 1) = validationPosition[1];
-        _zPoints.at(_validationIndex - 1) = validationPosition[2];
+        _xPoints.at(_validationIndex) = validationPosition[0];
+        _yPoints.at(_validationIndex) = validationPosition[1];
+        _zPoints.at(_validationIndex) = validationPosition[2];
 
-        _inputTraining(_validationIndex - 1, 0) = validationPosition[0];
-        _inputTraining(_validationIndex - 1, 1) = validationPosition[1];
-        _outputTraining(_validationIndex -1, 0) = validationPosition[2];
+        _inputTraining(_validationIndex, 0) = validationPosition[0];
+        _inputTraining(_validationIndex , 1) = validationPosition[1];
+        _outputTraining(_validationIndex, 0) = validationPosition[2];
         ret = true;
     }
 
