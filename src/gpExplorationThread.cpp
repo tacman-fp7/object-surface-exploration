@@ -724,7 +724,7 @@ bool GPExplorationThread::initialiseGP(Vector startingPos, Vector startingOrient
     xMax = startingPos[0];
     xMin = xMax - 70.0/1000;
 
-    zMin = -0.15; // TODO: fix it! Maybe take it form reachable space
+    zMin = -0.148; // TODO: fix it! Maybe take it form reachable space
     if(startingPos[1] < endingPos[1])
     {
         yMin = startingPos[1];
@@ -736,6 +736,48 @@ bool GPExplorationThread::initialiseGP(Vector startingPos, Vector startingOrient
         yMax = startingPos[1];
     }
 
+    // Get the table height
+   /* int prev_nRepeats = _nRepeats;
+    bool _prev_sampleSurface = _sampleSurface;
+
+    //_minZPoints.clear();
+    _sampleSurface = false;
+    _nRepeats = 2;
+    Vector pos;
+    pos.resize(3);
+    pos[0] = xMax;
+    pos[1] = yMin;
+    pos[2] = startingPos[2];
+    makeSingleContact(pos, startingOrient);
+
+    pos[0] = xMin;
+    pos[1] = yMin;
+    pos[2] = startingPos[2];
+    makeSingleContact(pos, startingOrient);
+
+    pos[0] = xMin;
+    pos[1] = yMax;
+    pos[2] = startingPos[2];
+    makeSingleContact(pos, startingOrient);
+
+    pos[0] = xMax;
+    pos[1] = yMax;
+    pos[2] = startingPos[2];
+    makeSingleContact(pos, startingOrient);
+
+    _nRepeats = prev_nRepeats;
+    _sampleSurface = _prev_sampleSurface;
+
+    sort(_minZPoints.begin(), _minZPoints.end());
+    _minZPoints.resize(3);
+    zMin = getMedian(_minZPoints);
+    cout << "Median minZ: " << zMin << endl;
+
+    //if(zMin > -0.148)
+    //   zMin = -0.148; */
+
+
+
     _surfaceModel->padBoundingBox(xMin, xMax, yMin, yMax, zMin, nSteps, 0.0/1000);
     _surfaceModel->setBoundingBox(nSteps, 0/1000);
     _surfaceModel->trainModel();
@@ -743,7 +785,7 @@ bool GPExplorationThread::initialiseGP(Vector startingPos, Vector startingOrient
     //_surfaceModel->padBoundingBox(xMin, xMax, yMin, yMax, zMin, nSteps, 0.0/1000);
 
     // Set the waypoint to the midpoint
-    Vector pos;
+ /*   Vector pos;
     pos.resize(3);
     pos[0] = (xMin + xMax)/2.0;
     pos[1] = (yMin + yMax)/2.0;
@@ -817,6 +859,24 @@ bool GPExplorationThread::initialiseGP(Vector startingPos, Vector startingOrient
     return ret; */
 }
 
+double GPExplorationThread::getMedian(std::vector<double> &vec)
+{
+
+
+    size_t vecSize = vec.size();
+
+
+    sort(vec.begin(), vec.end());
+    double median;
+
+    if(vecSize % 2 == 0){
+        median = (vec.at(vecSize / 2 - 1) + vec.at(vecSize / 2)) / 2.0;
+    }
+    else{
+        median = vec.at(vecSize / 2);
+    }
+
+}
 
 void GPExplorationThread::moveArmUp()
 {
@@ -856,7 +916,7 @@ void GPExplorationThread::makeSingleContact(Vector pos, Vector orient)
 
     _objectFeatures->setWayPointGP(desiredArmPos, orient);
     _contactState = APPROACH_OBJECT;
-
+    Vector fingertipPosition;
     moveArmUp();
     while((_contactState != FINISHED) && !isStopping() && !(_contactState == STOP))
     {
@@ -886,21 +946,27 @@ void GPExplorationThread::makeSingleContact(Vector pos, Vector orient)
             // Store update the contact location in the GP
             // Maintain contact for a couple of seconds
             // Set the state to GET_WAYPOINT_GP
-            maintainContact();
+            //maintainContact();
+
+
+            _objectFeatures->getIndexFingertipPosition(fingertipPosition);
+            _minZPoints.push_back(fingertipPosition[2]);
+            TappingExplorationThread::maintainContact();
+            //_contactState = STOP;
             break;
         case MOVE_LOCATION:
             cout << "Contact state is: move location" << endl;
             // Update the GP
             // Set the waypoint to the next waypoint suggested by the GP
             // moveToNewLocation();
-            _contactState = FINISHED;
+            _contactState = STOP;
             break;
         case SET_WAYPOINT_GP:
             // Use the GP Model to set the next waypoint
             // TODO: determine whether we sould terminate or not
             cout << "ContactState is: get waypoint from GP" << endl;
             //setWayPoint_GP();
-            _contactState = FINISHED;
+            _contactState = STOP;
             break;
         case FINISHED:
             cout << "Contact state is: finished" << endl;

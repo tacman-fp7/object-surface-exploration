@@ -5,6 +5,7 @@
 #include "surfaceModelGP.h"
 #include <contactSafetyThread.h>
 #include <yarp/os/Mutex.h>
+#include <vector>
 
 #define FORCE_TH 1.6
 
@@ -51,6 +52,7 @@ protected:
 private:
      void makeSingleContact(yarp::sig::Vector pos, yarp::sig::Vector orient);
      void moveArmToWayPoint(yarp::sig::Vector pos, yarp::sig::Vector orient);
+     double getMedian(std::vector<double> &vec);
 
 protected:
      SurfaceModelGP *_surfaceModel;
@@ -64,6 +66,8 @@ protected:
      bool _refineModel;
      bool _validatePositionsEnabled;
 
+private:
+     std::vector<double> _minZPoints;
 
 };
 
