@@ -51,7 +51,7 @@ void GPExplorationThread::run()
             // If the limit is reached,  set the state to MOVELOCATION <= this needs to be changed for GP
             cout << "Contact state is: approach" << endl;
             TappingExplorationThread::approachObject();
-            if(_contactState != MAINTAIN_CONTACT){
+            if(_contactState == MOVE_LOCATION){
                 _stateMutex.unlock();
             }
             break;
@@ -90,12 +90,15 @@ void GPExplorationThread::run()
             _stateMutex.lock();
             cout << "ContactState is: get waypoint from GP" << endl;
             if(_refineModel){
+                cout << "Refine" << endl;
                 setWayPoint_GP_Refine();
             }
             else if(_validatePositionsEnabled){
+                cout << "Validate" << endl;
                 setWayPoint_GP_validate();
             }
             else{
+                cout << "Normal" << endl;
                 setWayPoint_GP();
             }
             break;
@@ -126,7 +129,7 @@ void GPExplorationThread::setWayPoint_GP_validate()
     Vector validationPosition;
     Vector orient;
     Vector armPos;
-    bool ret;
+    bool ret = false;
 
     _curProximal = 10;
     _curAbduction = 0;
@@ -141,20 +144,21 @@ void GPExplorationThread::setWayPoint_GP_validate()
         _objectFeatures->indexFinger2ArmPosition(validationPosition, armPos);
         ret = _objectFeatures->setWayPointGP(armPos, orient);
     }
-    else
-    {
-        _refineModel = false;
-        _contactState = SET_WAYPOINT_GP;
+    else{
+        _validatePositionsEnabled = false;
+        _stateMutex.unlock();
     }
 
     moveArmUp();
 
 
     //yarp::os::Time::delay(5);
-    if(ret)
+    if(ret){
         _contactState = APPROACH_OBJECT;
-    else
+    }
+    else{
         _contactState = SET_WAYPOINT_GP;
+    }
 
 
 }
@@ -194,7 +198,8 @@ void GPExplorationThread::setWayPoint_GP_Refine()
     else
     {
         _refineModel = false;
-        _contactState = SET_WAYPOINT_GP;
+
+        _stateMutex.unlock();
     }
 
 
@@ -205,10 +210,12 @@ void GPExplorationThread::setWayPoint_GP_Refine()
 
 
     //yarp::os::Time::delay(5);
-    if(ret)
+    if(ret){
         _contactState = APPROACH_OBJECT;
-    else
+    }
+    else{
         _contactState = SET_WAYPOINT_GP;
+    }
 
 
 
@@ -229,6 +236,7 @@ void GPExplorationThread::maintainContact_GP_validatePosition(){
         _surfaceModel->updateSurfaceEstimate();
     }
 
+    _contactState = SET_WAYPOINT_GP;
 }
 
 void GPExplorationThread::maintainContact_GP_Refine()
@@ -249,6 +257,9 @@ void GPExplorationThread::maintainContact_GP_Refine()
     _nRepeats = 0;
     _repeats = 0;
     this->maintainContact();
+
+    _surfaceModel->trainModel();
+    _surfaceModel->updateSurfaceEstimate();
 
     // Restore to the prvious value;
     _nRepeats = prevNRepeats;
