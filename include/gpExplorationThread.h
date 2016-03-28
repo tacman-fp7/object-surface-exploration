@@ -68,6 +68,8 @@ protected:
 
 private:
      std::vector<double> _minZPoints;
+     std::vector<double> _zPoints;
+     yarp::os::RpcClient _skinManagerCommand;
 
 };
 

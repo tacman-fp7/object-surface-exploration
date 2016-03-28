@@ -296,31 +296,24 @@ void GPExplorationThread::maintainContact()
     // Store the contact location
 
 
-    Vector fingertipPosition, fingertipOrientation;
+    Vector fingertipPosition;
     _objectFeatures->getIndexFingertipPosition(fingertipPosition);
-    // _objectFeatures->getFingertipPose(fingertipPosition, fingertipOrientation);
-    //cout << "Position of the fingertip: " << fingertipPosition.toString();
 
-    // Check if finger position is close to the waypoint
-    /*    Vector pos, orient;
-    Vector posInArm;
-
-    _objectFeatures->getWayPoint(pos, orient, false);
-
-    _objectFeatures->indexFinger2ArmPosition(fingertipPosition, posInArm);
-
-    double dist;
-
-    dist = sqrt(pow(pos[0] - posInArm[0], 2) +
-            pow(pos[1] - posInArm[1], 2));
-    if(dist > 8.0/1000)
+    _zPoints.push_back(fingertipPosition[2]);
+    if(_zPoints.size() > _nRepeats)
     {
-        cout << "Too far from the requested position: " << dist << endl;
+        _zPoints.resize(3, fingertipPosition[2]);
+
+        double median = getMedian(_zPoints);
+        fingertipPosition[2] = median;
+        _surfaceModel->addContactPoint(fingertipPosition);
+
+        _zPoints.clear();
+
     }
 
-*/
 
-    _surfaceModel->addContactPoint(fingertipPosition);
+
 
 
 
@@ -898,7 +891,17 @@ void GPExplorationThread::moveArmUp()
     cout.flush();
     double force = _objectFeatures->getContactForce();
 
-    while(force > 0.5)
+    if(force > 0.25)
+    {
+        yarp::os::Bottle msg;
+        msg.addString("calib");
+
+        yarp::os::Bottle response;
+        _skinManagerCommand.write(msg, response);
+        cout << response.toString();
+
+    }
+    while(force > 0.25)
     {
         force = _objectFeatures->getContactForce();
         for( int i = 0; i < 9; i++)
@@ -1047,6 +1050,8 @@ bool GPExplorationThread::threadInit()
     if(_contactSafetyThread == NULL)
         _contactSafetyThread = new ContactSafetyThread(5, _objectFeatures, _robotCartesianController );
     _contactSafetyThread->start();
+    _skinManagerCommand.open("/object-exploration/skinManager/rpc:o");
+    yarp::os::Network::connect("/object-exploration/skinManager/rpc:o", "/skinManager/rpc");
     return TappingExplorationThread::threadInit();
 }
 

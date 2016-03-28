@@ -572,7 +572,7 @@ bool SurfaceModelGP::getNextValidationPosition(yarp::sig::Vector &validationPosi
 
     _validationIndex--;
     //if(_validationIndex < _zPoints.size())
-    if((_validationIndex >= _paddingPoints) && (_zPoints.size() - _validationIndex) <= 3){
+    if((_validationIndex >= _paddingPoints)){// && (_zPoints.size() - _validationIndex) <= 3){
         validationPosition.resize(3);
         validationPosition[0] = _xPoints.at(_validationIndex);
         validationPosition[1] = _yPoints.at(_validationIndex);
