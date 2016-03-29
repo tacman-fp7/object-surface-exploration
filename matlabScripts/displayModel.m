@@ -27,6 +27,7 @@ while(true)
     
     delete(nextPointFileName);
     
+    
     %%
     
     mmFactor = 1000;
