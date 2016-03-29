@@ -1,6 +1,7 @@
 #include "gpExplorationThread.h"
 #include <iostream>
 #include <yarp/os/Time.h>
+#include <fstream>
 
 #define DEBUG_LEVEL 1
 #define FORCE_TH 1.6
@@ -328,6 +329,26 @@ void GPExplorationThread::maintainContact()
     _surfaceModel->addContactPoint(fingertipPosition);
 
     _zPoints.clear();
+
+    // Save tactile data for Max
+    // Read the tactile data
+    Bottle *msg;
+    msg = _tactileData_in.read(true);
+    if(!msg->isNull()){
+
+        std::ofstream myFile;
+        myFile.open("taxel.csv");
+
+
+        for (int i = 0; i < 12; i++){
+            myFile << msg->get(i).asDouble() << ", ";
+        }
+                      myFile.flush();
+                      myFile.close();
+    }
+    else{
+        cout << "No taxel data was available." << endl;
+    }
 
     /*
     if(_zPoints.size() > _nRepeats)
@@ -1082,6 +1103,12 @@ bool GPExplorationThread::threadInit()
     //_contactSafetyThread->start();
     _skinManagerCommand.open("/object-exploration/skinManager/rpc:o");
     yarp::os::Network::connect("/object-exploration/skinManager/rpc:o", "/skinManager/rpc");
+
+    _tactileData_in.open("/object-exploration/skin/" + _objectFeatures->getArm() + "_hand:i");
+    yarp::os::Network::connect("/" + _objectFeatures->getRobotName() + "/skin/" + _objectFeatures->getArm() +  "_hand",
+                               "/object-exploration/skin/" + _objectFeatures->getArm() + "_hand:i");
+
+
     return TappingExplorationThread::threadInit();
 }
 

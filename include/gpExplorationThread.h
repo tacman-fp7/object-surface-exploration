@@ -70,6 +70,7 @@ private:
      std::vector<double> _minZPoints;
      std::vector<double> _zPoints;
      yarp::os::RpcClient _skinManagerCommand;
+     yarp::os::BufferedPort<Bottle> _tactileData_in;
 
 };
 
