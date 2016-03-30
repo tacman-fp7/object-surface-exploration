@@ -149,8 +149,8 @@ while(true)
     subplot(2,2,4)
     
     ngroups=5;
-    x = trainingInput(2:end,1);
-    y = trainingInput(2:end,2);
+    x = trainingInput(:,1);
+    y = trainingInput(:,2);
     z = latentVariables* 10;
     
     

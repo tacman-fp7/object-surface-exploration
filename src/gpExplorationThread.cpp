@@ -107,9 +107,9 @@ void GPExplorationThread::run()
                 setWayPoint_GP();
             }
             break;
-        //case SET_WAYPOINT_REFINE_CONTACT:
-        //    setWayPoint_GP_Refine();
-        //    break;
+            //case SET_WAYPOINT_REFINE_CONTACT:
+            //    setWayPoint_GP_Refine();
+            //    break;
         case REFINE_CONTACT:
             maintainContact_GP_Refine();
             break;
@@ -340,11 +340,11 @@ void GPExplorationThread::maintainContact()
         myFile.open("taxel.csv");
 
 
-        for (int i = 0; i < 12; i++){
+        for (int i = 0; i < 11; i++){
             myFile << msg->get(i).asDouble() << ", ";
         }
-                      myFile.flush();
-                      myFile.close();
+        myFile << msg->get(12).asDouble() << endl;
+        myFile.close();
     }
     else{
         cout << "No taxel data was available." << endl;
@@ -781,7 +781,7 @@ bool GPExplorationThread::initialiseGP(Vector startingPos, Vector startingOrient
     }
 
     // Get the table height
-   /* int prev_nRepeats = _nRepeats;
+    /* int prev_nRepeats = _nRepeats;
     bool _prev_sampleSurface = _sampleSurface;
 
     //_minZPoints.clear();
@@ -829,7 +829,7 @@ bool GPExplorationThread::initialiseGP(Vector startingPos, Vector startingOrient
     //_surfaceModel->padBoundingBox(xMin, xMax, yMin, yMax, zMin, nSteps, 0.0/1000);
 
     // Set the waypoint to the midpoint
- /*   Vector pos;
+    /*   Vector pos;
     pos.resize(3);
     pos[0] = (xMin + xMax)/2.0;
     pos[1] = (yMin + yMax)/2.0;
