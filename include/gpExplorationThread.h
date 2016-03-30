@@ -22,7 +22,8 @@ public:
         TappingExplorationThread(period, robotCartesianController,
                                   objectFeatures){ _surfaceModel = objectFeatures->getGPSurfaceModel();
                                                  _forceThreshold = FORCE_TH; _sampleSurface = true;
-                                                 _refineModel = false; _validatePositionsEnabled = false;}
+                                                 _refineModel = false; _validatePositionsEnabled = false;
+                                                 _contactSafetyThread = NULL;}
 
     virtual void run();
     virtual bool threadInit();

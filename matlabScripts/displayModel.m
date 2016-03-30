@@ -1,7 +1,7 @@
 %cd('/home/nawidj/software/src/object-surface-exploration/build');
-%cd('/home/nawidj/gpdata')
+cd('/home/nawidj/gpdata')
 %cd('/home/nawidj/gpDataTrial06')
-cd('/home/nawidj/tacman/GaussianSurfaceExplorationData/data/hut/set02/trial05/gpPoints');
+%cd('/home/nawidj/tacman/GaussianSurfaceExplorationData/data/hut/set02/trial05/gpPoints');
 
 objectName = 'hut';
 nextPointFileName = [objectName '_model_nextPoint.csv'];
@@ -15,7 +15,7 @@ nextSamplePointFileName = [objectName '_nextPoint.csv'];
 %viewVars = [45, 55];
 %viewVars = [90, 90];
 viewVars = [50, 35];
-%%
+
 while(true)
     
     while(~exist(nextPointFileName))
@@ -27,6 +27,7 @@ while(true)
     
     delete(nextPointFileName);
     
+    system('python taxel2latent.py');
     
     %%
     

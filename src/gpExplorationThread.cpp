@@ -1098,8 +1098,10 @@ void GPExplorationThread::setWayPoint_GP()
 
 bool GPExplorationThread::threadInit()
 {
-    if(_contactSafetyThread == NULL)
+    if(_contactSafetyThread == NULL){
         _contactSafetyThread = new ContactSafetyThread(5, _objectFeatures, _robotCartesianController );
+        cout << "Contact safety started" << endl;
+    }
     //_contactSafetyThread->start();
     _skinManagerCommand.open("/object-exploration/skinManager/rpc:o");
     yarp::os::Network::connect("/object-exploration/skinManager/rpc:o", "/skinManager/rpc");
