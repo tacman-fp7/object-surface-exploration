@@ -455,7 +455,7 @@ bool TappingExplorationThread::confrimContact(double maxAngle)
         cout << "Pos: " << pos.toString() << endl;
         pos[0] += r * 0.0125;
         pos[1] += r * 0.0125;
-        pos[2] += 0.001;
+        pos[2] += 0.003;
         cout << "Pos: " << pos.toString() << endl;
 
         _objectFeatures->setWayPoint(pos, orient);
