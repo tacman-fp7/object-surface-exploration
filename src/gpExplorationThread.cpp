@@ -337,8 +337,9 @@ void GPExplorationThread::maintainContact()
     if(!msg->isNull()){
 
         std::ofstream myFile;
-        myFile.open("taxel.csv");
+        myFile.open("taxel.csv", std::ios::app);
 
+        myFile << "1458686550.2213881015777587890625" << ", ";
 
         for (int i = 0; i < 11; i++){
             myFile << msg->get(i).asDouble() << ", ";
@@ -766,7 +767,7 @@ bool GPExplorationThread::initialiseGP(Vector startingPos, Vector startingOrient
     double xMin, xMax, yMin, yMax, zMin;
     int nSteps = 20;
     xMax = startingPos[0];
-    xMin = xMax - 70.0/1000;
+    xMin = xMax - 90.0/1000;
 
     zMin = -0.148; // TODO: fix it! Maybe take it form reachable space
     if(startingPos[1] < endingPos[1])
