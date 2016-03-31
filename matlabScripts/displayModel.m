@@ -15,23 +15,26 @@ nextSamplePointFileName = [objectName '_nextPoint.csv'];
 %viewVars = [45, 55];
 %viewVars = [90, 90];
 viewVars = [50, 35];
-
+clf('reset');
 while(true)
     
     while(~exist(nextPointFileName))
         pause(0.05);
     end
     
+    mmFactor = 1000;
+    
     maxVarPoint = dlmread(nextPointFileName);
-    fprintf('Next sampling point is: (%0.4f, %0.4f. %0.4f)\n', maxVarPoint(1), maxVarPoint(2), maxVarPoint(3));
+    
+    
     
     delete(nextPointFileName);
     
     system('python taxel2latent.py');
     
-    %%
     
-    mmFactor = 1000;
+    
+    
     
     nPoints = 20;
     
@@ -41,6 +44,12 @@ while(true)
     trainingInput = dlmread(trainingInputFileName);
     trainingTarget = dlmread(trainingTargetFileName);
     latentVariables = dlmread('latent.csv');
+    
+    maxVarPoint(1) = maxVarPoint(1) - min(modelInput(:,1));
+    maxVarPoint(2) = maxVarPoint(2) - min(modelInput(:,2));
+    maxVarPoint(3) = maxVarPoint(3) - min(modelOutput);
+    maxVarPoint = maxVarPoint * mmFactor;
+    fprintf('Next sampling point is: (%0.4f, %0.4f. %0.4f)\n', maxVarPoint(1), maxVarPoint(2), maxVarPoint(3));
     
     %nextSamplePoint = dlmread(nextSamplePointFileName);
     
@@ -54,7 +63,7 @@ while(true)
     trainingInput = (trainingInput - repmat(min(trainingInput), length(trainingInput), 1)) * mmFactor;
     trainingTarget = (trainingTarget - min(trainingTarget)) * mmFactor;
     
-    
+   
     
     x = modelInput(:, 1);
     y = modelInput(:, 2);
@@ -68,7 +77,10 @@ while(true)
     ZT = reshape(modelOutput, nPoints, nPoints);
     ZV = reshape(modelVariance, nPoints, nPoints);
     
-    figure(1)
+    figH = figure(1);
+    %clf('reset');
+    set(figH, 'color', 'white');
+    
     subplot(2,2,1)
     %figure(1)
     
@@ -83,8 +95,8 @@ while(true)
     view(viewVars);
     
     hold on
-    %    h_cp = scatter3(maxVarPoint(1), maxVarPoint(2),...
-    %        maxVarPoint(3), 'fill', 'markerFaceColor', 'black', 'sizeData', [100]);
+       h_cp = scatter3(maxVarPoint(1), maxVarPoint(2),...
+           maxVarPoint(3), 'fill', 'markerFaceColor', 'black', 'sizeData', [100]);
     
     %     scatter3(nextSamplePoint(1), nextSamplePoint(2), nextSamplePoint(3),...
     %         'fill', 'markerFaceColor', 'black', 'sizeData', [100]);
@@ -102,13 +114,20 @@ while(true)
     set(gca, 'fontname', 'Bitstream Charter','fontsize', 15);
     xlabel('Width [mm]','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'bottom');
     ylabel('Length [mm]','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'top');
-    zlabel('Height [mm]','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'bottom');
+    zlabel('Uncertainty','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'bottom');
     title('GP Variance', 'fontsize', 20, 'interpreter', 'tex');
     %zlim([0 5]);
     %axis('equal');
     axis tight;
     view(viewVars);
     
+    hold on
+       h_cp = scatter3(maxVarPoint(1), maxVarPoint(2),...
+           maxVarPoint(4), 'fill', 'markerFaceColor', 'black', 'sizeData', [100]);
+    
+    %     scatter3(nextSamplePoint(1), nextSamplePoint(2), nextSamplePoint(3),...
+    %         'fill', 'markerFaceColor', 'black', 'sizeData', [100]);
+    hold off
     
     % %     hold on
     % %     h_cp = scatter3(maxVarPoint(1), maxVarPoint(2),...
@@ -144,13 +163,20 @@ while(true)
     hold off
     view(viewVars);
     
+    hold on
+%        h_cp = scatter3(maxVarPoint(1), maxVarPoint(2),...
+%            maxVarPoint(3), 'fill', 'markerFaceColor', 'black', 'sizeData', [100]);
+    
+    %     scatter3(nextSamplePoint(1), nextSamplePoint(2), nextSamplePoint(3),...
+    %         'fill', 'markerFaceColor', 'black', 'sizeData', [100]);
+    hold off
     
     
     subplot(2,2,4)
     
     ngroups=5;
-    x = trainingInput(:,1);
-    y = trainingInput(:,2);
+    x = trainingInput(2:end,1);
+    y = trainingInput(2:end,2);
     z = latentVariables* 10;
     
     
