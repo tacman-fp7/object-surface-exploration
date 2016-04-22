@@ -433,8 +433,8 @@ bool TappingExplorationThread::confrimContact(double maxAngle)
             else if(indexFingerAngles[1] < 1)
             {
                 cout << "...[exceeded angle]..." << endl;
-                _contactState = EXCEEDED_ANGLE;
-                //_contactState = MAINTAIN_CONTACT;
+               // _contactState = EXCEEDED_ANGLE;
+                _contactState = MAINTAIN_CONTACT; // We consider it a contact
                 ret = false;
                 break;
             }
