@@ -11,8 +11,6 @@
 #include <yarp/os/Time.h>
 
 
-//#define M_PI   3.14159265358979323846264338328
-
 
 namespace objectExploration
 {
@@ -105,7 +103,7 @@ bool ObjectFeaturesThread::fingerMovePosition(int joint, double angle, double sp
 
 
 
-bool ObjectFeaturesThread::maintainContactPose()
+/*bool ObjectFeaturesThread::maintainContactPose()
 {
 
     bool ret = true;
@@ -135,10 +133,10 @@ bool ObjectFeaturesThread::maintainContactPose()
 
     }
 
-    */
+    ///
 
     return ret;
-}
+}*/
 
 bool ObjectFeaturesThread::prepHand()
 {
@@ -588,60 +586,6 @@ bool ObjectFeaturesThread::indexFinger2ArmPosition(Vector &fingertipPosition, Ve
 
     return ret;
 
-    /*
-    // Get the current arm position
-
-    Vector armPos, armOrient;
-    Vector fingertipPos, fingertipOrient;
-
-    ret = ret && _armCartesianCtrl->getPose(armPos, armOrient);
-
-    // Get the curent fingertip position
-    ret = ret && getIndexFingertipPosition(fingertipPos);
-
-    //retArmpPosition = fingertipPosition - (armPos - fingertipPos);
-    retArmpPosition.resize(3);
-    retArmpPosition[0] = fingertipPosition[0] + (armPos[0] - fingertipPos[0]);
-    retArmpPosition[1] = fingertipPosition[1] + (armPos[1] - fingertipPos[1]);
-    retArmpPosition[2] = fingertipPosition[2] + (armPos[2] - fingertipPos[2]);
-    cout << "Arm pos: " << armPos.toString() << endl;
-    cout << "Ftp pos: " << fingertipPos.toString() << endl;
-    cout << "Ret pos: " << retArmpPosition.toString() << endl;
-
-    return false;*/
-
-    /*
-    // fingertipPosition is in the world coordinate
-    Vector armPos, armOrient;
-    // Get the arm position in the world coordinate
-    ret = ret && _armCartesianCtrl->getPose(armPos, armOrient);
-
-    // My own transformation
-    yarp::sig::Matrix T_rotoTrans(4,4);
-    yarp::sig::Matrix T_rotoTransInverse(4,4);
-
-    T_rotoTrans = yarp::math::axis2dcm(_desiredStartingOrientation);
-    //T_rotoTrans = yarp::math::axis2dcm(armOrient);
-    T_rotoTrans.setSubcol(armPos, 0,3);
-    T_rotoTransInverse = yarp::math::SE3inv(T_rotoTrans);
-
-    //cout << T_rotoTransInverse.toString() << endl;
-
-    cout << "Fingertip position: " << fingertipPosition.toString() << endl;
-    //cout << "Fingertip: " << fingertipPosition.toString() << endl;
-    fingertipPosition.resize(4);
-    fingertipPosition[3] = 1;
-    //cout << "Fingertip: " << fingertipPosition.toString() << endl;
-
-    Vector retMat = yarp::math::operator *(fingertipPosition,T_rotoTransInverse);
-    retArmpPosition = retMat.subVector(0,2);
-
-    //cout << retMat.toString() << endl;
-
-    //cout << "Fingertip position: " << fingertipPosition.toString() << endl;
-    cout << "Correstponding arm: " << retArmpPosition.toString() << endl;
-    return ret;
-    */
 }
 
 /*
@@ -1423,10 +1367,7 @@ const int& ObjectFeaturesThread::getExplorationThreadPeriod()
     return _explorationThreadPeriod;
 }
 
-const int& ObjectFeaturesThread::getMaintainContactPeriod()
-{
-    return _maintainContactPeriod;
-}
+
 
 const double& ObjectFeaturesThread::getDesiredForce()
 {

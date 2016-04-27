@@ -94,7 +94,7 @@ public:
     const string& getControllerType();
     const string& getControllerName();
     const int& getTrajectoryTime();
-    const int& getMaintainContactPeriod();
+    //const int& getMaintainContactPeriod();
     const int& getExplorationThreadPeriod();
     const double& getDesiredForce();
     void writeToFingerController(std::string command);
@@ -105,7 +105,7 @@ public:
     double getProximalJointAngle(){return _proximalJointAngle;}
     bool openHand();
     bool prepHand();
-    bool maintainContactPose();
+    //bool maintainContactPose();
     void adjustIndexFinger();
     bool getIndexFingerEncoder(Vector &encoderValues);
     bool getIndexFingertipPosition(Vector &position);
