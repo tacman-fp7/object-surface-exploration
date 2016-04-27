@@ -33,9 +33,9 @@ void TappingExplorationThread::run()
     _contactState = APPROACH_OBJECT;
     _repeats = 0;
     _nRepeats = 0;
-   // _curDistal = 0;
-   // _curProximal = 10;
-   // _curAbduction = 0;
+    // _curDistal = 0;
+    // _curProximal = 10;
+    // _curAbduction = 0;
 
 
     _forceThreshold = FORCE_TH;
@@ -109,6 +109,18 @@ void TappingExplorationThread::run()
 
 }
 
+
+TappingExplorationThread::TappingExplorationThread(int period, ICartesianControl* robotCartesianController,
+                                                   ObjectFeaturesThread* objectFeatures):
+    ExplorationStrategyThread(period, robotCartesianController,
+                              objectFeatures){
+    _nGrid = 0;
+    _forceThreshold = FORCE_TH;
+    _curAbduction = -10;
+    _curAbduction = -10;
+    _nRepeats = 0;
+}
+
 void TappingExplorationThread::finshExploration()
 {
     Vector starting_pos, starting_orient;
@@ -116,23 +128,7 @@ void TappingExplorationThread::finshExploration()
     starting_orient.resize(4);
 
     _nGrid = 0;
-    // Open the hand
-    //_objectFeatures->prepHand();
 
-
-
-
- /*   _objectFeatures->setProximalAngle(_curProximal);
-    Bottle msg;
-    msg.clear();
-    msg.addDouble(_curProximal);
-    msg.addDouble(_curDistal);
-    msg.addDouble(_curAbduction);
-    _objectFeatures->publishFingertipControl(msg);
-    // Wait for the hand to open;
-    while(!_objectFeatures->checkOpenHandDone() && !isStopping())
-        ;
-*/
 
     // Lift the finger up
     // Get the current pose of the arm
@@ -433,7 +429,7 @@ bool TappingExplorationThread::confrimContact(double maxAngle)
             else if(indexFingerAngles[1] < 1)
             {
                 cout << "...[exceeded angle]..." << endl;
-               // _contactState = EXCEEDED_ANGLE;
+                // _contactState = EXCEEDED_ANGLE;
                 // ret = false;
                 _contactState = MAINTAIN_CONTACT; // We consider it a contact
                 ret = true;

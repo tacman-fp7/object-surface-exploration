@@ -96,18 +96,7 @@ private:
     double _maxX, _maxY, _minX, _minY;
     int _currentRow;
     int _currentCol;
-    //unsigned long _nextY;
-    //unsigned long _nextX;
-    //unsigned long _maxNextY;
 
-    /*double _table[8][2] =
-    {
-        {6,2}, {6,7},
-        {5,7}, {5,2},
-        {4,3}, {4,6},
-        {3,5}, {3,4},
-    };
-*/
     int _dummyIndex;
 
 }; // end of class

@@ -25,22 +25,19 @@ enum State{
     SAMPLE_SURFACE = 9,
     REFINE_CONTACT = 10,
     VALIDATE_CONTACT = 11
-    //SET_WAYPOINT_REFINE_CONTACT = 11
 };
 
 class TappingExplorationThread: public ExplorationStrategyThread
 {
 public:
     TappingExplorationThread(int period, ICartesianControl* robotCartesianController,
-                            ObjectFeaturesThread* objectFeatures):
-        ExplorationStrategyThread(period, robotCartesianController,
-                                  objectFeatures){ _nGrid = 0; _forceThreshold = FORCE_TH;
-                                                 _curAbduction = -10;
-                                                 //_curDistal = -10;
-                                                 _curAbduction = -10; _nRepeats = 0;}
+                            ObjectFeaturesThread* objectFeatures);
+
+
     virtual void run();
     virtual bool threadInit();
     virtual void threadRelease();
+
     void setNRepeats(int nRepeats){_nRepeats = nRepeats;}
 
 protected:
@@ -56,8 +53,7 @@ protected:
 private:
     Vector _indexFingerEncoders;
     int _nGrid;
-    //Vector _indexFingerPosition;
-   // double _preContactForce;
+
 
 protected:
     //void logFingertipControl();
