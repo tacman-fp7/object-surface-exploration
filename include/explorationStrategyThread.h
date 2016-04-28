@@ -10,6 +10,10 @@ using yarp::dev::ICartesianControl;
 
 namespace objectExploration
 {
+
+
+
+
 class ExplorationStrategyThread: public yarp::os::Thread
 {
 public:

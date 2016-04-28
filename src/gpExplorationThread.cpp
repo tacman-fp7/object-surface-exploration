@@ -29,7 +29,6 @@ void GPExplorationThread::run()
 
 
     _repeats = 0;
-    //_curDistal = 0;
     _curProximal = 0;
     _forceThreshold = FORCE_TH; //TODO: should be in a config file
 
@@ -1100,7 +1099,7 @@ void GPExplorationThread::setWayPoint_GP()
 bool GPExplorationThread::threadInit()
 {
     if(_contactSafetyThread == NULL){
-        _contactSafetyThread = new ContactSafetyThread(5, _objectFeatures, _robotCartesianController );
+        _contactSafetyThread = new ContactSafetyThread(5, _robotCartesianController );
         cout << "Contact safety started" << endl;
     }
     //_contactSafetyThread->start();

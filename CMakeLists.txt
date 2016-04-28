@@ -28,12 +28,17 @@ include_directories(${YARP_INCLUDE_DIRS} ${Gurls_INCLUDE_DIRS} ${iKin_INCLUDE_DI
 set(HEADERS  include/robotControl.h include/exploreObject.h include/explorationStrategyThread.h
 include/objectFeaturesThread.h
 include/tappingExplorationThread.h include/surfaceModelGP.h include/gpExplorationThread.h
-include/exploreGPSurfaceThread.h include/contactSafetyThread.h)
+include/exploreGPSurfaceThread.h include/contactSafetyThread.h
+include/finger.h
+include/hand.h)
 
 set(SOURCES src/main.cpp src/robotControl.cpp src/exploreObject.cpp
 src/objectFeaturesThread.cpp
 src/tappingExplorationThread.cpp src/surfaceModelGP.cpp src/exploreGPSurfaceThread.cpp
-src/gpExplorationThread.cpp src/contactSafetyThread.cpp ${HEADERS})
+src/gpExplorationThread.cpp src/contactSafetyThread.cpp
+src/finger.cpp
+src/hand.cpp
+ ${HEADERS})
 
 #set(CONTEXT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/bin/context" CACHE PATH "Path to the context files")
 set( CMAKE_BUILD_TYPE Debug CACHE STRING

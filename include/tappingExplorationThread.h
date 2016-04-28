@@ -37,17 +37,18 @@ public:
     virtual void run();
     virtual bool threadInit();
     virtual void threadRelease();
-
-    void setNRepeats(int nRepeats){_nRepeats = nRepeats;}
+    /*
+     * Set the number of times a contact location is sampled
+     */
+    void setNRepeats(int nRepeats);
 
 protected:
     State _contactState;
-    int _repeats;
-    int _nRepeats;
-    double _forceThreshold;
-    double _curProximal;
-    //double _curDistal;
-    double _curAbduction;
+    int _repeats; // Number of contact repeats so far
+    int _nRepeats; // Desired number of repeats
+    double _forceThreshold; // Force threshold to determine contact
+    double _curProximal;  // Used for logging
+    double _curAbduction; // Used for logging
 
 
 private:
@@ -56,15 +57,14 @@ private:
 
 
 protected:
-    //void logFingertipControl();
-
-protected:
     virtual void moveToNewLocation();
-    void approachObject();
     virtual void calculateNewWaypoint();
     virtual void maintainContact();
+
+    void approachObject(); 
     bool confrimContact(double maxAngle);
     void finshExploration();
+
     // Rename the functions to refelect the fact that the proximal and distal are locked
     void moveIndexFinger(double proximalAngle, double abductionAngle, double speed = 40);
     void moveIndexFingerBlocking(double proximalAngle, double abductionAngle, double speed);
@@ -72,7 +72,6 @@ protected:
 
 private:
     void moveArmToWayPoint(Vector pos, Vector orient);
-
     void detectContact(double maxAngle);
 
 

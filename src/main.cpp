@@ -11,6 +11,7 @@
 #include <surfaceModelGP.h>
 #include <yarp/os/Time.h>
 #include <gurls++/gmat2d.h>
+#include "hand.h" //Testing only
 
 using namespace yarp::os;
 using namespace std;
@@ -33,6 +34,12 @@ int main(int argc, char *argv[])
 
 
 
+  objectExploration::Hand robotHand(rf);
+
+  while(true)
+      ;
+
+  return 1;
 
   /////////////////////////////////////
   /// \brief surfModel

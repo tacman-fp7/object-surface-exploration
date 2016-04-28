@@ -103,40 +103,7 @@ bool ObjectFeaturesThread::fingerMovePosition(int joint, double angle, double sp
 
 
 
-/*bool ObjectFeaturesThread::maintainContactPose()
-{
 
-    bool ret = true;
-
-    openHand();
-
-    // Put the thumb in position
-    ret = fingerMovePosition(7, 12);
-    ret = fingerMovePosition(9, 30);
-    ret = fingerMovePosition(10, 170);
-
-    /*
-    Vector pos, orient;
-    pos.resize(3);
-    orient.resize(4);
-
-   ret = _armCartesianCtrl->getPose(pos, orient);
-
-    cout << "Pos: " << pos.toString() << "\tOrient: " << orient.toString() << endl;
-
-
-    orient[3] += 0.4;
-
-    if(ret){
-        ret = _armCartesianCtrl->goToPose(pos,orient);
-        ret = fingerMovePosition(11, 25);
-
-    }
-
-    ///
-
-    return ret;
-}*/
 
 bool ObjectFeaturesThread::prepHand()
 {

@@ -664,16 +664,7 @@ bool ExploreObject::configure(yarp::os::ResourceFinder& rf )
 
     _objectFeaturesThread->start();
 
-    ////////////////////////////////////////////////////////////////////////////////////////
-    ////////// Setting up the MaintainContactThread ////////////////////////////////////////
-    ////////// at the meoment it is achieved using Massimo's code //////////////////////////
-    ////////////////////////////////////////////////////////////////////////////////////////
-    /*_maintainContactThread = new MaintainContactThread(systemParameters.getMaintainContactPeriod(),
-                                                       _objectFeaturesThread);
-    _maintainContactThread->setDesiredForce(systemParameters.getDesiredForce());
-    */
-    //_contactSafetyThread = new ContactSafetyThread(systemParameters.getMaintainContactPeriod(),
-                                                   //_objectFeaturesThread);
+
 
 
     /////////////////////////////////////////////////////////////////////////////////////////////////

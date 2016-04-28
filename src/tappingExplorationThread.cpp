@@ -28,16 +28,11 @@ void TappingExplorationThread::run()
     finger_pos.resize(3);
     finger_orient.resize(4);
 
-    //State contactState = State::UNDEFINED;
+
 
     _contactState = APPROACH_OBJECT;
     _repeats = 0;
     _nRepeats = 0;
-    // _curDistal = 0;
-    // _curProximal = 10;
-    // _curAbduction = 0;
-
-
     _forceThreshold = FORCE_TH;
 
     // put the finger in known position
@@ -89,7 +84,6 @@ void TappingExplorationThread::run()
 #endif
             // Calculate the next waypoint
             moveToNewLocation();
-            //continue; // Just for now, before I clean the code
             break;
         case FINISHED:
 #if DEBUG_LEVEL>=1
@@ -101,10 +95,9 @@ void TappingExplorationThread::run()
         }
     }
 
-    // Make sure nothing is conrolling the finger
-    //_objectFeatures->writeToFingerController("stop");
 
-    yarp::os::Time::delay(1);
+
+    yarp::os::Time::delay(1);  //TODO: Test if this is needed
 
 
 }
@@ -120,6 +113,11 @@ TappingExplorationThread::TappingExplorationThread(int period, ICartesianControl
     _curAbduction = -10;
     _nRepeats = 0;
 }
+
+void TappingExplorationThread::setNRepeats(int nRepeats){
+    _nRepeats = nRepeats;
+}
+
 
 void TappingExplorationThread::finshExploration()
 {
@@ -237,16 +235,7 @@ void TappingExplorationThread::calculateNewWaypoint()
     }
 }
 
-/*void TappingExplorationThread::logFingertipControl()
-{
-    Bottle msg;
-    msg.clear();
-    msg.addDouble(_curProximal);
-    msg.addDouble(_curDistal);
-    msg.addDouble(_curAbduction);
-    _objectFeatures->publishFingertipControl(msg);
-}
-*/
+
 
 void TappingExplorationThread::moveArmToWayPoint(yarp::sig::Vector pos, yarp::sig::Vector orient)
 {

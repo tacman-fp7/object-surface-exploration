@@ -14,6 +14,7 @@
 #include <yarp/dev/IPositionControl.h>
 #include <yarp/dev/IControlMode2.h>
 #include "surfaceModelGP.h"
+#include "hand.h"
 
 // This object is used to update features which will be shared between object objectExploraton
 // and object classification threads
@@ -36,13 +37,13 @@ using yarp::os::Mutex;
 using std::string;
 using yarp::os::RpcClient;
 
-enum fingerJoints{
+/*enum fingerJoints{
     ABDUCTION = 7,
     THUMBT_PROXIMAL = 9,
     THUMB_DISTAL = 10,
     INDEX_PROXIMAL = 11,
     INDEX_DISTAL = 12
-};
+};*/
 
 struct reachableSpace
 {

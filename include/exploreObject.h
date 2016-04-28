@@ -1,10 +1,7 @@
 #pragma once
-//#include <approachObject.h>
-//#include <maintainContactThread.h>
 #include <explorationStrategyThread.h>
 #include <gpExplorationThread.h>
 #include <objectFeaturesThread.h>
-//#include <objectClassifierThread.h>
 #include <yarp/dev/CartesianControl.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/os/ResourceFinder.h>

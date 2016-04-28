@@ -10,29 +10,24 @@ class ContactSafetyThread: public yarp::os::RateThread
 {
 public:
 
-    ContactSafetyThread(int period, ObjectFeaturesThread* objectFeatures, ICartesianControl* robotCartesianController):RateThread(period), _desiredForce(0),
-        _objectFeatures(objectFeatures), _minDistalAngle(0), _dbgtag("Contact safety: "),
-    _robotCartesianController(robotCartesianController){
-        _collisionDetected = false;
-    }
-    void setDesiredForce(double desiredForce);
-    void setMinDistalAngle(double minDistalAngle);
-    void resetBaseline();
+    ContactSafetyThread(int period, ICartesianControl* robotCartesianController);
+    void setForceThreshold(double desiredForceThreshold);
+    bool resetBaseline();
     void run();
     bool threadInit();
-    void threadRelease();
+    //void threadRelease();
     bool collisionDetected();
-
+private:
+    void init();
 private:
     // things
-    double _desiredForce;
-    double _minDistalAngle;
+    double _forceThreshold;
+    //double _minDistalAngle;
     double _baseLine;
     ObjectFeaturesThread* _objectFeatures;
     std::string _dbgtag;
     ICartesianControl* _robotCartesianController;
     BufferedPort<Bottle> _forceTorque_in;
-    BufferedPort<Bottle> _forceTorque_out;
 
     bool _collisionDetected;
 };

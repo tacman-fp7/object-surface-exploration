@@ -4,6 +4,7 @@
 #include <yarp/sig/Vector.h>
 #include <yarp/os/Network.h>
 #include <math.h>
+#include <yarp/os/ResourceFinder.h>
 
 using std::cerr;
 using std::cout;
@@ -21,60 +22,67 @@ void ContactSafetyThread::run()
 
     if(!forceTorqueData->isNull())
     {
+        // Get the resultant force
         double resultant = sqrt(
                     pow(forceTorqueData->get(0).asDouble(), 2) +
                     pow(forceTorqueData->get(1).asDouble(), 2) +
                     pow(forceTorqueData->get(2).asDouble(), 2));
-        //cout << "FT: " << resultant << " BL: "  << _baseLine << endl;
 
-        if(fabs(resultant - _baseLine) > 5){
+
+        // If the resultant force is greater than the threshold stop the
+        // arm movemnet
+        if(fabs(resultant - _baseLine) > _forceThreshold){
             _robotCartesianController->stopControl();
             _collisionDetected = true;
-            //cout << "Force toque exceeded" << endl;
 
         }
     }
-
-    /* // Read the tactile data
-    double contactForce;
-    double distalAngle;
-    Vector indexFingerAngels;
-
-
-
-    contactForce = _objectFeatures->getContactForce();
-    if(_objectFeatures->getIndexFingerAngles(indexFingerAngels))
-        distalAngle = indexFingerAngels[2]; // The distal angle
-    else
-        cerr << _dbgtag << "failed to read the distal angle." << endl;
-*/
-    // Here do something smart with it.
-
-    //cout << "Distal angle: " << distalAngle;
-    //cout << " Contact froce: " << contactForce << endl;
-
-    //if(contactForce > 2)
-    //   _robotCartesianController->stopControl();
-
-    //if(distalAngle < 1)
-    //    _robotCartesianController->stopControl();
-
 }
 
 
 
-void ContactSafetyThread::resetBaseline()
+ContactSafetyThread::ContactSafetyThread(int period,  ICartesianControl* robotCartesianController)
+    :RateThread(period){
+
+    _forceThreshold = 5;
+    //_objectFeatures = objectFeatures;
+    _dbgtag = "Contact safety: ";
+    _robotCartesianController = robotCartesianController;
+    _collisionDetected = false;
+
+
+
+
+}
+
+void ContactSafetyThread::init(){
+
+    ResourceFinder rf;
+
+    /// Force torque//////
+
+
+    if(_forceTorque_in.open("/safeConact/" + _objectFeatures->getArm() + "_arm/forceTorque/analog:i"))
+    {
+        yarp::os::Network::connect( "/" + _objectFeatures->getRobotName() + "/" + _objectFeatures->getArm() + "_arm/analog:o",
+                                    "/safeConact/" + _objectFeatures->getArm() + "_arm/forceTorque/analog:i");
+    }
+
+}
+
+bool ContactSafetyThread::resetBaseline()
 {
 
-     Bottle* forceTorqueData = _forceTorque_in.read(true);
+    Bottle* forceTorqueData = _forceTorque_in.read(true);
     if(!forceTorqueData->isNull())
     {
         _baseLine = sqrt(
                     pow(forceTorqueData->get(0).asDouble(), 2) +
                     pow(forceTorqueData->get(1).asDouble(), 2) +
                     pow(forceTorqueData->get(2).asDouble(), 2));
-        //cout << "FT: " << resultant << endl;
-
+    }
+    else{
+        return false;
     }
     _collisionDetected = false;
 }
@@ -84,54 +92,29 @@ bool ContactSafetyThread::collisionDetected()
     return _collisionDetected;
 }
 
-void ContactSafetyThread::setMinDistalAngle(double minDistalAngle)
-{
-    _minDistalAngle = minDistalAngle;
-}
 
-void ContactSafetyThread::setDesiredForce(double desiredForce)
+void ContactSafetyThread::setForceThreshold(double desiredForceThreshold)
 {
-    _desiredForce = desiredForce;
+    _forceThreshold = desiredForceThreshold;
 }
 
 
 
-bool ContactSafetyThread::threadInit()
-{
-    yarp::os::RateThread::threadInit();
+bool ContactSafetyThread::threadInit(){
 
     if(_objectFeatures == NULL){
         cout << _dbgtag << " failed to initialise -- objectFeatures points to NULL, aborting" << endl;
         return false;
     }
-    else
-    {
-        cout << "ContactSafetyThread configured" << endl;
+
+    // Reset the force baseline
+    if(!resetBaseline()){
+        cerr << _dbgtag << "failed to initialise, force baseline could not be calculated." << endl;
+        return false;
     }
 
-    /// Force torque//////
-
-    if(_forceTorque_in.open("/safeConact/" + _objectFeatures->getArm() + "_arm/forceTorque/analog:i"))
-    {
-        yarp::os::Network::connect( "/" + _objectFeatures->getRobotName() + "/" + _objectFeatures->getArm() + "_arm/analog:o",
-                                    "/safeConact/" + _objectFeatures->getArm() + "_arm/forceTorque/analog:i");
-    }
-
-    _forceTorque_out.open("/safeContact/" + _objectFeatures->getArm() + "_arm/forceTorque/resultant:o");
-
-
-    Bottle* forceTorqueData = _forceTorque_in.read(true);
-
-    resetBaseline();
-
-    ///icub/left_arm/analog:o
     return true;
 }
 
-
-void ContactSafetyThread::threadRelease()
-{
-    yarp::os::RateThread::threadRelease();
-}
 
 } // namespace objectExploration
