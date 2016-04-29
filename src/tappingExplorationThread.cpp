@@ -207,16 +207,17 @@ void TappingExplorationThread::calculateNewWaypoint()
 
 
         // Get the finger postion
-        _objectFeatures->getIndexFingertipPosition(fingertipPosition, _indexFingerEncoders);
+        _explorationFinger->getPosition(fingertipPosition, _indexFingerEncoders);
 
+        //_explorationFinger->getPosition()
         //Open the finger
         _curProximal = 10;
         moveIndexFingerBlocking(_curProximal, _curAbduction, 40);
 
 
         Vector prepDeltaPosition;
-        _objectFeatures->getIndexFingertipPosition(prepDeltaPosition);
-
+        //_objectFeatures->getIndexFingertipPosition(prepDeltaPosition);
+        _explorationFinger->getPosition(prepDeltaPosition);
         fingertipPosition[2] -= prepDeltaPosition[2];// + 0.003; // Take the current delta z out
 
         if(fingertipPosition[2] > 0.04)
@@ -253,7 +254,9 @@ void TappingExplorationThread::moveArmToWayPoint(yarp::sig::Vector pos, yarp::si
                 break;
             }
 
-            _objectFeatures->getIndexFingerAngles(indexFingerAngles);
+            _explorationFinger->getAngels(indexFingerAngles);
+
+            //_objectFeatures->getIndexFingerAngles(indexFingerAngles);
 
             if(indexFingerAngles[1] < 20 )
             {
@@ -270,15 +273,26 @@ void TappingExplorationThread::moveArmToWayPoint(yarp::sig::Vector pos, yarp::si
 
 void TappingExplorationThread::moveIndexFingerBlocking(double proximalAngle, double distalAngle, double abductionAngle, double speed)
 {
-    _objectFeatures->setIndexFingerAngles(proximalAngle, distalAngle, abductionAngle, speed);
-    while(!_objectFeatures->checkOpenHandDone() && !isStopping() )
+
+    _explorationFinger->setAngles(proximalAngle, distalAngle, speed);
+    _robotHand->setAbduction(abductionAngle, speed);
+
+    while(!_explorationFinger->checkMotionDone()){
         ;
+    }
+
+//TODO: should wait for abduction as well!
+
+
+    //_objectFeatures->setIndexFingerAngles(proximalAngle, distalAngle, abductionAngle, speed);
+//    while(!_objectFeatures->checkOpenHandDone() && !isStopping() )
+//        ;
 }
 
 void TappingExplorationThread::moveIndexFingerBlocking(double proximalAngle, double abductionAngle, double speed)
 {
     moveIndexFinger(proximalAngle, abductionAngle);
-    while(!_objectFeatures->checkOpenHandDone() && !isStopping() )
+    while(!_explorationFinger->checkMotionDone() && !isStopping() )
         ;
 }
 
@@ -289,7 +303,9 @@ void TappingExplorationThread::moveIndexFinger(double proximalAngle, double abdu
     //_curDistal = 90 - _curProximal;
     //logFingertipControl();
     //_objectFeatures->setProximalAngle(_curProximal);
-    _objectFeatures->setIndexFingerAngles(_curProximal, _curAbduction, speed);
+   // _objectFeatures->setIndexFingerAngles(_curProximal, _curAbduction, speed);
+    _robotHand->setAbduction(abductionAngle, speed);
+    _explorationFinger->setAngles(_curProximal, speed);
 
 }
 
@@ -354,15 +370,18 @@ void TappingExplorationThread::detectContact(double maxAngle)
     while((_objectFeatures->getContactForce()) < _forceThreshold)
     {
         // Get the angles
-        _objectFeatures->getIndexFingerAngles(indexFingerAngles);
+        _explorationFinger->getAngels(indexFingerAngles);
+
+        //_objectFeatures->getIndexFingerAngles(indexFingerAngles);
 
 
         if(isStopping() || (_contactState == STOP))
         {
             break;
         }
-        else if(_objectFeatures->getProximalJointAngle() > maxAngle * 0.95)
+        else if(indexFingerAngles[0] > maxAngle * 0.95) //Proximal angle
         {
+
             cout << "No contact detected." << endl;
             _contactState = CALCULATE_NEWWAYPONT;
             break;
@@ -373,7 +392,7 @@ void TappingExplorationThread::detectContact(double maxAngle)
             _contactState = CALCULATE_NEWWAYPONT;
             break;
         }
-        else if(indexFingerAngles[1] < 3)
+        else if(indexFingerAngles[1] < 3) // Middle angle
         {
             // We have contact without force
             cout << "No froce but angle exceeded the limit " << endl;
@@ -384,7 +403,8 @@ void TappingExplorationThread::detectContact(double maxAngle)
 
     // This is used later to move the relative to the contact
     // and prep position.
-    _objectFeatures->getIndexFingerEncoder(_indexFingerEncoders);
+    _explorationFinger->readEncoders(_indexFingerEncoders);
+    //_objectFeatures->getIndexFingerEncoder(_indexFingerEncoders);
 }
 
 bool TappingExplorationThread::confrimContact(double maxAngle)
@@ -404,9 +424,11 @@ bool TappingExplorationThread::confrimContact(double maxAngle)
         moveIndexFinger(angle, _curAbduction);
         //cout << "Moving finger" << endl;
 
-        while(!_objectFeatures->checkOpenHandDone())
+        while(!_explorationFinger->checkMotionDone())
         {
-            _objectFeatures->getIndexFingerAngles(indexFingerAngles);
+            _explorationFinger->getAngels(indexFingerAngles);
+
+            //_objectFeatures->getIndexFingerAngles(indexFingerAngles);
 
             if(_objectFeatures->getContactForce() >= _forceThreshold)
             {

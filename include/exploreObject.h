@@ -12,6 +12,7 @@
 #include <robotControl.h>
 #include <surfaceModelGP.h>
 #include <exploreGPSurfaceThread.h>
+#include "hand.h"
 
 using yarp::os::RFModule;
 
@@ -28,8 +29,8 @@ public:
 
 public: // Methods related to the robot control
     
-    bool setHomePose();
-    bool goToHomePose();
+    //bool setHomePose();
+    //bool goToHomePose();
     bool setStartingPose();
     bool goToStartingPose();
     bool setEndPose();
@@ -88,6 +89,8 @@ private: // Private members
     bool _exploreObjectOnOff;
     bool _exploreObjectValid;
     bool _stopModule;
+
+    Hand* _robotHand;
 
     std::string _dbgtag;
 };

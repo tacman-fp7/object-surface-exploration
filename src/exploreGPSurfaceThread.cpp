@@ -66,8 +66,8 @@ void ExploreGPSurfaceThread::run()
             TappingExplorationThread::approachObject();
 
 
-            _objectFeatures->getIndexFingertipPosition(fingertipPositon);
-
+            //_objectFeatures->getIndexFingertipPosition(fingertipPositon);
+            _explorationFinger->getPosition(fingertipPositon);
             // Check if it is high enough
             if(!(fabs(fingertipPositon[2]  + 0.15) > 10.0/1000))
             {
@@ -245,7 +245,7 @@ void ExploreGPSurfaceThread::maintainContact()
     // Get the fingertip position
     Vector indexFingerAngles;
     Vector fingertipPosition;
-    _objectFeatures->getIndexFingertipPosition(fingertipPosition);
+    _explorationFinger->getPosition(fingertipPosition);
 
     // set the current fingertip position as the next waypoint;
     Vector desiredArmPos, desiredArmOrient;
@@ -255,11 +255,12 @@ void ExploreGPSurfaceThread::maintainContact()
 
     _objectFeatures->fingerMovePosition(11, 0);
     _objectFeatures->fingerMovePosition(12, 10);
-    while (!_objectFeatures->checkOpenHandDone())
+    while (!_explorationFinger->checkMotionDone())
         ;
 
     // Get the current desired arm positionw with the new fingertip configuration
-    _objectFeatures->indexFinger2ArmPosition(fingertipPosition, desiredArmPos);
+    //_objectFeatures->indexFinger2ArmPosition(fingertipPosition, desiredArmPos);
+     _explorationFinger->toArmPosition(fingertipPosition, desiredArmPos);
 
     //desiredArmPos[2] -= 5.0/1000; // offset from the middle
     //moveArmToWayPoint(desiredArmPos, desiredArmOrient);
@@ -292,12 +293,13 @@ void ExploreGPSurfaceThread::maintainContact()
             _robotCartesianController->checkMotionDone(&motionDone);
         }
 
-        _objectFeatures->getIndexFingertipPosition(fingertipPosition);
+        _explorationFinger->getPosition(fingertipPosition);
         cout << "AF: " << fingertipPosition.toString() << endl;
 
 
 
-        _objectFeatures->getIndexFingerAngles(indexFingerAngles);
+        _explorationFinger->getAngels(indexFingerAngles);
+        //_objectFeatures->getIndexFingerAngles(indexFingerAngles);
 
         if(indexFingerAngles[1] > 3 )
         {
@@ -330,13 +332,14 @@ void ExploreGPSurfaceThread::maintainContact()
 
 
 
-    _objectFeatures->getArmPose(armPos, orient);
+   _robotHand->getPose(armPos, orient);
     _objectFeatures->getStartingPose(startingPos, startingOrient);
 
 
-    _objectFeatures->indexFinger2ArmPosition(startingPos, desiredArmPos);
+    _explorationFinger->toArmPosition(startingPos, desiredArmPos);
+    //_objectFeatures->indexFinger2ArmPosition(startingPos, desiredArmPos);
     armPos[2] = desiredArmPos[2] + 10.0/1000; // Move the fingertip up to avoid collisiont
-    _objectFeatures->moveArmToPosition(armPos, orient);
+   _robotHand->moveToPosition(armPos, orient);
 
 
     _curProximal = 10;
@@ -372,7 +375,8 @@ void ExploreGPSurfaceThread::moveArmToWayPoint(yarp::sig::Vector pos, yarp::sig:
                 break;
             }
 
-            _objectFeatures->getIndexFingerAngles(indexFingerAngles);
+            _explorationFinger->getAngels(indexFingerAngles);
+            //_objectFeatures->getIndexFingerAngles(indexFingerAngles);
 
             if(indexFingerAngles[1] < 3 )
             {
@@ -416,7 +420,9 @@ void ExploreGPSurfaceThread::setWayPoint_GP()
 
         //Get the current fingertip position
         //Vector tipPos, tipOrient;
-        _objectFeatures->indexFinger2ArmPosition(_nextSamplingPos, desiredArmPos);
+        _explorationFinger->toArmPosition(_nextSamplingPos, desiredArmPos);
+
+        //_objectFeatures->indexFinger2ArmPosition(_nextSamplingPos, desiredArmPos);
         _objectFeatures->setWayPointGP(desiredArmPos, desiredArmOrient);
     }
     else

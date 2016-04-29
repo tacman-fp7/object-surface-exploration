@@ -53,16 +53,16 @@ void ObjectFeaturesThread::run()
         return;
     }
 
-    double encoderValue;
+   /* double encoderValue;
     _armPoseMutex.lock();
     _armCartesianCtrl->getPose(_armPosition, _armOrientation);
     if(_armEncoder->getEncoder(_proximalJoint_index, &encoderValue))
-        _proximalJointAngle = encoderValue;
+        //_proximalJointAngle = encoderValue;
     else
         cerr << _dbgtag << "Invalid proximal joint value." << endl;
 
     _armPoseMutex.unlock();
-
+*/
 
 
     _tactileMutex.lock();
@@ -72,13 +72,14 @@ void ObjectFeaturesThread::run()
 
     // Read the fingertip position
     Vector fingertipPosition;
-    getIndexFingertipPosition(fingertipPosition);
+
+    //getIndexFingertipPosition(fingertipPosition);
     publishFingertipPosition(fingertipPosition);
 
     publishContactState(_contactState);
 }
 
-bool ObjectFeaturesThread::getArmPose(yarp::sig::Vector &pos, yarp::sig::Vector &orient)
+/*bool ObjectFeaturesThread::getArmPose(yarp::sig::Vector &pos, yarp::sig::Vector &orient)
 {
 
     bool ret;
@@ -89,7 +90,7 @@ bool ObjectFeaturesThread::getArmPose(yarp::sig::Vector &pos, yarp::sig::Vector 
     _armPoseMutex.unlock();
 
     return ret;
-}
+}*/
 
 bool ObjectFeaturesThread::fingerMovePosition(int joint, double angle, double speed)
 {
@@ -105,7 +106,7 @@ bool ObjectFeaturesThread::fingerMovePosition(int joint, double angle, double sp
 
 
 
-bool ObjectFeaturesThread::prepHand()
+/*bool ObjectFeaturesThread::prepHand()
 {
     int numAxes;
     bool ret = true;
@@ -138,10 +139,10 @@ bool ObjectFeaturesThread::prepHand()
 
     return true;
 
-}
+}*/
 
 
-bool ObjectFeaturesThread::openHand()
+/*bool ObjectFeaturesThread::openHand()
 {
     int numAxes;
 
@@ -169,9 +170,9 @@ bool ObjectFeaturesThread::openHand()
 
 
     return true;
-}
+}*/
 
-bool ObjectFeaturesThread::checkOpenHandDone()
+/*bool ObjectFeaturesThread::checkOpenHandDone()
 {
     bool retProximal;
     bool retDistal;
@@ -196,10 +197,10 @@ bool ObjectFeaturesThread::checkOpenHandDone()
             //ret = false;
 
     return (retProximal && retDistal && retAbduction);
-}
+}*/
 
 
-bool ObjectFeaturesThread::setIndexFingerAngles(double proximal, double distal, double abductionAngle, double speed)
+/*bool ObjectFeaturesThread::setIndexFingerAngles(double proximal, double distal, double abductionAngle, double speed)
 {
     bool ret = true;
     if(_armJointPositionCtrl != NULL )
@@ -233,23 +234,23 @@ bool ObjectFeaturesThread::setIndexFingerAngles(double proximal, double distal, 
         ret = false;
     }
     return ret;
-}
+}*/
 
-bool ObjectFeaturesThread::setIndexFingerAngles(double proximalAngle, double abductionAngle, double speed)
+/*bool ObjectFeaturesThread::setIndexFingerAngles(double proximalAngle, double abductionAngle, double speed)
 {
     double distalAngle = 90 - proximalAngle;
     return setIndexFingerAngles(proximalAngle, distalAngle, abductionAngle, speed);
-}
+}*/
 
-bool ObjectFeaturesThread::setProximalAngle(double angle){
+/*bool ObjectFeaturesThread::setProximalAngle(double angle){
 
     double distal = 90-angle;
     return setIndexFingerAngles(angle, distal, 40);
 
-}
+}*/
 
 
-void ObjectFeaturesThread::adjustIndexFinger()
+/*void ObjectFeaturesThread::adjustIndexFinger()
 {
 
     _armPoseMutex.lock();
@@ -260,19 +261,18 @@ void ObjectFeaturesThread::adjustIndexFinger()
     {
         cerr << _dbgtag << "Falied to move to the requsted positions." << endl;
     }
-}
+}*/
 
-bool ObjectFeaturesThread::openIndexFinger()
+/*bool ObjectFeaturesThread::openIndexFinger()
 {
     bool ret;
     ret = _armJointPositionCtrl->positionMove(12,0);
     ret = _armJointPositionCtrl->positionMove(11,0);
     return ret;
-}
+}*/
 
-void ObjectFeaturesThread::calibrateHand()
+/*void ObjectFeaturesThread::calibrateHand()
 {
-
 
 
 
@@ -330,17 +330,18 @@ void ObjectFeaturesThread::calibrateHand()
             _maxIndexMiddle << "\t" <<
             _maxIndexDistal << "\t" << endl;
 
-}
 
-void ObjectFeaturesThread::adjustMinMax(const double currentVal, double &min, double &max)
+}*/
+
+/*void ObjectFeaturesThread::adjustMinMax(const double currentVal, double &min, double &max)
 {
     if(currentVal > max)
         max = currentVal;
     if(currentVal < min)
         min = currentVal;
-}
+}*/
 
-bool ObjectFeaturesThread::getIndexFingerAngles(yarp::sig::Vector &angles)
+/*bool ObjectFeaturesThread::getIndexFingerAngles(yarp::sig::Vector &angles)
 {
     Vector fingerEncoders;
     angles.resize(3);
@@ -363,9 +364,9 @@ bool ObjectFeaturesThread::getIndexFingerAngles(yarp::sig::Vector &angles)
     angles[2] = 90 * (1 - (fingerEncoders[2] - _minIndexDistal) / (_maxIndexDistal - _minIndexDistal) );
 
     return ret;
-}
+}*/
 
-bool ObjectFeaturesThread::getIndexFingerEncoder(yarp::sig::Vector &encoderValues)
+/*bool ObjectFeaturesThread::getIndexFingerEncoder(yarp::sig::Vector &encoderValues)
 {
 
     bool ret = false;
@@ -389,9 +390,9 @@ bool ObjectFeaturesThread::getIndexFingerEncoder(yarp::sig::Vector &encoderValue
 
     //cout << "Encoders: " << encoderValues.toString() << endl;
     return ret;
-}
+}*/
 
-bool ObjectFeaturesThread::getIndexFingertipPosition(yarp::sig::Vector &position)
+/*bool ObjectFeaturesThread::getIndexFingertipPosition(yarp::sig::Vector &position)
 {
 
     bool ret = true;
@@ -404,13 +405,13 @@ bool ObjectFeaturesThread::getIndexFingertipPosition(yarp::sig::Vector &position
     return ret;
 
 
-}
+}*/
 
 
-bool ObjectFeaturesThread::getIndexFingertipPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders)
+/*bool ObjectFeaturesThread::getIndexFingertipPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders)
 {
 
-    // I am using an hybrid fingertip position forward kinematics. Fristly, I use the the actual encoder
+   // I am using an hybrid fingertip position forward kinematics. Fristly, I use the the actual encoder
     // data for the last three joints. Secondly, the behaviour of the icubFinger position estimation
     // is a little unpredictable, so I am transforming the fingertip position into the robot coordingates
     // myself.
@@ -464,12 +465,13 @@ bool ObjectFeaturesThread::getIndexFingertipPosition(yarp::sig::Vector &position
     Vector retMat = yarp::math::operator *(T_rotoTrans, tip_x);
     position = retMat.subVector(0,2);
     //cout << "Finger position: " << position.toString()  << endl;
-}
+
+}*/
 
 
 
 
-bool ObjectFeaturesThread::changeOrient(double newOrient)
+/*bool ObjectFeaturesThread::changeOrient(double newOrient)
 {
     Vector pos, orient;
     pos.resize(3);
@@ -483,10 +485,10 @@ bool ObjectFeaturesThread::changeOrient(double newOrient)
     _armCartesianCtrl->goToPose(pos, orient);
 
 
-}
+}*/
 
 
-bool ObjectFeaturesThread::indexFinger2ArmPosition(Vector &fingertipPosition, Vector &retArmpPosition)
+/*bool ObjectFeaturesThread::indexFinger2ArmPosition(Vector &fingertipPosition, Vector &retArmpPosition)
 {
 
     bool ret = true;
@@ -553,7 +555,7 @@ bool ObjectFeaturesThread::indexFinger2ArmPosition(Vector &fingertipPosition, Ve
 
     return ret;
 
-}
+}*/
 
 /*
 bool ObjectFeaturesThread::getFingertipPose(yarp::sig::Vector &pos, yarp::sig::Vector &orient)
@@ -633,72 +635,10 @@ bool ObjectFeaturesThread::getFingertipPose(yarp::sig::Vector &pos, yarp::sig::V
 */
 /// Urgh
 
-void ObjectFeaturesThread::writeToFingerController(std::string command)
-{
-    //Bottle rpcCommand, rpcResponse;
-    //rpcCommand.addString(command);
 
-    Bottle &message = _fingerController_port.prepare();
-    message.clear();
-
-    message.clear();
-
-    //// Copied from Massimo
-    if (!command.empty()){
-
-        char *commandChar = new char[command.length() + 1];
-        strcpy(commandChar,command.c_str());
-        std::vector<string> wordList;
-        char *target;
-
-        target = strtok(commandChar," ");
-        while(target != NULL){
-            wordList.push_back(target);
-            target = strtok(NULL," ");
-        }
-
-        for(size_t i = 0; i < wordList.size(); i++){
-            message.add(yarp::os::Value(wordList[i]));
-        }
-
-    }
-
-
-    _fingerController_port.writeStrict();
-
-}
 
 /////////// Accessor and mutators ///////////
 
-Vector ObjectFeaturesThread::getPosition()
-{ 
-    _armPoseMutex.lock();
-    Vector temp = _armPosition;
-    _armPoseMutex.unlock();
-    return temp;
-
-}
-
-bool ObjectFeaturesThread::getHomePose ( Vector& pos, Vector& orient )
-{
-    if(_homePose_isValid)
-    {
-        pos = _homePosition;
-        orient = _homeOrientation;
-    }
-    else
-        cerr << "Home pose is invalid" << endl;
-
-    return _homePose_isValid;
-}
-
-void ObjectFeaturesThread::setHomePose ( Vector& pos, Vector& orient )
-{
-    _homePosition = pos;
-    _homeOrientation = orient;
-    _homePose_isValid = true;
-    printPose(pos, orient);
-}
 
 
 void ObjectFeaturesThread::setEndPose ( Vector& pos, Vector& orient )
@@ -741,14 +681,14 @@ bool ObjectFeaturesThread::getDesiredEndPose ( Vector& pos, Vector& orient )
     return _desiredEndPose_isValid;
 }
 
-bool ObjectFeaturesThread::moveArmToPosition(yarp::sig::Vector pos, yarp::sig::Vector orient)
+/*bool ObjectFeaturesThread::moveArmToPosition(yarp::sig::Vector pos, yarp::sig::Vector orient)
 {
     bool ret;
     ret =  _armCartesianCtrl->goToPoseSync(pos, orient);
     _armCartesianCtrl->waitMotionDone(0.1, 5);
     return ret;
 
-}
+}*/
 
 bool ObjectFeaturesThread::setWayPointGP(yarp::sig::Vector pos, yarp::sig::Vector orient)
 {
@@ -907,13 +847,13 @@ double ObjectFeaturesThread::getContactForce()
 }
 
 
-Vector ObjectFeaturesThread::getOrientation()
+/*Vector ObjectFeaturesThread::getOrientation()
 {
     _armPoseMutex.lock();
     Vector temp = _armOrientation;
     _armPoseMutex.unlock();
     return temp;
-}
+}*/
 
 
 
@@ -958,33 +898,11 @@ bool ObjectFeaturesThread::threadInit()
         cerr << "/" + _moduleName + "/skin/" + _arm + "_hand/" + _whichFinger + "/force-CoP:i" << endl << endl;
     }
 
-    /// Connect to the finger controller RPC port
-
-    if(!_fingerController_port.open("/" + _moduleName + "/" + _arm + "_hand/" + _whichFinger + "/command:o"))
-    {
-        ret = false;
-        cerr << _dbgtag << "Failed to open local fingerController port" << endl;
-        _isExplorationValid = false;
-    }
-
-    /*if(!Network::connect("/" + _moduleName + "/" + _arm + "_hand/" + _whichFinger + "/command:o",
-                         _fingerControllerPortName))
-    {
-        cerr << _dbgtag << "Failed to connect" << endl;
-        cerr << "/" + _moduleName + "/" + _arm + "_hand/" + _whichFinger + "/command:o" << endl;
-        cerr << _fingerControllerPortName << endl << endl;
-        _isExplorationValid = false;
-    } */
 
 
-    /////////////////////////////////////////
-    if(_fingerEncoders.open("/" + _moduleName + "/" + _arm + "_hand/analog:i"))
-    {
-        Network::connect( "/" + _robotName + "/" + _arm + "_hand/analog:o",
-                          "/" + _moduleName + "/" + _arm + "_hand/analog:i");
-    }
 
-    //calibrateFinger();
+
+
 
     _contactStatePort_out.open("/object-exploration/contact/state:o");
     _fingertipPosition_out.open("/object-exploration/fingertip/position:o");
@@ -1079,34 +997,34 @@ ObjectFeaturesThread::~ObjectFeaturesThread()
     _fingertipPosition_out.close();
 }
 
-void ObjectFeaturesThread::setArmController_cart(yarp::dev::ICartesianControl *cartesianCtrl)
+/*void ObjectFeaturesThread::setArmController_cart(yarp::dev::ICartesianControl *cartesianCtrl)
 {
     _armCartesianCtrl = cartesianCtrl;
-}
+}*/
 
-void ObjectFeaturesThread::setArmController_jnt(yarp::dev::IEncoders *encoder, yarp::dev::IPositionControl *jointCtrl)
+/*void ObjectFeaturesThread::setArmController_jnt(yarp::dev::IEncoders *encoder, yarp::dev::IPositionControl *jointCtrl)
 {
 
     _armEncoder = encoder;
     _armJointPositionCtrl = jointCtrl;
-}
+}*/
 
-void ObjectFeaturesThread::setArmController_mode(yarp::dev::IControlMode2 *armJointCtrlmode)
+/*void ObjectFeaturesThread::setArmController_mode(yarp::dev::IControlMode2 *armJointCtrlmode)
 {
     _armJointModeCtrl = armJointCtrlmode;
-}
+}*/
 
 ObjectFeaturesThread::ObjectFeaturesThread ( int period, ResourceFinder rf ) : RateThread ( period )
 {
 
     // Some sane and safe default values
-    _trajectoryTime = 5; // By default take 5 seconds to complete a trajectory
-    _maintainContactPeriod = 20;
-    _readTactilePeriod = 20;
+    //_trajectoryTime = 5; // By default take 5 seconds to complete a trajectory
+    //_maintainContactPeriod = 20;
+    //_readTactilePeriod = 20;
     _explorationThreadPeriod = 20;
     _isExplorationValid = true; // assume true,
 
-    _desiredFroce = 0;
+    //_desiredFroce = 0;
 
     _desiredStartingPose_isValid = false;
     _desiredStartingPosition.resize(3); // x,y,z position
@@ -1132,24 +1050,24 @@ ObjectFeaturesThread::ObjectFeaturesThread ( int period, ResourceFinder rf ) : R
     _contactForce = 0;
     _rf = rf;
 
-    _armCartesianCtrl = NULL;
-    _armEncoder = NULL;
+    //_armCartesianCtrl = NULL;
+    //_armEncoder = NULL;
     _armJointPositionCtrl = NULL;
 
-    _proximalJointAngle = 0;
-    _proximalJoint_index = 11;
+    //_proximalJointAngle = 0;
+    //_proximalJoint_index = 11;
 
     //_zMin = 0;
     //_zMax = 0;
 
     // TODO: Put it in a config file!
-    _maxIndexProximal = 235;
+ /*   _maxIndexProximal = 235;
     _minIndexProximal = 14;
     _maxIndexMiddle = 215;
     _minIndexMiddle = 20;
     _maxIndexDistal = 250;
     _minIndexDistal = 24;
-
+*/
 
 
     ////////////// read the parameters from the config file ///////////////
@@ -1187,9 +1105,8 @@ bool ObjectFeaturesThread::readParameters()
         _robotName = robotParameters.check("robotName", Value("icubSim")).asString();
         _controller = robotParameters.check("controller", Value("Error")).asString();
         _controllerName = robotParameters.check("controllerName", Value("Error")).asString();
-        _trajectoryTime = robotParameters.check("trajectoryTime", Value(5)).asInt();
-        _fingerControllerPortName = robotParameters.check("fingerControllerPortName",
-                                                          Value("/plantIdentification/cmd:i")).asString();
+        //_trajectoryTime = robotParameters.check("trajectoryTime", Value(5)).asInt();
+
         _whichFinger = robotParameters.check("whichFinger", Value("left_index")).asString();
 
     }
@@ -1200,9 +1117,9 @@ bool ObjectFeaturesThread::readParameters()
     Bottle* endPose;
     if(!explorationParameters.isNull())
     {
-        _maintainContactPeriod = explorationParameters.check("maintainContactPeriod", Value(20)).asInt();
-        _desiredFroce = explorationParameters.check("desiredFroce", Value(0)).asDouble();
-        _readTactilePeriod = explorationParameters.check("readTactilePeriod", Value(20)).asInt();
+        //_maintainContactPeriod = explorationParameters.check("maintainContactPeriod", Value(20)).asInt();
+        //_desiredFroce = explorationParameters.check("desiredFroce", Value(0)).asDouble();
+        //_readTactilePeriod = explorationParameters.check("readTactilePeriod", Value(20)).asInt();
         _explorationThreadPeriod = explorationParameters.check("explorationThreadPeriod", Value(20)).asInt();
         startingPose = explorationParameters.find("startingPose").asList();
         endPose = explorationParameters.find("endPose").asList();
@@ -1246,7 +1163,7 @@ bool ObjectFeaturesThread::readParameters()
     cout << "Arm: " << _arm << endl;
     cout << "Controller: " << _controller << endl;
     cout << "Controller name: " << _controllerName << endl;
-    cout << "Trajectory time: " << _trajectoryTime << endl;
+    //cout << "Trajectory time: " << _trajectoryTime << endl;
 
     if(_desiredStartingPose_isValid)
     {
@@ -1261,18 +1178,17 @@ bool ObjectFeaturesThread::readParameters()
         cout << "End orientation: " << _desiredEndOrientation.toString() << endl;
     }
 
-    cout << "Maintain contact thread period: " << _maintainContactPeriod << endl;
-    cout << "Desired force: " << _desiredFroce << endl;
-    cout << "Read tactile sensors thread period: " << _readTactilePeriod << endl;
+   // cout << "Maintain contact thread period: " << _maintainContactPeriod << endl;
+    //cout << "Desired force: " << _desiredFroce << endl;
+    //cout << "Read tactile sensors thread period: " << _readTactilePeriod << endl;
     cout << "Exploration thread period: " << _explorationThreadPeriod << endl;
     cout << endl;
 
-    if(_whichFinger.compare(_whichFinger.size()-5, 5, "index")==0)
+    /*if(_whichFinger.compare(_whichFinger.size()-5, 5, "index")==0)
         _proximalJoint_index = 11;
     else
         _proximalJoint_index = 9;
-
-
+*/
 
 }
 
@@ -1309,25 +1225,22 @@ const string& ObjectFeaturesThread::getArm()
     return _arm;
 }
 
-const string& ObjectFeaturesThread::getControllerName()
-{
-    return _controllerName;
-}
 
-const string& ObjectFeaturesThread::getControllerType()
+
+/*const string& ObjectFeaturesThread::getControllerType()
 {
     return _controller;
-}
+}*/
 
 const string& ObjectFeaturesThread::getRobotName()
 {
     return _robotName;
 }
 
-const int& ObjectFeaturesThread::getTrajectoryTime()
+/*const int& ObjectFeaturesThread::getTrajectoryTime()
 {
     return _trajectoryTime;
-}
+}*/
 
 const int& ObjectFeaturesThread::getExplorationThreadPeriod()
 {
@@ -1336,9 +1249,9 @@ const int& ObjectFeaturesThread::getExplorationThreadPeriod()
 
 
 
-const double& ObjectFeaturesThread::getDesiredForce()
+/*const double& ObjectFeaturesThread::getDesiredForce()
 {
     return _desiredFroce;
-}
+}*/
 
 } // namespace objectExploration

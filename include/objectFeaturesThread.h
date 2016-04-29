@@ -45,7 +45,7 @@ using yarp::os::RpcClient;
     INDEX_DISTAL = 12
 };*/
 
-struct reachableSpace
+/*struct reachableSpace
 {
     double minX;
     double maxX;
@@ -54,86 +54,66 @@ struct reachableSpace
     double minZ;
     double maxZ;
     double disasterX;
-};
+};*/
 
-typedef struct reachableSpace reachableSpace;
+//typedef struct reachableSpace reachableSpace;
 
 class ObjectFeaturesThread: public RateThread
 {
-private:
-    void adjustMinMax(const double currentVal, double &min, double &max);
-
 public:
     ObjectFeaturesThread(int period, ResourceFinder rf);
     ~ObjectFeaturesThread();
-    //double getFingerForce(int nFinger){ return _contactForce;}
     void run();
     bool threadInit();
     void threadRelease();
-    //////// accessros and mutators ////
-    /// \brief getPosition
-    /// \return
-    ///
-    bool getIndexFingerAngles(yarp::sig::Vector &angles);
-    Vector getPosition();
-    Vector getOrientation();
+
+
     double getContactForce();
-    bool getArmPose(Vector& pos, Vector& orient);
+
+
+
     void setEndPose(Vector& pos, Vector& orient);
     void setStartingPose(Vector& pos, Vector& orient);
     bool getDesiredEndPose(Vector& pos, Vector& orient);
     bool getStartingPose(Vector& pos, Vector& orient);
     bool getEndingPose(Vector& pos, Vector& orient);
-    void setHomePose(Vector& pos, Vector& orient);
-    bool getHomePose(Vector& pos, Vector& orient);
+
     bool setWayPoint(Vector pos, Vector orient);
     bool setWayPointGP(Vector pos, Vector orient);
     bool getWayPoint(Vector& pos, Vector& orient, bool invalidateWayPoint = true);
-    bool readParameters();
+
+
     const string& getArm();
     const string& getRobotName();
-    const string& getControllerType();
-    const string& getControllerName();
-    const int& getTrajectoryTime();
-    //const int& getMaintainContactPeriod();
+
+
     const int& getExplorationThreadPeriod();
-    const double& getDesiredForce();
-    void writeToFingerController(std::string command);
+
     void setArmController_jnt(yarp::dev::IEncoders *encoder, yarp::dev::IPositionControl *jointCtrl);
     void setArmController_cart(yarp::dev::ICartesianControl * cartesianCtrl);
     void setArmController_mode(yarp::dev::IControlMode2 *armJointCtrlmode);
     bool isExplorationValid(){return _isExplorationValid;}
-    double getProximalJointAngle(){return _proximalJointAngle;}
-    bool openHand();
-    bool prepHand();
-    //bool maintainContactPose();
-    void adjustIndexFinger();
-    bool getIndexFingerEncoder(Vector &encoderValues);
-    bool getIndexFingertipPosition(Vector &position);
-    bool getIndexFingertipPosition(Vector &position, Vector &fingerEncoders);
-    bool indexFinger2ArmPosition(Vector &fingertipPosition, Vector &retArmpPosition);
-    bool changeOrient(double orient);
+    //double getProximalJointAngle(){return _proximalJointAngle;}
+
+
     void publishContactState(int contactState);
     void publishFingertipPosition(Vector pos);
-    bool openIndexFinger();
+
     bool prepGP();
-    void calibrateHand();
-    bool moveArmToPosition(Vector pos, Vector orient);
+
+    //bool moveArmToPosition(Vector pos, Vector orient);
     bool fingerMovePosition(int joint, double angle, double speed = 40); /////
     void updateContactState(int contactState){_contactState = contactState;
 
                                               publishContactState(_contactState);}
 
 
-    bool setProximalAngle(double angle);
 
-    bool setIndexFingerAngles(double proximalAngle, double abductionAngle, double speed);
-    bool setIndexFingerAngles(double proximal, double distal, double abductionAngle, double speed);
     objectExploration::SurfaceModelGP* getGPSurfaceModel(){
         return _objectSurfaceModelGP;
     }
 
-    bool checkOpenHandDone();
+    //bool checkOpenHandDone();
 
 
 
@@ -141,6 +121,8 @@ private:
     void printPose(Vector& pos, Vector& prient);
     void updateRobotReachableSpace();
     void publishFingertipControl(Bottle controlCommand);
+    bool readParameters();
+
 protected:
     ResourceFinder _rf;
 
@@ -152,29 +134,21 @@ protected:
     string _moduleName;
     string _whichFinger;
 
-    int _trajectoryTime;
+//    int _trajectoryTime;
 
 
-    //////// Finger encoders //////
 
-    BufferedPort<Bottle> _fingerEncoders;
-    double _maxIndexProximal;
-    double _minIndexProximal;
-    double _maxIndexMiddle;
-    double _minIndexMiddle;
-    double _maxIndexDistal;
-    double _minIndexDistal;
 
     int _contactState;
 
     ////// Exploration parameters ///////
-    int _maintainContactPeriod;
-    int _readTactilePeriod;
+    //int _maintainContactPeriod;
+    //int _readTactilePeriod;
     int _explorationThreadPeriod;
     bool _isExplorationValid;
 
-    double _desiredFroce;
-    Mutex _desiredForceMutex;
+   //double _desiredFroce;
+   // Mutex _desiredForceMutex;
 
 
     bool _desiredStartingPose_isValid;
@@ -192,18 +166,13 @@ protected:
     Vector _homeOrientation;
 
     //////// Object Features ////////////
-    //BufferedPort<Bottle> _tactilePort;
-    // BufferedPort<Bottle> _armPositionPort;
+
     Mutex _tactileMutex;
-    //double _tactileSum;
     BufferedPort<Bottle> _contactForceCoPPort;
     double _contactForce;
 
 
-    /// Using Massimo's controller to maintainContact
-    //RpcClient _fingerController_RPC;
-    BufferedPort<Bottle> _fingerController_port;
-    string _fingerControllerPortName;
+
 
     /// Clean them a little later /////
 
@@ -220,19 +189,14 @@ protected:
     Vector _wayPointPos;
     Vector _wayPointOrient;
 
-    std::string _dbgtag;// = "objectFeaturesThread.cpp: ";
+    std::string _dbgtag;
 
     //// The port to read the joint information
 
-    yarp::dev::IEncoders *_armEncoder;
-    yarp::dev::ICartesianControl *_armCartesianCtrl;
+
     yarp::dev::IPositionControl *_armJointPositionCtrl;
-    yarp::dev::IControlMode2 *_armJointModeCtrl;
 
-    double _proximalJointAngle;
-    int _proximalJoint_index;
 
-    //BufferedPort<Bottle> _armJointPort_in;
 
     BufferedPort<Bottle> _contactStatePort_out;
     BufferedPort<Bottle> _fingertipPosition_out;

@@ -145,7 +145,7 @@ void GPExplorationThread::setWayPoint_GP_validate()
     if( _surfaceModel->getNextValidationPosition(validationPosition))
     {
 
-        _objectFeatures->indexFinger2ArmPosition(validationPosition, armPos);
+        _explorationFinger->toArmPosition(validationPosition, armPos);
         ret = _objectFeatures->setWayPointGP(armPos, orient);
     }
     else{
@@ -192,7 +192,7 @@ void GPExplorationThread::setWayPoint_GP_Refine()
     {
         //Get the current fingertip position
         //Vector tipPos, tipOrient;
-        _objectFeatures->indexFinger2ArmPosition(refinementPosition, armPos);
+        _explorationFinger->toArmPosition(refinementPosition, armPos);
 
         /*maxVariancePos[0] += pos[0];
         maxVariancePos[1] -= pos[1];
@@ -233,7 +233,7 @@ void GPExplorationThread::maintainContact_GP_validatePosition(){
     // Store the contact location
 
     Vector fingertipPosition;
-    _objectFeatures->getIndexFingertipPosition(fingertipPosition);
+    _explorationFinger->getPosition(fingertipPosition);
 
     if(_surfaceModel->validatePosition(fingertipPosition)){
         _surfaceModel->trainModel();
@@ -301,7 +301,7 @@ void GPExplorationThread::maintainContact()
 
 
     Vector fingertipPosition;
-    _objectFeatures->getIndexFingertipPosition(fingertipPosition);
+    _explorationFinger->getPosition(fingertipPosition);
 
     _zPoints.push_back(fingertipPosition[2]);
 
@@ -311,7 +311,7 @@ void GPExplorationThread::maintainContact()
 
         if(TappingExplorationThread::confrimContact(30))
         {
-            _objectFeatures->getIndexFingertipPosition(fingertipPosition);
+            _explorationFinger->getPosition(fingertipPosition);
             _zPoints.push_back(fingertipPosition[2]);
         }
         else
@@ -377,7 +377,7 @@ void GPExplorationThread::maintainContact()
     if(_sampleSurface)
     {
 
-        _objectFeatures->getIndexFingertipPosition(fingertipPosition);
+        _explorationFinger->getPosition(fingertipPosition);
         cout << "Finger position: " << fingertipPosition[2] + 0.15 << endl;
         if((fabs(fingertipPosition[2]  + 0.15) > 15.0/1000))
         {
@@ -415,7 +415,7 @@ bool GPExplorationThread::confirmWiggleContact(double maxAngle)
     // Move the finger s
     _objectFeatures->fingerMovePosition(INDEX_PROXIMAL, 0, 50);
     _objectFeatures->fingerMovePosition(INDEX_DISTAL, 0, 50);
-    while (!_objectFeatures->checkOpenHandDone())
+    while (!_explorationFinger->checkMotionDone())
         ;
 
 
@@ -428,7 +428,7 @@ bool GPExplorationThread::confirmWiggleContact(double maxAngle)
         _objectFeatures->fingerMovePosition(INDEX_PROXIMAL, angle, 10);
 
 
-        while(!_objectFeatures->checkOpenHandDone())
+        while(!_explorationFinger->checkMotionDone())
         {
 
             //cout << "Force: " << _objectFeatures->getContactForce() << endl;
@@ -461,7 +461,8 @@ bool GPExplorationThread::confirmWiggleContact(double maxAngle)
 
     }
 
-    if(_objectFeatures->getIndexFingerAngles(indexFingerAngles))
+    //if(_objectFeatures->getIndexFingerAngles(indexFingerAngles))
+    if(_explorationFinger->getAngels(indexFingerAngles))
     {
         if (indexFingerAngles[0] > 2)
             contact = false;
@@ -483,7 +484,7 @@ void GPExplorationThread::sampleSurface_wiggleFingers()
     // Get the fingertip position
     Vector indexFingerAngles;
     Vector fingertipPosition;
-    _objectFeatures->getIndexFingertipPosition(fingertipPosition);
+    _explorationFinger->getPosition(fingertipPosition);
 
 
     Vector desiredArmPos, desiredArmOrient;
@@ -501,7 +502,7 @@ void GPExplorationThread::sampleSurface_wiggleFingers()
     //    ;
 
     // Get the current desired arm positionw with the new fingertip configuration
-    _objectFeatures->indexFinger2ArmPosition(fingertipPosition, desiredArmPos);
+    _explorationFinger->toArmPosition(fingertipPosition, desiredArmPos);
 
     desiredArmPos[0] += 7.0/1000; // This is a hack to adjust for the position being in the middle of the finger
     _curProximal = 0;
@@ -523,7 +524,7 @@ void GPExplorationThread::sampleSurface_wiggleFingers()
     // Read the current arm position, it may have stopped before reaching
     // the desired position
     Vector dummy;
-    _objectFeatures->getArmPose(desiredArmPos, dummy);
+    _robotHand->getPose(desiredArmPos, dummy);
     desiredArmPos[2] -= 2.0/1000; // move just a little  more to adjust for the 15 degree angle
 
     bool contact = false;
@@ -546,7 +547,8 @@ void GPExplorationThread::sampleSurface_wiggleFingers()
         //     ;
 
         //cout << "confirming contact" << endl;
-        _objectFeatures->moveArmToPosition(desiredArmPos, desiredArmOrient);
+        //_objectFeatures->moveArmToPosition(desiredArmPos, desiredArmOrient);
+        _robotHand->moveToPosition(desiredArmPos, desiredArmOrient);
 
         bool done = false;
         while( !done && !isStopping())
@@ -717,7 +719,7 @@ void GPExplorationThread::sampleSurface_wiggleFingers()
     _objectFeatures->getStartingPose(startingPos, startingOrient);
 
 
-    _objectFeatures->indexFinger2ArmPosition(startingPos, desiredArmPos);
+    _explorationFinger->toArmPosition(startingPos, desiredArmPos);
     armPos[2] = desiredArmPos[2] + 10.0/1000; // Move the fingertip up to avoid collisiont
     _objectFeatures->moveArmToPosition(armPos, orient);
 
@@ -742,7 +744,8 @@ void GPExplorationThread::moveArmToWayPoint(yarp::sig::Vector pos, yarp::sig::Ve
                 break;
             }
 
-            _objectFeatures->getIndexFingerAngles(indexFingerAngles);
+            _explorationFinger->getAngels(indexFingerAngles);
+            //_objectFeatures->getIndexFingerAngles(indexFingerAngles);
 
             if(indexFingerAngles[1] < 2 )
             {
@@ -929,14 +932,14 @@ void GPExplorationThread::moveArmUp()
     TappingExplorationThread::moveIndexFinger(10, _curAbduction);
 
 
-    _objectFeatures->getArmPose(armPos, orient);
+    _robotHand->getPose(armPos, orient);
     _objectFeatures->getStartingPose(startingPos, startingOrient);
 
     Vector desiredArmPos;
-    _objectFeatures->indexFinger2ArmPosition(startingPos, desiredArmPos);
+    _explorationFinger->toArmPosition(startingPos, desiredArmPos);
     armPos[2] = desiredArmPos[2]; // Move the fingertip up to avoid collisiont
-    _objectFeatures->moveArmToPosition(armPos, orient);
-
+    //_objectFeatures->moveArmToPosition(armPos, orient);
+    _robotHand->moveToPosition(armPos, orient);
 
     cout << "Waiting for force to return to normal value...";
     cout.flush();
@@ -966,7 +969,7 @@ void GPExplorationThread::moveArmUp()
 void GPExplorationThread::makeSingleContact(Vector pos, Vector orient)
 {
     Vector desiredArmPos;
-    _objectFeatures->indexFinger2ArmPosition(pos, desiredArmPos);
+    _explorationFinger->toArmPosition(pos, desiredArmPos);
 
     _objectFeatures->setWayPointGP(desiredArmPos, orient);
     _contactState = APPROACH_OBJECT;
@@ -1003,7 +1006,7 @@ void GPExplorationThread::makeSingleContact(Vector pos, Vector orient)
             //maintainContact();
 
 
-            _objectFeatures->getIndexFingertipPosition(fingertipPosition);
+            _explorationFinger->getPosition(fingertipPosition);
             _minZPoints.push_back(fingertipPosition[2]);
             TappingExplorationThread::maintainContact();
             //_contactState = STOP;
@@ -1037,13 +1040,14 @@ void GPExplorationThread::makeSingleContact(Vector pos, Vector orient)
 
     //_objectFeatures->prepHand();
 
-    _objectFeatures->getArmPose(armPos, armOrient);
+    _robotHand->getPose(armPos, armOrient);
     _objectFeatures->getStartingPose(startingPos, startingOrient);
 
 
-    _objectFeatures->indexFinger2ArmPosition(startingPos, desiredArmPos);
+    _explorationFinger->toArmPosition(startingPos, desiredArmPos);
     armPos[2] = desiredArmPos[2]; // Move the fingertip up to avoid collisiont
-    _objectFeatures->moveArmToPosition(armPos, orient);
+   // _objectFeatures->moveArmToPosition(armPos, orient);
+    _robotHand->moveToPosition(armPos, orient);
 
     _curProximal = 10;
     //   _curDistal = 90 - _curProximal;
@@ -1076,7 +1080,7 @@ void GPExplorationThread::setWayPoint_GP()
     {
         //Get the current fingertip position
         //Vector tipPos, tipOrient;
-        _objectFeatures->indexFinger2ArmPosition(maxVariancePos, armPos);
+        _explorationFinger->toArmPosition(maxVariancePos, armPos);
 
         /*maxVariancePos[0] += pos[0];
         maxVariancePos[1] -= pos[1];

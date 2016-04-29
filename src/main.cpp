@@ -34,12 +34,14 @@ int main(int argc, char *argv[])
 
 
 
-  objectExploration::Hand robotHand(rf);
+  //objectExploration::Hand robotHand(rf);
 
-  while(true)
-      ;
+ // robotHand.prepare();
 
-  return 1;
+  //while(true)
+   //   ;
+
+  //return 1;
 
   /////////////////////////////////////
   /// \brief surfModel

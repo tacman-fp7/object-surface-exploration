@@ -45,21 +45,21 @@ bool ExploreObject::refineModelDisable()
 bool ExploreObject::openHand()
 {
 
-    return _objectFeaturesThread->openHand();
-    while (!_objectFeaturesThread->checkOpenHandDone() && !isStopping())
-        ;
+    return _robotHand->open();
+
+
 }
 
 bool ExploreObject::prepHand()
 {
-    return _objectFeaturesThread->prepHand();
-    while (!_objectFeaturesThread->checkOpenHandDone() && !isStopping())
-        ;
+    return _robotHand->prepare();
+
+
 }
 
 bool ExploreObject::calibrateHand()
 {
-    _objectFeaturesThread->calibrateHand();
+    _robotHand->calibrate();
 
     return true;
 }
@@ -75,10 +75,10 @@ bool ExploreObject::fingerSetAngle(const double angle)
 
 
     //_objectFeaturesThread->getFingertipPose(pos, orient);
-    _objectFeaturesThread->getIndexFingertipPosition(finger_pos);
+    //_objectFeaturesThread->getIndexFingertipPosition(finger_pos);
 
     //cout << "Finger: " << finger_pos.toString() << endl;
-    return _objectFeaturesThread->setProximalAngle(angle);
+    //return _objectFeaturesThread->setProximalAngle(angle);
 }
 
 ExploreObject::ExploreObject(yarp::os::ResourceFinder& rf)
@@ -163,7 +163,10 @@ ExploreObject::~ExploreObject()
 
 bool ExploreObject::goToStartingPose()
 {
-    Vector desiredFingerPos;
+
+    return _robotHand->goToStartingPose();
+
+    /*Vector desiredFingerPos;
     Vector desiredArmPos, desiredArmOrient;
     Vector currentArmPos, currentArmOrient;
 
@@ -183,13 +186,13 @@ bool ExploreObject::goToStartingPose()
         return true;
     }
 
-    return false;
+    return false;*/
 
 }
 
 
 
-bool ExploreObject::goToHomePose()
+/*bool ExploreObject::goToHomePose()
 {
     Vector pos, orient;
     Vector armPos, armOrient;
@@ -206,10 +209,14 @@ bool ExploreObject::goToHomePose()
         return true;
     }
     return false;
-}
+}*/
 
 bool ExploreObject::goToEndPose()
 {
+
+    return _robotHand->goToEndPose();
+
+    /*
     Vector desiredFingerPos;
     Vector desiredArmPos, desiredArmOrient;
     Vector currentArmPos, currentArmOrient;
@@ -227,7 +234,7 @@ bool ExploreObject::goToEndPose()
         return true;
     }
     return false;
-
+*/
 
 }
 
@@ -241,15 +248,15 @@ bool ExploreObject::setStartingPose()
     return true;
 }
 
-bool ExploreObject::setHomePose()
+/*bool ExploreObject::setHomePose()
 {
     Vector pos, orient;
     pos.resize(3); // x,y,z position
     orient.resize(4); // x,y,z,w prientation
-    _armCartesianController->getPose(pos, orient);
-    _objectFeaturesThread->setHomePose(pos, orient);
+    //_robotHand->getPose(pos, orient);
+    //_objectFeaturesThread->setHomePose(pos, orient);
     return true;
-}
+}*/
 
 bool ExploreObject::setEndPose()
 {
@@ -286,16 +293,16 @@ bool ExploreObject::exploreGPSurface(const std::string& objectName)
 
     if(_exploreObjectOnOff)
     {
-        prepHand();
+        _robotHand->prepare();
+
+        //prepHand();
         if(!this->goToStartingPose())
             ret = false;
         _armCartesianController->waitMotionDone(0.1, 5);
 
         // Ge the current position of the arm.
         Vector pos, orient;
-        pos.resize(3);
-        orient.resize(4);
-        if(!_objectFeaturesThread->getArmPose(pos, orient))
+        if(!_robotHand->getPose(pos, orient))
         {
             cerr << _dbgtag << "Could not read the arm position, cannot start exploration" << endl;
             return false;
@@ -357,7 +364,7 @@ bool ExploreObject::startExploringGP()
         Vector pos, orient;
         pos.resize(3);
         orient.resize(4);
-        if(!_objectFeaturesThread->getArmPose(pos, orient))
+        if(!_robotHand->getPose(pos, orient))
         {
             cerr << _dbgtag << "Could not read the arm position, cannot start exploration" << endl;
             return false;
@@ -443,7 +450,7 @@ bool ExploreObject::startExploring()
         Vector pos, orient;
         pos.resize(3);
         orient.resize(4);
-        if(!_objectFeaturesThread->getArmPose(pos, orient))
+        if(!_robotHand->getPose(pos, orient))
         {
             cerr << _dbgtag << "Could not read the arm position, cannot start exploration" << endl;
             return false;
@@ -528,6 +535,8 @@ bool ExploreObject::configure(yarp::os::ResourceFinder& rf )
 
     bool ret = true;
 
+    _robotHand = new Hand(rf);
+
     // Check if in the config file we have a name for the server
     string moduleName = rf.check("moduleName", Value("object-exploration-server"),
                                  "module name (string)").asString().c_str();
@@ -541,128 +550,17 @@ bool ExploreObject::configure(yarp::os::ResourceFinder& rf )
     ObjectFeaturesThread& systemParameters = *_objectFeaturesThread; // Just for better naming
 
 
-    ///////////////////////////////////////////////////////////////////////////////////////////
-    /////////////////////////////// Configure the controller //////////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////////////////////
 
-    yarp::os::Property deviceOptions;
-    deviceOptions.put("device", systemParameters.getControllerType());
-    deviceOptions.put("local", "/" + moduleName
-                      + "/" + systemParameters.getControllerName() + "/" + systemParameters.getArm() + "_arm");
-    deviceOptions.put("remote", "/" + systemParameters.getRobotName()
-                      + "/" + systemParameters.getControllerName() + "/" + systemParameters.getArm() + "_arm");
-
-    cout << "Device options: " << deviceOptions.toString() << endl;
-
-    if(!_deviceController.open(deviceOptions))
-    {
-        cerr << _dbgtag << "Failed to open the device: " << systemParameters.getControllerType() << endl;
-        // cannot explore
-        _exploreObjectValid = false;
-        return false;
-    }
-
-    // Open a Cartesian controller
-
-    if(!_deviceController.view(_armCartesianController))
-    {
-        cerr << _dbgtag << "Failed to get a Cartesian view" << endl;
-        // Cannot explore,
-        _exploreObjectValid = false;
-        return false;
-    }
-
-    // Remember the contorller context ID, restore when closing the port
-    _armCartesianController->storeContext(&_cartCtrlStartupIDstartupID);
-
-    // Set the trajectory time
-    cout << "Trajectory time: " << systemParameters.getTrajectoryTime() << endl;
-    _armCartesianController->setTrajTime(systemParameters.getTrajectoryTime());
-
-
-    // Enable the torso movement
-
-    Vector curDof;
-    _armCartesianController->getDOF(curDof);
-    cout<<"["<<curDof.toString()<<"]"<<endl;  // [0 0 0 1 1 1 1 1 1 1] will be printed out
-    Vector newDof(3);
-    newDof[0]=1;    // torso pitch: 1 => enable
-    newDof[1]=2;    // torso roll:  2 => skip
-    newDof[2]=1;    // torso yaw:   1 => enable
-    _armCartesianController->setDOF(newDof,curDof);
-    cout<<"["<<curDof.toString()<<"]"<<endl;  // [1 0 1 1 1 1 1 1 1 1] will be printed out
-
-    //_armCartesianController->setPosePriority("orientation");
-
-
-    //////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////////        Joint Control                     /////////////////
-    //////////////////////////////////////////////////////////////////////////////////////
-
-    yarp::os::Property optionsJnt;
-    optionsJnt.put("device", "remote_controlboard");
-    optionsJnt.put("local", "/" + moduleName + "/" + systemParameters.getArm() + "_arm/joint");                 //local port names
-    optionsJnt.put("remote", "/" + systemParameters.getRobotName()
-                   + "/" + systemParameters.getArm() + "_arm");
-
-
-
-    cout << "Device options: " << optionsJnt.toString() << endl;
-
-    if(!_deviceController_joint.open(optionsJnt))
-    {
-        cerr << _dbgtag << "Failed to open the device: " << "urgh" << endl; //systemParameters.getControllerType() << endl;
-        // Cannot explore
-        _exploreObjectValid = false;
-        return false;
-    }
-
-    //open an armcontroller_mode view
-    if(!_deviceController_joint.view(_armController_mode))
-    {
-        cerr << _dbgtag << "Failed to open control mode view" << endl;
-        // Cannot explore
-        _exploreObjectValid = false;
-        return false;
-    }
-
-    // Open an encoder view
-    if(!_deviceController_joint.view(_armEncoders))
-    {
-        cerr << _dbgtag << "Failed to open Encoder view" << endl;
-        // Cannot explore
-        _exploreObjectValid = false;
-        return false;
-    }
-
-    if(!_deviceController_joint.view(_armJointPositionController))
-    {
-        cerr << _dbgtag << "Failed to open joint position controller view" << endl;
-        _exploreObjectValid = false;
-        return false;
-    }
-
-    int armJointsNum;
-    _armJointPositionController->getAxes(&armJointsNum);
-    // Set reference speeds
-    std::vector<double> refSpeeds(armJointsNum, 0);
-    _armJointPositionController->getRefSpeeds(&refSpeeds[0]);
-    for (int i = 11; i < 15; ++i) {
-        refSpeeds[i] = 50;
-    }
-    _armJointPositionController->setRefSpeeds(&refSpeeds[0]);
-
-    //_armCartesianController->getPose()
     ////////////////////////////////////////////////////////////////////////////////////////
     ////////// Setting up the tactile data reading thread //////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////
 
 
-    _objectFeaturesThread->setArmController_cart(_armCartesianController);
-    _objectFeaturesThread->setArmController_jnt(_armEncoders, _armJointPositionController);
-    _objectFeaturesThread->setArmController_mode(_armController_mode);
+    //_objectFeaturesThread->setArmController_cart(_armCartesianController);
+    //_objectFeaturesThread->setArmController_jnt(_armEncoders, _armJointPositionController);
+    //_objectFeaturesThread->setArmController_mode(_armController_mode);
 
-    _objectFeaturesThread->start();
+    //_objectFeaturesThread->start();
 
 
 
@@ -691,7 +589,7 @@ bool ExploreObject::configure(yarp::os::ResourceFinder& rf )
 
     this->attach(_robotControl_port);
 
-    setHomePose();
+    //setHomePose();
 
     return ret;
 }

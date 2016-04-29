@@ -5,7 +5,7 @@
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Bottle.h>
 #include <yarp/os/ResourceFinder.h>
-
+#include <yarp/dev/CartesianControl.h>
 
 namespace objectExploration {
 
@@ -35,6 +35,7 @@ struct fingerControllerData{
     yarp::dev::IEncoders *armEncoder;
     yarp::dev::IControlMode2 *armJointModeCtrl;
     yarp::dev::IPositionControl *armJointPositionCtrl;
+    yarp::dev::ICartesianControl* armCartesianCtrl;
 
 };
 typedef struct fingerControllerData t_controllerData;
@@ -51,19 +52,27 @@ class Finger{
 
 public:
     virtual bool prepare() =0;
+    bool open();
     bool toArmPosition(Vector &fingertipPosition, Vector &retArmpPosition);
     bool setAngles(double proximal, double distal, double speed);
-    bool setAngles(double proximal, double speed);
-
-    //virtual bool init() = 0;
-
+    bool setAngles(double proximal, double speed); //consider changing the name to something meaningful both distal and proximal are moves
+    bool setSynchroProximalAngle(double proximal);
+    void calibrate();
+    bool checkMotionDone();
+    bool getAngels(Vector &angles);
+    bool getPosition(yarp::sig::Vector &position);
+    bool getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders);
+    bool readEncoders(Vector &encoderValues);
 protected:
     Finger(t_controllerData);
     bool setAngle(int joint, double angle, double speed = 30);
+    //bool getEncoderValues(Vector &encoderValues);
+    void getAngels(yarp::sig::Vector &angles, Vector fingerEncoders);
+
 
 private:
     void adjustMinMax(const double currentVal, double &min, double &max);
-    bool readEncoders(Vector &encoderValues);
+
     static void initController(ResourceFinder& rf);
 
 private:
@@ -73,11 +82,12 @@ private:
     yarp::dev::IControlMode2 *_armJointModeCtrl;
     yarp::dev::IPositionControl *_armJointPositionCtrl;
 
+    yarp::dev::ICartesianControl* _armCartesianCtrl;
 
-    BufferedPort<Bottle> _fingerEncoders;
 
     string _dbgtag;
 
+protected:
     double _maxProximal;
     double _minProximal;
     double _maxMiddle;
@@ -85,8 +95,8 @@ private:
     double _maxDistal;
     double _minDistal;
 
-protected:
 
+BufferedPort<Bottle> _fingerEncoders;
     iCub::iKin::iCubFinger* _iCubFinger;
 
     int _proximalJointIndex;
@@ -105,7 +115,9 @@ class IndexFinger: public Finger{
 
 public:
     IndexFinger(t_controllerData);
+    void calibrate();
     bool prepare();
+    bool setSynchroProximalAngle(double proximal);
 };
 
 

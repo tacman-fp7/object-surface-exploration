@@ -4,7 +4,8 @@
 #include <yarp/os/Thread.h>
 #include <objectFeaturesThread.h>
 #include <yarp/dev/CartesianControl.h>
-
+#include "hand.h"
+#include "finger.h"
 
 using yarp::dev::ICartesianControl;
 
@@ -24,6 +25,8 @@ public:
 protected:
     ObjectFeaturesThread* _objectFeatures;
     ICartesianControl* _robotCartesianController;
+    Hand* _robotHand;
+    Finger* _explorationFinger;
 
     
     
