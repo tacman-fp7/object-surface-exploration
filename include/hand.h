@@ -35,11 +35,14 @@ public:
     void setStartingPose(Vector& pos, Vector& orient);
     bool getStartingPose(Vector& pos, Vector& orient);
     bool getEndPose(Vector& pos, Vector& orient);
-    bool moveToPosition(Vector pos, Vector orient);
+    bool goToPoseSync(Vector pos, Vector orient, double timeout = 0.0);
+    void stopControl();
     bool goToStartingPose();
     bool goToEndPose();
-    bool checkOpenMotionDone();
-
+    bool checkOpenMotionDone(); //Rename to reduce confusion
+    bool checkMotionDone(bool* motionDone);
+    string getArmName(){return _whichHand;}
+    string getRobotName(){return _robotName;}
 private:
     void configure(ResourceFinder rf);
     void updateRobotReachableSpace();
@@ -47,6 +50,8 @@ private:
 
 private:
     string _whichHand;
+    string _robotName;
+
     Finger* _indexFinger; // Think of a better way that will allow multiple fingers
     Finger* _thumb;
 

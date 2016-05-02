@@ -56,6 +56,8 @@ public:
     bool toArmPosition(Vector &fingertipPosition, Vector &retArmpPosition);
     bool setAngles(double proximal, double distal, double speed);
     bool setAngles(double proximal, double speed); //consider changing the name to something meaningful both distal and proximal are moves
+    bool setProximalAngle(double angle, double speed = 30);
+    bool setDistalAngle(double angle, double speed = 30);
     bool setSynchroProximalAngle(double proximal);
     void calibrate();
     bool checkMotionDone();

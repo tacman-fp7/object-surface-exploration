@@ -37,26 +37,7 @@ using yarp::os::Mutex;
 using std::string;
 using yarp::os::RpcClient;
 
-/*enum fingerJoints{
-    ABDUCTION = 7,
-    THUMBT_PROXIMAL = 9,
-    THUMB_DISTAL = 10,
-    INDEX_PROXIMAL = 11,
-    INDEX_DISTAL = 12
-};*/
 
-/*struct reachableSpace
-{
-    double minX;
-    double maxX;
-    double minY;
-    double maxY;
-    double minZ;
-    double maxZ;
-    double disasterX;
-};*/
-
-//typedef struct reachableSpace reachableSpace;
 
 class ObjectFeaturesThread: public RateThread
 {
@@ -101,8 +82,7 @@ public:
 
     bool prepGP();
 
-    //bool moveArmToPosition(Vector pos, Vector orient);
-    bool fingerMovePosition(int joint, double angle, double speed = 40); /////
+
     void updateContactState(int contactState){_contactState = contactState;
 
                                               publishContactState(_contactState);}
@@ -113,7 +93,7 @@ public:
         return _objectSurfaceModelGP;
     }
 
-    //bool checkOpenHandDone();
+
 
 
 
@@ -191,10 +171,6 @@ protected:
 
     std::string _dbgtag;
 
-    //// The port to read the joint information
-
-
-    yarp::dev::IPositionControl *_armJointPositionCtrl;
 
 
 

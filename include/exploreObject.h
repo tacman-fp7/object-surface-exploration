@@ -91,6 +91,7 @@ private: // Private members
     bool _stopModule;
 
     Hand* _robotHand;
+    Finger* _explorationFinger;
 
     std::string _dbgtag;
 };

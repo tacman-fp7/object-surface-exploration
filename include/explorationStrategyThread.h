@@ -18,13 +18,13 @@ namespace objectExploration
 class ExplorationStrategyThread: public yarp::os::Thread
 {
 public:
-    ExplorationStrategyThread(int period, ICartesianControl* robotCartesianController,
+    ExplorationStrategyThread(int period, Hand* robotHand, Finger* explorationFinger,
                               ObjectFeaturesThread* objectFeatures):
-        _objectFeatures(objectFeatures), _robotCartesianController(robotCartesianController){}
+        _objectFeatures(objectFeatures), _robotHand(robotHand), _explorationFinger(explorationFinger){}
     
 protected:
     ObjectFeaturesThread* _objectFeatures;
-    ICartesianControl* _robotCartesianController;
+    //ICartesianControl* _robotCartesianController;
     Hand* _robotHand;
     Finger* _explorationFinger;
 

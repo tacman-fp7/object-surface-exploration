@@ -61,6 +61,10 @@ bool Hand::open(){
     _thumb->open();
 }
 
+bool Hand::checkMotionDone(bool *motionDone){
+    return _armCartesianCtrl->checkMotionDone(motionDone);
+}
+
 bool Hand::setAbduction(double angle, double speed){
 
     _armJointPositionCtrl->setRefSpeed(ABDUCTION, speed);
@@ -138,11 +142,13 @@ bool Hand::getPose(Vector &pos, Vector &orient)
 
 }
 
-bool Hand::moveToPosition(yarp::sig::Vector pos, yarp::sig::Vector orient){
+bool Hand::goToPoseSync(yarp::sig::Vector pos, yarp::sig::Vector orient, double timeout){
 
         bool ret;
         ret =  _armCartesianCtrl->goToPoseSync(pos, orient);
-        _armCartesianCtrl->waitMotionDone(0.1, 5);
+        if(timeout > 0){
+        _armCartesianCtrl->waitMotionDone(0.1, timeout);
+        }
         return ret;
 
 
@@ -175,7 +181,7 @@ bool Hand::goToStartingPose(){
         // Get the current arm pose
        getPose(currentArmPos, currentArmOrient);
         currentArmPos[2] = desiredArmPos[2];
-        moveToPosition(currentArmPos, currentArmOrient);
+        goToPoseSync(currentArmPos, currentArmOrient,10);
 
         return true;
     }
@@ -204,11 +210,15 @@ bool Hand::goToEndPose(){
         // Move the hand up before moving sidways.
        getPose(currentArmPos, currentArmOrient);
         currentArmPos[2] = desiredArmPos[2];
-        return moveToPosition(currentArmPos, currentArmOrient);
+        return goToPoseSync(currentArmPos, currentArmOrient, 10);
 
 
     }
     return false;
+}
+
+void Hand::stopControl(){
+    _armCartesianCtrl->stopControl();
 }
 
 void Hand::printPose ( Vector& pos, Vector& orient )
@@ -244,8 +254,8 @@ void Hand::configure(yarp::os::ResourceFinder rf){
     }
 
     // Read the arm configuration
-    string arm = robotParameters.check("arm", Value("left")).asString();
-    string robotName = robotParameters.check("robotName", Value("icubSim")).asString();
+    _whichHand = robotParameters.check("arm", Value("Error")).asString();
+    _robotName = robotParameters.check("robotName", Value("icubSim")).asString();
     string controller = robotParameters.check("controller", Value("Error")).asString();
     string controllerName = robotParameters.check("controllerName", Value("Error")).asString();
     int trajectoryTime = robotParameters.check("trajectoryTime", Value(5)).asInt();
@@ -254,8 +264,8 @@ void Hand::configure(yarp::os::ResourceFinder rf){
     //string moduleName = "object-exploration" ;
 
     cout << "Read the following configuration from the file:" << endl;
-    cout << "Robot name: " << robotName << endl;
-    cout << "Arm: " << arm << endl;
+    cout << "Robot name: " << _robotName << endl;
+    cout << "Arm: " << _whichHand << endl;
     cout << "Controller: " << controller << endl;
     cout << "Controller name: " << controllerName << endl;
     cout << "Trajectory time: " << trajectoryTime << endl;
@@ -268,8 +278,8 @@ void Hand::configure(yarp::os::ResourceFinder rf){
 
     yarp::os::Property deviceOptions;
     deviceOptions.put("device", controller);
-    deviceOptions.put("local", "/" + moduleName + "/" + controllerName + "/" + arm + "_arm");
-    deviceOptions.put("remote", "/" + robotName + "/" + controllerName + "/" + arm + "_arm");
+    deviceOptions.put("local", "/" + moduleName + "/" + controllerName + "/" + _whichHand + "_arm");
+    deviceOptions.put("remote", "/" + _robotName + "/" + controllerName + "/" + _whichHand + "_arm");
 
     //cout << "Device options: " << deviceOptions.toString() << endl;
 
@@ -294,7 +304,7 @@ void Hand::configure(yarp::os::ResourceFinder rf){
     _armCartesianCtrl->storeContext(&_cartCtrlStartupIDstartupID);
 
     // Set the trajectory time
-    cout << "Trajectory time: " << trajectoryTime << endl;
+   //cout << "Trajectory time: " << trajectoryTime << endl;
     _armCartesianCtrl->setTrajTime(trajectoryTime);
 
 
@@ -320,8 +330,8 @@ void Hand::configure(yarp::os::ResourceFinder rf){
 
     yarp::os::Property optionsJnt;
     optionsJnt.put("device", "remote_controlboard");
-    optionsJnt.put("local", "/" + moduleName + "/" + arm + "_arm/joint");                 //local port names
-    optionsJnt.put("remote", "/" + robotName + "/" + arm + "_arm");
+    optionsJnt.put("local", "/" + moduleName + "/" + _whichHand + "_arm/joint");                 //local port names
+    optionsJnt.put("remote", "/" + _robotName + "/" + _whichHand + "_arm");
 
 
 
@@ -436,7 +446,7 @@ void Hand::configure(yarp::os::ResourceFinder rf){
     }
 
     t_controllerData ctrlData;
-    ctrlData.whichHand = arm;
+    ctrlData.whichHand = _whichHand;
     ctrlData.armJointModeCtrl = _armJointModeCtrl;
     ctrlData.armEncoder = _armEncoders;
     ctrlData.armJointPositionCtrl = _armJointPositionCtrl;

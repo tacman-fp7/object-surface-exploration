@@ -103,9 +103,9 @@ void TappingExplorationThread::run()
 }
 
 
-TappingExplorationThread::TappingExplorationThread(int period, ICartesianControl* robotCartesianController,
+TappingExplorationThread::TappingExplorationThread(int period, Hand* robotHand, Finger* explorationFinger,
                                                    ObjectFeaturesThread* objectFeatures):
-    ExplorationStrategyThread(period, robotCartesianController,
+    ExplorationStrategyThread(period, robotHand, explorationFinger,
                               objectFeatures){
     _nGrid = 0;
     _forceThreshold = FORCE_TH;
@@ -130,15 +130,16 @@ void TappingExplorationThread::finshExploration()
 
     // Lift the finger up
     // Get the current pose of the arm
-    if(_robotCartesianController->getPose(starting_pos, starting_orient))
+    if( _robotHand->getPose(starting_pos, starting_orient))// _robotCartesianController->getPose(starting_pos, starting_orient))
     {
         starting_pos[2] = 0.05; // TODO: remove the magic number
         _objectFeatures->setWayPoint(starting_pos, starting_orient);
 
         _objectFeatures->getWayPoint(starting_pos, starting_orient, false);
 
-        _robotCartesianController->goToPoseSync(starting_pos, starting_orient);
-        _robotCartesianController->waitMotionDone(0.1, 20);
+        _robotHand->goToPoseSync(starting_pos, starting_orient, 20);
+       // _robotCartesianController->goToPoseSync(starting_pos, starting_orient);
+       // _robotCartesianController->waitMotionDone(0.1, 20);
 
     }
 
@@ -151,9 +152,9 @@ void TappingExplorationThread::finshExploration()
 
     if(_objectFeatures->getStartingPose(starting_pos, starting_orient))
     {
-        //
-        _robotCartesianController->goToPoseSync(starting_pos, starting_orient);
-        _robotCartesianController->waitMotionDone(0.1, 20);
+        _robotHand->goToPoseSync(starting_pos, starting_orient, 20);
+        //_robotCartesianController->goToPoseSync(starting_pos, starting_orient);
+        //_robotCartesianController->waitMotionDone(0.1, 20);
     }
 
     _contactState = STOP;
@@ -241,7 +242,7 @@ void TappingExplorationThread::calculateNewWaypoint()
 void TappingExplorationThread::moveArmToWayPoint(yarp::sig::Vector pos, yarp::sig::Vector orient)
 {
     Vector indexFingerAngles;
-    if(_robotCartesianController->goToPoseSync(pos, orient))
+    if( _robotHand->goToPoseSync(pos, orient))//_robotCartesianController->goToPoseSync(pos, orient))
     {
         bool motionDone = false;
         while(!motionDone)
@@ -249,8 +250,8 @@ void TappingExplorationThread::moveArmToWayPoint(yarp::sig::Vector pos, yarp::si
             if(_objectFeatures->getContactForce() > _forceThreshold)
             {
                 cout  << "Abandoned motion due to force" << endl;
-                _robotCartesianController->stopControl();
-
+                //_robotCartesianController->stopControl();
+                _robotHand->stopControl();
                 break;
             }
 
@@ -261,12 +262,14 @@ void TappingExplorationThread::moveArmToWayPoint(yarp::sig::Vector pos, yarp::si
             if(indexFingerAngles[1] < 20 )
             {
                 cout << "Abandoned motion due to angles" << endl;
-                _robotCartesianController->stopControl();
+                _robotHand->stopControl();
+                //_robotCartesianController->stopControl();
                 cout << "Angles: " << indexFingerAngles.toString() << endl;
 
                 break;
             }
-            _robotCartesianController->checkMotionDone(&motionDone);
+            //_robotCartesianController->checkMotionDone(&motionDone);
+            _robotHand->checkMotionDone(&motionDone);
         }
     }
 }

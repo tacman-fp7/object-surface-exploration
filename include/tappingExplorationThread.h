@@ -30,7 +30,7 @@ enum State{
 class TappingExplorationThread: public ExplorationStrategyThread
 {
 public:
-    TappingExplorationThread(int period, ICartesianControl* robotCartesianController,
+    TappingExplorationThread(int period, Hand *robotHand, Finger *explorationFinger,
                             ObjectFeaturesThread* objectFeatures);
 
 

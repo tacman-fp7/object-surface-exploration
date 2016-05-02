@@ -2,6 +2,7 @@
 #include <yarp/os/RateThread.h>
 #include <objectFeaturesThread.h>
 #include <yarp/dev/CartesianControl.h>
+#include "hand.h"
 
 namespace objectExploration
 {
@@ -10,7 +11,7 @@ class ContactSafetyThread: public yarp::os::RateThread
 {
 public:
 
-    ContactSafetyThread(int period, ICartesianControl* robotCartesianController);
+    ContactSafetyThread(int period, Hand* robotHand);
     void setForceThreshold(double desiredForceThreshold);
     bool resetBaseline();
     void run();
@@ -24,9 +25,10 @@ private:
     double _forceThreshold;
     //double _minDistalAngle;
     double _baseLine;
-    ObjectFeaturesThread* _objectFeatures;
+    //ObjectFeaturesThread* _objectFeatures;
     std::string _dbgtag;
-    ICartesianControl* _robotCartesianController;
+    //ICartesianControl* _robotCartesianController;
+    Hand* _robotHand;
     BufferedPort<Bottle> _forceTorque_in;
 
     bool _collisionDetected;

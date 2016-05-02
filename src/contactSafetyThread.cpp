@@ -4,7 +4,7 @@
 #include <yarp/sig/Vector.h>
 #include <yarp/os/Network.h>
 #include <math.h>
-#include <yarp/os/ResourceFinder.h>
+//#include <yarp/os/ResourceFinder.h>
 
 using std::cerr;
 using std::cout;
@@ -32,7 +32,7 @@ void ContactSafetyThread::run()
         // If the resultant force is greater than the threshold stop the
         // arm movemnet
         if(fabs(resultant - _baseLine) > _forceThreshold){
-            _robotCartesianController->stopControl();
+            _robotHand->stopControl();
             _collisionDetected = true;
 
         }
@@ -41,13 +41,13 @@ void ContactSafetyThread::run()
 
 
 
-ContactSafetyThread::ContactSafetyThread(int period,  ICartesianControl* robotCartesianController)
+ContactSafetyThread::ContactSafetyThread(int period,  Hand *robotHand)
     :RateThread(period){
 
     _forceThreshold = 5;
     //_objectFeatures = objectFeatures;
     _dbgtag = "Contact safety: ";
-    _robotCartesianController = robotCartesianController;
+    _robotHand = robotHand;
     _collisionDetected = false;
 
 
@@ -57,15 +57,15 @@ ContactSafetyThread::ContactSafetyThread(int period,  ICartesianControl* robotCa
 
 void ContactSafetyThread::init(){
 
-    ResourceFinder rf;
+    //ResourceFinder rf;
 
     /// Force torque//////
 
 
-    if(_forceTorque_in.open("/safeConact/" + _objectFeatures->getArm() + "_arm/forceTorque/analog:i"))
+    if(_forceTorque_in.open("/safeConact/" + _robotHand->getArmName() + "_arm/forceTorque/analog:i"))
     {
-        yarp::os::Network::connect( "/" + _objectFeatures->getRobotName() + "/" + _objectFeatures->getArm() + "_arm/analog:o",
-                                    "/safeConact/" + _objectFeatures->getArm() + "_arm/forceTorque/analog:i");
+        yarp::os::Network::connect( "/" + _robotHand->getRobotName() + "/" + _robotHand->getArmName() + "_arm/analog:o",
+                                    "/safeConact/" + _robotHand->getArmName() + "_arm/forceTorque/analog:i");
     }
 
 }
@@ -102,8 +102,8 @@ void ContactSafetyThread::setForceThreshold(double desiredForceThreshold)
 
 bool ContactSafetyThread::threadInit(){
 
-    if(_objectFeatures == NULL){
-        cout << _dbgtag << " failed to initialise -- objectFeatures points to NULL, aborting" << endl;
+    if(_robotHand == NULL){
+        cout << _dbgtag << " failed to initialise -- robot hand points to NULL, aborting" << endl;
         return false;
     }
 

@@ -569,14 +569,14 @@ bool ExploreObject::configure(yarp::os::ResourceFinder& rf )
     ////////////////////////// Setting up the exploration strategy thread ///////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////////
     _exploreObjectThread = new TappingExplorationThread(systemParameters.getExplorationThreadPeriod(),
-                                                        _armCartesianController,_objectFeaturesThread);
+                                                        _robotHand, _explorationFinger,_objectFeaturesThread);
 
 
     _exploreObjectGP_thread = new GPExplorationThread(systemParameters.getExplorationThreadPeriod(),
-                                                      _armCartesianController, _objectFeaturesThread);
+                                                      _robotHand, _explorationFinger, _objectFeaturesThread);
 
     _exploreGPSurface_thread = new ExploreGPSurfaceThread(systemParameters.getExplorationThreadPeriod(),
-                                                          _armCartesianController, _objectFeaturesThread);
+                                                          _robotHand, _explorationFinger, _objectFeaturesThread);
 
 
     std::string portName= "/";

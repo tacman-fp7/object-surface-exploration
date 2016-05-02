@@ -17,9 +17,9 @@ class GPExplorationThread: public TappingExplorationThread
 {
 
 public:
-    GPExplorationThread(int period, ICartesianControl* robotCartesianController,
+    GPExplorationThread(int period, Hand* robotHand, Finger* explorationFinger,
                             ObjectFeaturesThread* objectFeatures):
-        TappingExplorationThread(period, robotCartesianController,
+        TappingExplorationThread(period, robotHand, explorationFinger,
                                   objectFeatures){ _surfaceModel = objectFeatures->getGPSurfaceModel();
                                                  _forceThreshold = FORCE_TH; _sampleSurface = true;
                                                  _refineModel = false; _validatePositionsEnabled = false;

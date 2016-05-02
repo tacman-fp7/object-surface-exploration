@@ -10,6 +10,13 @@ using std::endl;
 using std::cout;
 
 
+bool Finger::setProximalAngle(double angle, double speed){
+    return setAngle(_proximalJointIndex, angle, speed);
+}
+
+bool Finger::setDistalAngle(double angle, double speed){
+    return setAngle(_distalJointIndex, angle, speed);
+}
 
 bool Finger::readEncoders(Vector &encoderValues){
     bool ret = false;

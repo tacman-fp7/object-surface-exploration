@@ -252,9 +252,10 @@ void ExploreGPSurfaceThread::maintainContact()
     _objectFeatures->getStartingPose(desiredArmPos, desiredArmOrient);
 
     // Open the fingertip
-
-    _objectFeatures->fingerMovePosition(11, 0);
-    _objectFeatures->fingerMovePosition(12, 10);
+    _explorationFinger->setProximalAngle(0);
+    _explorationFinger->setDistalAngle(10);
+   // _objectFeatures->fingerMovePosition(11, 0);
+    //_objectFeatures->fingerMovePosition(12, 10);
     while (!_explorationFinger->checkMotionDone())
         ;
 
@@ -272,7 +273,7 @@ void ExploreGPSurfaceThread::maintainContact()
 
     while(true){
         desiredArmPos[2] -= offset; // offset from the middle
-        _robotCartesianController->goToPoseSync(desiredArmPos, desiredArmOrient);
+        _robotHand->goToPoseSync(desiredArmPos, desiredArmOrient);
        // _robotCartesianController->waitMotionDone(0.1, 2);
 
 
@@ -285,12 +286,12 @@ void ExploreGPSurfaceThread::maintainContact()
             if(_objectFeatures->getContactForce() > 3)
             {
                 cout  << "Abandoned motion due to force" << endl;
-                _robotCartesianController->stopControl();
+                _robotHand->stopControl();
 
                 break;
             }
 
-            _robotCartesianController->checkMotionDone(&motionDone);
+            _robotHand->checkMotionDone(&motionDone);
         }
 
         _explorationFinger->getPosition(fingertipPosition);
@@ -318,10 +319,11 @@ void ExploreGPSurfaceThread::maintainContact()
 
 
     }
-
-   _objectFeatures->fingerMovePosition(7, 60);
+  _robotHand->setAbduction(60);
+   //_objectFeatures->fingerMovePosition(7, 60);
    yarp::os::Time::delay(2);
-   _objectFeatures->fingerMovePosition(7, 0);
+   _robotHand->setAbduction(0);
+   //_objectFeatures->fingerMovePosition(7, 0);
    yarp::os::Time::delay(2);
 
     // Just to be safe
@@ -339,7 +341,7 @@ void ExploreGPSurfaceThread::maintainContact()
     _explorationFinger->toArmPosition(startingPos, desiredArmPos);
     //_objectFeatures->indexFinger2ArmPosition(startingPos, desiredArmPos);
     armPos[2] = desiredArmPos[2] + 10.0/1000; // Move the fingertip up to avoid collisiont
-   _robotHand->moveToPosition(armPos, orient);
+   _robotHand->goToPoseSync(armPos, orient, 10);
 
 
     _curProximal = 10;
@@ -362,7 +364,7 @@ void ExploreGPSurfaceThread::maintainContact()
 void ExploreGPSurfaceThread::moveArmToWayPoint(yarp::sig::Vector pos, yarp::sig::Vector orient)
 {
     Vector indexFingerAngles;
-    if(_robotCartesianController->goToPoseSync(pos, orient))
+    if(_robotHand->goToPoseSync(pos, orient))
     {
         bool motionDone = false;
         while(!motionDone)
@@ -370,7 +372,7 @@ void ExploreGPSurfaceThread::moveArmToWayPoint(yarp::sig::Vector pos, yarp::sig:
             if(_objectFeatures->getContactForce() > _forceThreshold)
             {
                 cout  << "Abandoned motion due to force" << endl;
-                _robotCartesianController->stopControl();
+                _robotHand->stopControl();
 
                 break;
             }
@@ -381,12 +383,12 @@ void ExploreGPSurfaceThread::moveArmToWayPoint(yarp::sig::Vector pos, yarp::sig:
             if(indexFingerAngles[1] < 3 )
             {
                 cout << "Abandoned motion due to angles" << endl;
-                _robotCartesianController->stopControl();
+                _robotHand->stopControl();
                 cout << "Angles: " << indexFingerAngles.toString() << endl;
 
                 break;
             }
-            _robotCartesianController->checkMotionDone(&motionDone);
+            _robotHand->checkMotionDone(&motionDone);
         }
     }
 }
