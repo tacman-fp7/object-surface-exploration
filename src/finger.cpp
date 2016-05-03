@@ -2,13 +2,14 @@
 
 #include <iostream>
 #include <math.h>
+#include <yarp/os/Network.h>
 
 namespace objectExploration {
 
 using std::cerr;
 using std::endl;
 using std::cout;
-
+using yarp::os::Network;
 
 bool Finger::setProximalAngle(double angle, double speed){
     return setAngle(_proximalJointIndex, angle, speed);
@@ -310,11 +311,84 @@ Finger::Finger(t_controllerData ctrlData){
     _armCartesianCtrl = ctrlData.armCartesianCtrl;
     //_fingerEncoders = ctrlData.fingerEncoders;
 
+    // /force-cop-estimator/left_index/force:o
+
+    string forcePortName_remote = "/force-cop-estimator/" + ctrlData.whichHand + "_" +
+            ctrlData.whichFinger + "/force:o";
+    string copPortName_remote = "/force-cop-estimator/" + ctrlData.whichHand + "_" +
+            ctrlData.whichFinger + "/cop:o";
+
+    string forcePortName_local = "/object-exploration/" + ctrlData.whichHand + "_" +
+            ctrlData.whichFinger + "/force:i";
+    string copPortName_local = "/object-exploration/" + ctrlData.whichHand + "_" +
+            ctrlData.whichFinger + "/cop:i";
+
+
+    _contactForce_in.open(forcePortName_local);
+    _contactCoP_in.open(copPortName_local);
+
+    if(Network::exists(forcePortName_remote)){
+        Network::connect(forcePortName_remote, forcePortName_local);
+    }
+    else{
+       cerr << _dbgtag << "Port does not exist: " << forcePortName_remote << endl;
+    }
+
+    if(Network::exists(copPortName_remote)){
+        Network::connect(copPortName_remote, copPortName_local);
+    }
+    else{
+        cerr << _dbgtag << "Port does not exist: " << copPortName_remote << endl;
+    }
 }
 
 icubFinger::icubFinger(t_controllerData ctrlData):Finger(ctrlData){
     _fingerEncoders = ctrlData.fingerEncoders;
 
+}
+
+bool Finger::getContactCoP(yarp::sig::Vector &contactCoP){
+    int nPendingReads;
+    contactCoP.resize(3);
+    Bottle* cop;
+
+    nPendingReads = _contactCoP_in.getPendingReads();
+    for (int i = 0; i < nPendingReads; i++ ){
+       cop = _contactCoP_in.read();
+       cout << cop->toString() << endl;
+    }
+
+    if(!cop->isNull()){
+        contactCoP(0)  = cop->get(0).asDouble();
+        contactCoP(1) = cop->get(1).asDouble();
+        contactCoP(2) = cop->get(2).asDouble();
+        return true;
+    }
+    else{
+       contactCoP(0) = 0;
+       contactCoP(1) = 0;
+       contactCoP(2) = 0;
+
+       return false;
+    }
+}
+
+double Finger::getContactForce(){
+    int nPendingReads = _contactForce_in.getPendingReads();
+    Bottle* contactForce;
+
+    for (int i = 0; i < nPendingReads; i++){
+        contactForce = _contactForce_in.read();
+        cout << "contact force " << contactForce << endl;
+    }
+
+    if(!contactForce->isNull()){
+        return   contactForce->get(0).asDouble();
+
+    }
+    else{
+        return 0;
+    }
 }
 
 void Finger::calibrate(){
@@ -360,6 +434,7 @@ bool Finger::setAngles(double proximalAngle, double speed){
 
 
 }
+
 
 void icubFinger::adjustMinMax(const double currentVal, double &min, double &max){
 
@@ -497,7 +572,6 @@ SimIndexFinger::SimIndexFinger(t_controllerData ctrlData):
     _proximalEncoderIndex = INDEX_PROXIMAL_ENCODER;
     _middleEncoderIndex = INDEX_MIDDLE_ENCODER;
     _distalEncoderIndex = INDEX_DISTAL_ENCODER;
-
 
 
 }

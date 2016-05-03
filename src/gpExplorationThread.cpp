@@ -434,8 +434,8 @@ bool GPExplorationThread::confirmWiggleContact(double maxAngle)
         while(!_explorationFinger->checkMotionDone())
         {
 
-            //cout << "Force: " << _objectFeatures->getContactForce() << endl;
-            if(_objectFeatures->getContactForce() >= _forceThreshold/2)
+            //cout << "Force: " << _explorationFinger->getContactForce() << endl;
+            if(_explorationFinger->getContactForce() >= _forceThreshold/2)
             {
                 cout << "contact confirmed" << endl;
                 contact = true;
@@ -456,8 +456,8 @@ bool GPExplorationThread::confirmWiggleContact(double maxAngle)
     }
 
 
-    cout << "Force: " << _objectFeatures->getContactForce() << endl;
-    if(_objectFeatures->getContactForce() >= _forceThreshold/2)
+    cout << "Force: " << _explorationFinger->getContactForce() << endl;
+    if(_explorationFinger->getContactForce() >= _forceThreshold/2)
     {
         cout << "contact confirmed" << endl;
         contact = true;
@@ -566,7 +566,7 @@ void GPExplorationThread::sampleSurface_wiggleFingers()
         }
         contact = confirmWiggleContact(10);
 
-        //if(_objectFeatures->getContactForce() >= _forceThreshold)
+        //if(_explorationFinger->getContactForce() >= _forceThreshold)
         //    contact = true;
 
 
@@ -669,7 +669,7 @@ void GPExplorationThread::sampleSurface_wiggleFingers()
         bool motionDone = false;
         while(!motionDone)
         {
-            if(_objectFeatures->getContactForce() > 3)
+            if(_explorationFinger->getContactForce() > 3)
             {
                 cout  << "Abandoned motion due to force" << endl;
                 _robotCartesianController->stopControl();
@@ -739,7 +739,7 @@ void GPExplorationThread::moveArmToWayPoint(yarp::sig::Vector pos, yarp::sig::Ve
         bool motionDone = false;
         while(!motionDone)
         {
-            if(_objectFeatures->getContactForce() > _forceThreshold)
+            if(_explorationFinger->getContactForce() > _forceThreshold)
             {
                 cout  << "Abandoned motion due to force" << endl;
                 _robotHand->stopControl();
@@ -946,7 +946,7 @@ void GPExplorationThread::moveArmUp()
 
     cout << "Waiting for force to return to normal value...";
     cout.flush();
-    double force = _objectFeatures->getContactForce();
+    double force = _explorationFinger->getContactForce();
 
     if(force > 0.25)
     {
@@ -960,9 +960,9 @@ void GPExplorationThread::moveArmUp()
     }
     while(force > 0.25)
     {
-        force = _objectFeatures->getContactForce();
+        force = _explorationFinger->getContactForce();
         for( int i = 0; i < 9; i++)
-            force += _objectFeatures->getContactForce();
+            force += _explorationFinger->getContactForce();
         force = force/10;
     }
 

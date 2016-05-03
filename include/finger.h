@@ -32,6 +32,7 @@ enum fingerEncoders{
 
 struct fingerControllerData{
     std::string whichHand;
+    std::string whichFinger;
     yarp::dev::IEncoders *armEncoder;
     yarp::dev::IControlMode2 *armJointModeCtrl;
     yarp::dev::IPositionControl *armJointPositionCtrl;
@@ -66,47 +67,33 @@ public:
     virtual bool getPosition(yarp::sig::Vector &position);
     virtual bool getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders);
     bool readEncoders(Vector &encoderValues);
+    double getContactForce();
+    bool getContactCoP(yarp::sig::Vector& contactCoP);
 
 protected:
     Finger(t_controllerData);
     bool setAngle(int joint, double angle, double speed = 30);
-    //bool getEncoderValues(Vector &encoderValues);
-
-
 
 private:
-
-
     static void initController(ResourceFinder& rf);
 
 protected:
-
-
-
     yarp::dev::IControlMode2 *_armJointModeCtrl;
     yarp::dev::IPositionControl *_armJointPositionCtrl;
-
     yarp::dev::ICartesianControl* _armCartesianCtrl;
 
-
-
-
-protected:
     string _dbgtag;
     yarp::dev::IEncoders* _armEncoder;
 
-
     iCub::iKin::iCubFinger* _iCubFinger;
+    BufferedPort<Bottle> _contactForce_in;
+    BufferedPort<Bottle> _contactCoP_in;
 
     int _proximalJointIndex;
     int _distalJointIndex;
-
-
     int _proximalEncoderIndex;
     int _middleEncoderIndex;
     int _distalEncoderIndex;
-
-
 
 };
 
@@ -182,6 +169,7 @@ public:
     Finger* createFinger(string whichFinger, string whichRobot, t_controllerData ctrlData
                          ){
 
+          ctrlData.whichFinger = whichFinger;
 
         if(whichRobot.compare("icub") == 0){
             if(whichFinger.compare("index") == 0){

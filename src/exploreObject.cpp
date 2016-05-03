@@ -30,8 +30,8 @@ bool ExploreObject::nRepeatsSet(const int32_t nRepeats){
 }
 
 bool ExploreObject::refineModelEnable(){
-   _exploreObjectGP_thread->enableRefiningModel();
-   return true;
+    _exploreObjectGP_thread->enableRefiningModel();
+    return true;
 }
 
 bool ExploreObject::refineModelDisable(){
@@ -44,7 +44,11 @@ bool ExploreObject::openHand(){
 }
 
 bool ExploreObject::prepHand(){
-    return _robotHand->prepare();
+    //return _robotHand->prepare();
+    cout << "Force: " << _explorationFinger->getContactForce() << endl;
+    Vector cop;
+    _explorationFinger->getContactCoP(cop);
+    cout << "CoP: " << cop.toString() << endl;
 }
 
 bool ExploreObject::calibrateHand(){
@@ -303,7 +307,7 @@ bool ExploreObject::startExploringGP()
             return false;
         }
 
-       /* Vector startingPos, endingPos, startingOrient, endingOrient;
+        /* Vector startingPos, endingPos, startingOrient, endingOrient;
         _objectFeaturesThread->getStartingPose(startingPos, startingOrient);
         _objectFeaturesThread->getEndingPose(endingPos, endingOrient);
         _exploreObjectGP_thread->initialiseGP(startingPos, startingOrient,
@@ -464,7 +468,7 @@ bool ExploreObject::configure(yarp::os::ResourceFinder& rf )
     string robotName = robotParameters.check("robotName", Value("error")).asString();
 
     if(robotName.compare("icub") == 0){
-    _robotHand = new icubHand(rf);
+        _robotHand = new icubHand(rf);
     }
     else if(robotName.compare("icubSim") == 0){
         _robotHand = new SimHand(rf);

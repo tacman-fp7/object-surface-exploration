@@ -247,7 +247,7 @@ void TappingExplorationThread::moveArmToWayPoint(yarp::sig::Vector pos, yarp::si
         bool motionDone = false;
         while(!motionDone)
         {
-            if(_objectFeatures->getContactForce() > _forceThreshold)
+            if(_explorationFinger->getContactForce() > _forceThreshold)
             {
                 cout  << "Abandoned motion due to force" << endl;
                 //_robotCartesianController->stopControl();
@@ -370,7 +370,7 @@ void TappingExplorationThread::detectContact(double maxAngle)
 {
     Vector indexFingerAngles;
     std::clock_t time = std::clock();
-    while((_objectFeatures->getContactForce()) < _forceThreshold)
+    while((_explorationFinger->getContactForce()) < _forceThreshold)
     {
         // Get the angles
         _explorationFinger->getAngels(indexFingerAngles);
@@ -433,7 +433,7 @@ bool TappingExplorationThread::confrimContact(double maxAngle)
 
             //_objectFeatures->getIndexFingerAngles(indexFingerAngles);
 
-            if(_objectFeatures->getContactForce() >= _forceThreshold)
+            if(_explorationFinger->getContactForce() >= _forceThreshold)
             {
                 cout << "contact confirmed" << endl;
                 _contactState = MAINTAIN_CONTACT;

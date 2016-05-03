@@ -49,7 +49,7 @@ public:
     void threadRelease();
 
 
-    double getContactForce();
+    //double getContactForce();
 
 
 
@@ -147,9 +147,9 @@ protected:
 
     //////// Object Features ////////////
 
-    Mutex _tactileMutex;
-    BufferedPort<Bottle> _contactForceCoPPort;
-    double _contactForce;
+    //Mutex _tactileMutex;
+    //BufferedPort<Bottle> _contactForceCoPPort;
+   // double _contactForce;
 
 
 
@@ -157,13 +157,13 @@ protected:
     /// Clean them a little later /////
 
     ///
-    Mutex _armJointMutex;
-    Vector _armJoints;
+    //Mutex _armJointMutex;
+    //Vector _armJoints;
 
     /// Arm pose and orient is actually gripper pose and orient!!!!
-    Mutex _armPoseMutex;
-    Vector _armPosition;
-    Vector _armOrientation;
+    //Mutex _armPoseMutex;
+    //Vector _armPosition;
+    //Vector _armOrientation;
 
     bool _wayPoint_isValid;
     Vector _wayPointPos;

@@ -36,12 +36,12 @@ void ObjectFeaturesThread::run()
     //cout << _dbgtag << "Still running!" << endl;
     ///// Read the tactile data ///////
     //Bottle* tactileData = _tactilePort.read(true); // Wait for data
-    Bottle* contactForceCoP = _contactForceCoPPort.read(true); // Wait for data
+    //Bottle* contactForceCoP = _contactForceCoPPort.read(true); // Wait for data
 
     //// Read the corresponding arm position. //////
     //Bottle* armPose = _armPositionPort.read(true);
 
-    if(contactForceCoP == NULL )
+    /*if(contactForceCoP == NULL )
     {
         // TODO: figure out why it gets run when deleting the thread  <--- becuase it is was waiting for the tactile data
         cerr << _dbgtag << "Run: Null pointers!" << endl;
@@ -51,12 +51,12 @@ void ObjectFeaturesThread::run()
     {
         cerr << "Did not receive tactile or arm data" << endl;
         return;
-    }
+    }*/
 
 
-    _tactileMutex.lock();
-    _contactForce = contactForceCoP->get(0).asDouble(); // Contact force field is the first one
-    _tactileMutex.unlock();
+    //_tactileMutex.lock();
+    //_contactForce = contactForceCoP->get(0).asDouble(); // Contact force field is the first one
+    //_tactileMutex.unlock();
 
 
     // Read the fingertip position
@@ -114,14 +114,7 @@ bool ObjectFeaturesThread::getDesiredEndPose ( Vector& pos, Vector& orient )
     return _desiredEndPose_isValid;
 }
 
-/*bool ObjectFeaturesThread::moveArmToPosition(yarp::sig::Vector pos, yarp::sig::Vector orient)
-{
-    bool ret;
-    ret =  _armCartesianCtrl->goToPoseSync(pos, orient);
-    _armCartesianCtrl->waitMotionDone(0.1, 5);
-    return ret;
 
-}*/
 
 bool ObjectFeaturesThread::setWayPointGP(yarp::sig::Vector pos, yarp::sig::Vector orient)
 {
@@ -143,9 +136,6 @@ bool ObjectFeaturesThread::setWayPointGP(yarp::sig::Vector pos, yarp::sig::Vecto
 
 bool ObjectFeaturesThread::setWayPoint ( Vector pos, Vector orient )
 {
-
-
-
     _wayPoint_isValid = true;
 
     // Breaching this will be disasterous for the robot!
@@ -270,14 +260,14 @@ void ObjectFeaturesThread::printPose ( Vector& pos, Vector& orient )
     cout << "Orientation: " << orient.toString() << endl;
 }
 
-double ObjectFeaturesThread::getContactForce()
+/*double ObjectFeaturesThread::getContactForce()
 {
     _tactileMutex.lock();
     double temp = _contactForce;
     _tactileMutex.unlock();
 
     return temp;
-}
+}*/
 
 
 
@@ -292,36 +282,33 @@ bool ObjectFeaturesThread::threadInit()
 
     _dbgtag = "\n\nObjectFeaturesThread.cpp: ";
 
-    /*   /////////////////// Connect to the tactile sensor port /////////////////
-    if(!_tactilePort.open("/objectExploration/tactileSensors/" + _arm + "_hand")){
-        ret = false;
-        printf("Failed to open local tactile port\n");
-    }
 
-    Network::connect("/" + _robotName + "/skin/" + _arm + "_hand_comp",
-                     "/objectExploration/tactileSensors/" + _arm + "_hand");
-*/
+    ///////// Connect to the force port ///////////////////////
+
+//  /force-cop-estimator/left_index/force:o
+
+
     ////////////////// Connect to the forceCoP port ///////////////////////
-    if(!_contactForceCoPPort.open("/" + _moduleName + "/skin/" + _arm + "_hand/" + _whichFinger + "/force-CoP:i"))
+   /* if(!_contactForceCoPPort.open("/" + _moduleName + "/skin/" + _arm + "_hand/" + _whichFinger + "/force-CoP:i"))
     {
         ret = false;
         cerr << _dbgtag << "Failed to open " << "/" << _moduleName << "/skin" << _arm << "_hand/" <<
                 _whichFinger << "/force-CoP:i" << endl;
         _isExplorationValid = false;
         //        printf("Failed to open local tactile port\n");
-    }
+    }*/
 
     ///////////////////////////////////////
     //TODO: Change the incoming port!
     ////////////////////////////////////////
-    if(!Network::connect("/force-reconstruction/" + _arm + "_index/force-CoP",
+  /*  if(!Network::connect("/force-reconstruction/" + _arm + "_index/force-CoP",
                          "/" + _moduleName + "/skin/" + _arm + "_hand/" + _whichFinger + "/force-CoP:i"))
     {
         _isExplorationValid = false;
         cerr << _dbgtag << "Failed to connect:" << endl;
         cerr << "/force-reconstruction/" + _arm + "_index/force-CoP" << " and" << endl;
         cerr << "/" + _moduleName + "/skin/" + _arm + "_hand/" + _whichFinger + "/force-CoP:i" << endl << endl;
-    }
+    }*/
 
 
 
@@ -415,7 +402,7 @@ void ObjectFeaturesThread::publishContactState(int contactState)
 
 ObjectFeaturesThread::~ObjectFeaturesThread()
 {
-    _contactForceCoPPort.close();
+    //_contactForceCoPPort.close();
     //_armPositionPort.close();
 
     _contactStatePort_out.close();
@@ -468,11 +455,11 @@ ObjectFeaturesThread::ObjectFeaturesThread ( int period, ResourceFinder rf ) : R
     _wayPointPos.resize(3);
 
 
-    _armOrientation.resize(4);
-    _armPosition.resize(3);
+    //_armOrientation.resize(4);
+    //_armPosition.resize(3);
 
 
-    _contactForce = 0;
+    //_contactForce = 0;
     _rf = rf;
 
 

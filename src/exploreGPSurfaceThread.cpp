@@ -283,7 +283,7 @@ void ExploreGPSurfaceThread::maintainContact()
         bool motionDone = false;
         while(!motionDone)
         {
-            if(_objectFeatures->getContactForce() > 3)
+            if(_explorationFinger->getContactForce() > 3)
             {
                 cout  << "Abandoned motion due to force" << endl;
                 _robotHand->stopControl();
@@ -369,7 +369,7 @@ void ExploreGPSurfaceThread::moveArmToWayPoint(yarp::sig::Vector pos, yarp::sig:
         bool motionDone = false;
         while(!motionDone)
         {
-            if(_objectFeatures->getContactForce() > _forceThreshold)
+            if(_explorationFinger->getContactForce() > _forceThreshold)
             {
                 cout  << "Abandoned motion due to force" << endl;
                 _robotHand->stopControl();

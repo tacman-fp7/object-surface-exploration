@@ -200,6 +200,11 @@ bool Hand::goToStartingPose(){
         currentArmPos[2] = desiredArmPos[2];
         goToPoseSync(currentArmPos, desiredArmOrient,10);
 
+        bool motionDone = false;
+        while(!motionDone){
+            checkMotionDone(&motionDone);
+        }
+        goToPoseSync(desiredArmPos, desiredArmOrient);
         return true;
     }
 
