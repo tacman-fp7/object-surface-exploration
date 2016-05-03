@@ -35,36 +35,42 @@ public:
     void setStartingPose(Vector& pos, Vector& orient);
     bool getStartingPose(Vector& pos, Vector& orient);
     bool getEndPose(Vector& pos, Vector& orient);
-    bool goToPoseSync(Vector pos, Vector orient, double timeout = 0.0);
+    bool goToPoseSync(yarp::sig::Vector& pos, yarp::sig::Vector& orient, double timeout = 0.0);
     void stopControl();
     bool goToStartingPose();
     bool goToEndPose();
     bool checkOpenMotionDone(); //Rename to reduce confusion
     bool checkMotionDone(bool* motionDone);
+    Finger* getIndexFinger(){return _indexFinger;}
     string getArmName(){return _whichHand;}
     string getRobotName(){return _robotName;}
-private:
+protected:
     void configure(ResourceFinder rf);
+private:
+
     void updateRobotReachableSpace();
     void printPose(Vector& pos, Vector& orient);
 
-private:
+protected:
+    string _moduleName;
     string _whichHand;
     string _robotName;
 
     Finger* _indexFinger; // Think of a better way that will allow multiple fingers
     Finger* _thumb;
 
+
+
     yarp::dev::IEncoders *_armEncoders;
     yarp::dev::IControlMode2 *_armJointModeCtrl;
     yarp::dev::IPositionControl *_armJointPositionCtrl;
-    //yarp::dev::IPositionControl* _armJointPositionController;
-
-    yarp::dev::PolyDriver _deviceController; // The use depends on the view
     yarp::dev::ICartesianControl* _armCartesianCtrl;
 
-    yarp::dev::PolyDriver _deviceController_joint;
 
+private:
+
+    yarp::dev::PolyDriver _deviceController_joint;
+    yarp::dev::PolyDriver _deviceController; // The use depends on the view
     bool _desiredStartingPose_isValid;
     Vector _desiredStartingPosition;
     Vector _desiredStartingOrientation;
@@ -87,5 +93,22 @@ private:
     // yarp::dev::IControlMode2* _armController_mode;
     int _cartCtrlStartupIDstartupID; // Context ID of the controller at the start
     string _dbgtag;
+};
+
+class SimHand: public Hand{
+
+public:
+    SimHand(ResourceFinder& rf);
+    bool configure(ResourceFinder& rf);
+};
+
+class icubHand: public Hand{
+public:
+    icubHand(ResourceFinder& rf);
+    bool configure(yarp::os::ResourceFinder rf);
+
+protected:
+    BufferedPort<Bottle> _fingerEncoders;
+
 };
 }

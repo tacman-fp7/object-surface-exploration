@@ -1,6 +1,7 @@
 #include "hand.h"
 #include <iostream>
 #include <yarp/os/Value.h>
+#include <yarp/os/Network.h>
 
 namespace objectExploration {
 using std::cerr;
@@ -17,6 +18,15 @@ Hand::Hand(ResourceFinder rf){
     _desiredEndPosition.resize(3);
     _desiredEndOrientation.resize(4);
     _desiredEndPose_isValid = false;
+
+    _armEncoders = NULL;
+    _armJointModeCtrl = NULL;
+    _armJointPositionCtrl = NULL;
+    _armCartesianCtrl = NULL;
+
+    _indexFinger = NULL;
+    _thumb = NULL;
+
     configure(rf);
 
 }
@@ -26,9 +36,13 @@ bool Hand::prepare(){
     bool ret = true;
 
     // Prepare all fingers
-    ret = ret && setAbduction(20);
+   /* ret = ret && setAbduction(20);
     ret = ret && _indexFinger->prepare();
     ret = ret && _thumb->prepare();
+*/
+    setAbduction(20);
+    _indexFinger->prepare();
+    _thumb->prepare();
 
     return true;
 
@@ -36,6 +50,9 @@ bool Hand::prepare(){
 }
 
 bool Hand::calibrate(){
+
+    _indexFinger->open();
+    _thumb->open();
 
     _indexFinger->calibrate();
 
@@ -142,7 +159,7 @@ bool Hand::getPose(Vector &pos, Vector &orient)
 
 }
 
-bool Hand::goToPoseSync(yarp::sig::Vector pos, yarp::sig::Vector orient, double timeout){
+bool Hand::goToPoseSync(yarp::sig::Vector& pos, yarp::sig::Vector& orient, double timeout){
 
         bool ret;
         ret =  _armCartesianCtrl->goToPoseSync(pos, orient);
@@ -181,7 +198,7 @@ bool Hand::goToStartingPose(){
         // Get the current arm pose
        getPose(currentArmPos, currentArmOrient);
         currentArmPos[2] = desiredArmPos[2];
-        goToPoseSync(currentArmPos, currentArmOrient,10);
+        goToPoseSync(currentArmPos, desiredArmOrient,10);
 
         return true;
     }
@@ -210,7 +227,16 @@ bool Hand::goToEndPose(){
         // Move the hand up before moving sidways.
        getPose(currentArmPos, currentArmOrient);
         currentArmPos[2] = desiredArmPos[2];
-        return goToPoseSync(currentArmPos, currentArmOrient, 10);
+        goToPoseSync(currentArmPos, currentArmOrient, 10);
+        bool motionDone = false;
+        while(!motionDone){
+            checkMotionDone(&motionDone);
+        }
+        goToPoseSync(desiredArmPos, desiredArmOrient);
+        motionDone = false;
+        while(!motionDone){
+            checkMotionDone(&motionDone);
+        }
 
 
     }
@@ -244,7 +270,7 @@ void Hand::configure(yarp::os::ResourceFinder rf){
     _robotReachableSpace.disasterX = -0.2; // Beyond this point you will break the hand
 
 
-    string moduleName = rf.check("moduleName", Value("object-exploration-server"),
+    _moduleName = rf.check("moduleName", Value("object-exploration-server"),
                             "module name (string)").asString().c_str();
 
 
@@ -278,7 +304,7 @@ void Hand::configure(yarp::os::ResourceFinder rf){
 
     yarp::os::Property deviceOptions;
     deviceOptions.put("device", controller);
-    deviceOptions.put("local", "/" + moduleName + "/" + controllerName + "/" + _whichHand + "_arm");
+    deviceOptions.put("local", "/" + _moduleName + "/" + controllerName + "/" + _whichHand + "_arm");
     deviceOptions.put("remote", "/" + _robotName + "/" + controllerName + "/" + _whichHand + "_arm");
 
     //cout << "Device options: " << deviceOptions.toString() << endl;
@@ -292,12 +318,8 @@ void Hand::configure(yarp::os::ResourceFinder rf){
 
     // Open a Cartesian controller
 
-    if(!_deviceController.view(_armCartesianCtrl))
-    {
+    if(!_deviceController.view(_armCartesianCtrl)){
         cerr << _dbgtag << "Failed to get a Cartesian view" << endl;
-        // Cannot explore,
-        // _exploreObjectValid = false;
-        // return false;
     }
 
     // Remember the contorller context ID, restore when closing the port
@@ -320,7 +342,7 @@ void Hand::configure(yarp::os::ResourceFinder rf){
     _armCartesianCtrl->setDOF(newDof,curDof);
     //cout<<"["<<curDof.toString()<<"]"<<endl;  // [1 0 1 1 1 1 1 1 1 1] will be printed out
 
-    //_armCartesianController->setPosePriority("orientation");
+    //_armCartesianCtrl->setPosePriority("orientation");
 
 
 
@@ -330,7 +352,7 @@ void Hand::configure(yarp::os::ResourceFinder rf){
 
     yarp::os::Property optionsJnt;
     optionsJnt.put("device", "remote_controlboard");
-    optionsJnt.put("local", "/" + moduleName + "/" + _whichHand + "_arm/joint");                 //local port names
+    optionsJnt.put("local", "/" + _moduleName + "/" + _whichHand + "_arm/joint");                 //local port names
     optionsJnt.put("remote", "/" + _robotName + "/" + _whichHand + "_arm");
 
 
@@ -445,28 +467,69 @@ void Hand::configure(yarp::os::ResourceFinder rf){
         cout << "End orientation: " << _desiredEndOrientation.toString() << endl;
     }
 
+
+
+
+
+
+}
+
+bool SimHand::configure(yarp::os::ResourceFinder& rf){
+    // Common configuration
+    Hand::configure(rf);
+
+
+
+
     t_controllerData ctrlData;
     ctrlData.whichHand = _whichHand;
     ctrlData.armJointModeCtrl = _armJointModeCtrl;
     ctrlData.armEncoder = _armEncoders;
     ctrlData.armJointPositionCtrl = _armJointPositionCtrl;
 
+    ctrlData.armCartesianCtrl = _armCartesianCtrl;
 
-    /*
-    if(_fingerEncoders.open("/" + _moduleName + "/" + _arm + "_hand/analog:i"))
-    {
-        Network::connect( "/" + _robotName + "/" + _arm + "_hand/analog:o",
-                          "/" + _moduleName + "/" + _arm + "_hand/analog:i");
-    }
-
-    */
     FingerFactory fingerCreator;
 
-    _thumb = fingerCreator.createFinger("thumb", ctrlData);
-    _indexFinger = fingerCreator.createFinger("index", ctrlData);
+    _thumb = fingerCreator.createFinger("thumb", "icubSim", ctrlData);
+    _indexFinger = fingerCreator.createFinger("index", "icubSim", ctrlData);
+}
+
+icubHand::icubHand(yarp::os::ResourceFinder &rf):Hand(rf){
+    configure(rf);
+}
+
+SimHand::SimHand(yarp::os::ResourceFinder &rf):Hand(rf){
+    configure(rf);
+}
+
+bool icubHand::configure(yarp::os::ResourceFinder rf){
+
+    // Common configuration
+    Hand::configure(rf);
+
+    if(_fingerEncoders.open("/" + _moduleName + "/" + _whichHand + "_hand/analog:i"))
+    {
+        yarp::os::Network::connect( "/" + _robotName + "/" + _whichHand + "_hand/analog:o",
+                          "/" + _moduleName + "/" + _whichHand + "_hand/analog:i");
+    }
 
 
+    t_controllerData ctrlData;
+    ctrlData.whichHand = _whichHand;
+    ctrlData.armJointModeCtrl = _armJointModeCtrl;
+    ctrlData.armEncoder = _armEncoders;
+    ctrlData.armJointPositionCtrl = _armJointPositionCtrl;
+    ctrlData.fingerEncoders = &_fingerEncoders;
+    ctrlData.armCartesianCtrl = _armCartesianCtrl;
+
+    FingerFactory fingerCreator;
+
+    _thumb = fingerCreator.createFinger("thumb", "icub", ctrlData);
+    _indexFinger = fingerCreator.createFinger("index", "icub", ctrlData);
 
 }
+
+
 
 }

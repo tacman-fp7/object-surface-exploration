@@ -36,6 +36,7 @@ struct fingerControllerData{
     yarp::dev::IControlMode2 *armJointModeCtrl;
     yarp::dev::IPositionControl *armJointPositionCtrl;
     yarp::dev::ICartesianControl* armCartesianCtrl;
+    yarp::os::BufferedPort<yarp::os::Bottle>* fingerEncoders;
 
 };
 typedef struct fingerControllerData t_controllerData;
@@ -51,54 +52,50 @@ class Finger{
 
 
 public:
-    virtual bool prepare() =0;
+    virtual bool prepare(){}
     bool open();
-    bool toArmPosition(Vector &fingertipPosition, Vector &retArmpPosition);
+    virtual bool toArmPosition(Vector &fingertipPosition, Vector &retArmpPosition);
     bool setAngles(double proximal, double distal, double speed);
     bool setAngles(double proximal, double speed); //consider changing the name to something meaningful both distal and proximal are moves
     bool setProximalAngle(double angle, double speed = 30);
     bool setDistalAngle(double angle, double speed = 30);
-    bool setSynchroProximalAngle(double proximal);
-    void calibrate();
+    virtual bool setSynchroProximalAngle(double proximal){}
+    virtual void calibrate();
     bool checkMotionDone();
-    bool getAngels(Vector &angles);
-    bool getPosition(yarp::sig::Vector &position);
-    bool getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders);
+    virtual bool getAngels(Vector &angles);
+    virtual bool getPosition(yarp::sig::Vector &position);
+    virtual bool getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders);
     bool readEncoders(Vector &encoderValues);
+
 protected:
     Finger(t_controllerData);
     bool setAngle(int joint, double angle, double speed = 30);
     //bool getEncoderValues(Vector &encoderValues);
-    void getAngels(yarp::sig::Vector &angles, Vector fingerEncoders);
+
 
 
 private:
-    void adjustMinMax(const double currentVal, double &min, double &max);
+
 
     static void initController(ResourceFinder& rf);
 
-private:
+protected:
 
 
-    yarp::dev::IEncoders* _armEncoder;
+
     yarp::dev::IControlMode2 *_armJointModeCtrl;
     yarp::dev::IPositionControl *_armJointPositionCtrl;
 
     yarp::dev::ICartesianControl* _armCartesianCtrl;
 
 
-    string _dbgtag;
+
 
 protected:
-    double _maxProximal;
-    double _minProximal;
-    double _maxMiddle;
-    double _minMiddle;
-    double _maxDistal;
-    double _minDistal;
+    string _dbgtag;
+    yarp::dev::IEncoders* _armEncoder;
 
 
-BufferedPort<Bottle> _fingerEncoders;
     iCub::iKin::iCubFinger* _iCubFinger;
 
     int _proximalJointIndex;
@@ -113,7 +110,54 @@ BufferedPort<Bottle> _fingerEncoders;
 
 };
 
-class IndexFinger: public Finger{
+class simFinger:public Finger{
+protected:
+    simFinger(t_controllerData ctrlData);
+};
+
+class icubFinger:public Finger{
+public:
+    bool readEncoders(Vector &encoderValues);
+    void calibrate();
+    bool getAngels(Vector &angles);
+    bool toArmPosition(Vector &fingertipPosition, Vector &retArmpPosition);
+    bool getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders);
+    bool getPosition(yarp::sig::Vector &position);
+protected:
+    icubFinger(t_controllerData ctrlData);
+    BufferedPort<Bottle>* _fingerEncoders;
+
+protected:
+    double _maxProximal;
+    double _minProximal;
+    double _maxMiddle;
+    double _minMiddle;
+    double _maxDistal;
+    double _minDistal;
+
+private:
+    void adjustMinMax(const double currentVal, double &min, double &max);
+
+protected:
+    void getAngels(yarp::sig::Vector &angles, Vector fingerEncoders);
+
+};
+
+class SimIndexFinger: public Finger{
+public:
+    SimIndexFinger(t_controllerData ctrlData);
+    void calibrate(){}
+    bool prepare();
+    bool setSynchroProximalAngle(double proximal);
+};
+
+class SimThumb: public Finger{
+public:
+    SimThumb(t_controllerData ctrlData);
+    bool prepare();
+};
+
+class IndexFinger: public icubFinger{
 
 public:
     IndexFinger(t_controllerData);
@@ -124,7 +168,7 @@ public:
 
 
 
-class Thumb:public Finger{
+class Thumb:public icubFinger{
 
 public:
     Thumb(t_controllerData ctrlData);
@@ -135,14 +179,25 @@ public:
 
 class FingerFactory{
 public:
-    Finger* createFinger(string whichFinger, t_controllerData ctrlData
+    Finger* createFinger(string whichFinger, string whichRobot, t_controllerData ctrlData
                          ){
 
-        if(whichFinger.compare("index") == 0){
-            return new IndexFinger(ctrlData);
+
+        if(whichRobot.compare("icub") == 0){
+            if(whichFinger.compare("index") == 0){
+                return new IndexFinger(ctrlData);
+            }
+            else if(whichFinger.compare("thumb") == 0){
+                return new Thumb(ctrlData);
+            }
         }
-        else if(whichFinger.compare("thumb") == 0){
-            return new Thumb(ctrlData);
+        else if(whichRobot.compare("icubSim") == 0){
+            if(whichFinger.compare("index") == 0){
+                return new SimIndexFinger(ctrlData);
+            }
+            else if(whichFinger.compare("thumb") == 0){
+                return new SimThumb(ctrlData);
+            }
         }
     }
 };

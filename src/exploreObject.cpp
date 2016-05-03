@@ -24,61 +24,50 @@ bool ExploreObject::validatePositionsDisable(){
     return true;
 }
 
-bool ExploreObject::nRepeatsSet(const int32_t nRepeats)
-{
+bool ExploreObject::nRepeatsSet(const int32_t nRepeats){
     _exploreObjectGP_thread->setNRepeats(nRepeats);
     return true;
 }
 
-bool ExploreObject::refineModelEnable()
-{
+bool ExploreObject::refineModelEnable(){
    _exploreObjectGP_thread->enableRefiningModel();
    return true;
 }
 
-bool ExploreObject::refineModelDisable()
-{
+bool ExploreObject::refineModelDisable(){
     _exploreObjectGP_thread->disableRefiningModel();
     return true;
 }
 
-bool ExploreObject::openHand()
-{
-
+bool ExploreObject::openHand(){
     return _robotHand->open();
-
-
 }
 
-bool ExploreObject::prepHand()
-{
+bool ExploreObject::prepHand(){
     return _robotHand->prepare();
-
-
 }
 
-bool ExploreObject::calibrateHand()
-{
+bool ExploreObject::calibrateHand(){
     _robotHand->calibrate();
-
     return true;
 }
 
-bool ExploreObject::fingerSetAngle(const double angle)
-{
-
+bool ExploreObject::fingerSetAngle(const double angle){
     Vector finger_pos;
+    bool ret;
 
-    //_objectFeaturesThread->getIndexFingertipPosition(finger_pos);
+    ret = _explorationFinger->setSynchroProximalAngle(angle);
+    while(!_explorationFinger->checkMotionDone())
+        ;
 
-    //Vector pos, orient;
+    _explorationFinger->getPosition(finger_pos);
+    cout << "Finger pos: " << finger_pos.toString() << endl;
+    _explorationFinger->getAngels(finger_pos);
+    cout << "Finger ang: " << finger_pos.toString() << endl;
 
 
-    //_objectFeaturesThread->getFingertipPose(pos, orient);
-    //_objectFeaturesThread->getIndexFingertipPosition(finger_pos);
+    return ret;
 
-    //cout << "Finger: " << finger_pos.toString() << endl;
-    //return _objectFeaturesThread->setProximalAngle(angle);
 }
 
 ExploreObject::ExploreObject(yarp::os::ResourceFinder& rf)
@@ -161,81 +150,16 @@ ExploreObject::~ExploreObject()
 
 }
 
-bool ExploreObject::goToStartingPose()
-{
-
+bool ExploreObject::goToStartingPose(){
     return _robotHand->goToStartingPose();
-
-    /*Vector desiredFingerPos;
-    Vector desiredArmPos, desiredArmOrient;
-    Vector currentArmPos, currentArmOrient;
-
-
-    if(_objectFeaturesThread->getStartingPose(desiredFingerPos, desiredArmOrient))
-    {
-
-      // Move the arm up before moving sideways
-        _objectFeaturesThread->indexFinger2ArmPosition(desiredFingerPos, desiredArmPos);
-        _objectFeaturesThread->getArmPose(currentArmPos, currentArmOrient);
-        currentArmPos[2] = desiredArmPos[2];
-        _objectFeaturesThread->moveArmToPosition(currentArmPos, currentArmOrient);
-
-
-
-        _armCartesianController->goToPoseSync(desiredArmPos, desiredArmOrient);
-        return true;
-    }
-
-    return false;*/
-
 }
 
 
 
-/*bool ExploreObject::goToHomePose()
-{
-    Vector pos, orient;
-    Vector armPos, armOrient;
-    pos.resize(3); // x,y,z position
-    orient.resize(4); // x,y,z,w prientation
 
-    if(_objectFeaturesThread->getHomePose(pos, orient))
-    {
-        _objectFeaturesThread->getArmPose(armPos, armOrient);
-        armPos[2] = pos[2];
-        _objectFeaturesThread->moveArmToPosition(armPos, armOrient);
 
-        _armCartesianController->goToPoseSync(pos, orient);
-        return true;
-    }
-    return false;
-}*/
-
-bool ExploreObject::goToEndPose()
-{
-
+bool ExploreObject::goToEndPose(){
     return _robotHand->goToEndPose();
-
-    /*
-    Vector desiredFingerPos;
-    Vector desiredArmPos, desiredArmOrient;
-    Vector currentArmPos, currentArmOrient;
-
-    if(_objectFeaturesThread->getDesiredEndPose(desiredFingerPos, desiredArmOrient))
-    {
-        _objectFeaturesThread->indexFinger2ArmPosition(desiredFingerPos, desiredArmPos);
-        // Move the hand up before moving sidways.
-        _objectFeaturesThread->getArmPose(currentArmPos, currentArmOrient);
-        currentArmPos[2] = desiredArmPos[2];
-        _objectFeaturesThread->moveArmToPosition(currentArmPos, currentArmOrient);
-
-
-        _armCartesianController->goToPoseSync(desiredArmPos, desiredArmOrient);
-        return true;
-    }
-    return false;
-*/
-
 }
 
 bool ExploreObject::setStartingPose()
@@ -243,7 +167,8 @@ bool ExploreObject::setStartingPose()
     Vector pos, orient;
     pos.resize(3); // x,y,z position
     orient.resize(4); // x,y,z,w prientation
-    _armCartesianController->getPose(pos, orient);
+    //_armCartesianController->getPose(pos, orient);
+    _robotHand->getPose(pos, orient);
     _objectFeaturesThread->setStartingPose(pos, orient);
     return true;
 }
@@ -535,7 +460,19 @@ bool ExploreObject::configure(yarp::os::ResourceFinder& rf )
 
     bool ret = true;
 
-    _robotHand = new Hand(rf);
+    Bottle robotParameters = rf.findGroup("RobotParameters");
+    string robotName = robotParameters.check("robotName", Value("error")).asString();
+
+    if(robotName.compare("icub") == 0){
+    _robotHand = new icubHand(rf);
+    }
+    else if(robotName.compare("icubSim") == 0){
+        _robotHand = new SimHand(rf);
+    }
+    else{
+        return false;
+    }
+    _explorationFinger = _robotHand->getIndexFinger();
 
     // Check if in the config file we have a name for the server
     string moduleName = rf.check("moduleName", Value("object-exploration-server"),
