@@ -12,9 +12,9 @@ class ExploreGPSurfaceThread: public GPExplorationThread
 {
 
 public:
-    ExploreGPSurfaceThread(int period, Hand* robotHand, Finger* explorationFinger,
+    ExploreGPSurfaceThread(int period, Hand* robotHand, Finger* explorationFinger, string objectName,
                            ObjectFeaturesThread* objectFeatures):
-        GPExplorationThread(period, robotHand, explorationFinger, objectFeatures)
+        GPExplorationThread(period, robotHand, explorationFinger, objectName, objectFeatures)
     {
         _surfaceModel = objectFeatures->getGPSurfaceModel();
         _forceThreshold = FORCE_TH;

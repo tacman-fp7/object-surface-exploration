@@ -50,6 +50,7 @@ ContactSafetyThread::ContactSafetyThread(int period,  Hand *robotHand)
     _robotHand = robotHand;
     _collisionDetected = false;
 
+    init();
 
 
 

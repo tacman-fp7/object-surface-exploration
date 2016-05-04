@@ -13,20 +13,16 @@ class robotControl;
 class robotControl : public yarp::os::Wire {
 public:
   robotControl();
-  virtual bool setHomePose();
-  virtual bool goToHomePose();
   virtual bool setStartingPose();
   virtual bool goToStartingPose();
   virtual bool setEndPose();
   virtual bool goToEndPose();
-  virtual bool startExploring();
+  virtual bool startExploring(const std::string& type, const std::string& objectName);
   virtual bool stopExploring();
   virtual bool fingerSetAngle(const double angle);
   virtual bool prepHand();
   virtual bool openHand();
   virtual bool calibrateHand();
-  virtual bool startExploringGP();
-  virtual bool exploreGPSurface(const std::string& objectName);
   virtual bool enableSurfaceSampling();
   virtual bool disableSurfaceSampling();
   virtual bool refineModelEnable();

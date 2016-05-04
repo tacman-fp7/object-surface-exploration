@@ -10,6 +10,12 @@ using std::cout;
 
 using yarp::os::Value;
 
+/*
+ * 192 for hand data, where 1-60 are taxels of fingertips (12 each in this order:
+ * index, middle, ring, little, thumb); 61-96 zeros; 97-144 palm taxels
+ * (inside these, 108, 120, 132, and 140 are thermal pads ~ 0s); 145-192 zeros.
+ */
+
 Hand::Hand(ResourceFinder rf){
 
     _desiredStartingPosition.resize(3);
@@ -35,11 +41,6 @@ bool Hand::prepare(){
 
     bool ret = true;
 
-    // Prepare all fingers
-   /* ret = ret && setAbduction(20);
-    ret = ret && _indexFinger->prepare();
-    ret = ret && _thumb->prepare();
-*/
     setAbduction(20);
     _indexFinger->prepare();
     _thumb->prepare();
@@ -53,7 +54,6 @@ bool Hand::calibrate(){
 
     _indexFinger->open();
     _thumb->open();
-
     _indexFinger->calibrate();
 
     return true;
@@ -91,14 +91,14 @@ bool Hand::setAbduction(double angle, double speed){
     }
 }
 
-void Hand::updateRobotReachableSpace()
+void Hand::updateSafeWorkspace()
 {
     if(_desiredStartingPose_isValid) // && _desiredEndPose_isValid)
     {
-        _robotReachableSpace.minX = _desiredStartingPosition[0] - 0.30; //Maximum width 13 cm + 2 cm leeway
-        _robotReachableSpace.maxX = _desiredStartingPosition[0] + 0.10;
-        _robotReachableSpace.minZ = _desiredStartingPosition[2] - 0.05;
-        _robotReachableSpace.maxZ = _desiredStartingPosition[2] + 0.05;
+        _safeWorkspace.minX = _desiredStartingPosition[0] - 0.30; //Maximum width 13 cm + 2 cm leeway
+        _safeWorkspace.maxX = _desiredStartingPosition[0] + 0.10;
+        _safeWorkspace.minZ = _desiredStartingPosition[2] - 0.05;
+        _safeWorkspace.maxZ = _desiredStartingPosition[2] + 0.05;
 
     }
 
@@ -106,14 +106,14 @@ void Hand::updateRobotReachableSpace()
     {
         if(_desiredStartingPosition[1] < _desiredEndPosition[1])
         {
-            _robotReachableSpace.minY = _desiredStartingPosition[1] - 0.08;
-            _robotReachableSpace.maxY = _desiredEndPosition[1] + 0.08;
+            _safeWorkspace.minY = _desiredStartingPosition[1] - 0.08;
+            _safeWorkspace.maxY = _desiredEndPosition[1] + 0.08;
 
         }
         else
         {
-            _robotReachableSpace.minY = _desiredEndPosition[1] - 0.08;
-            _robotReachableSpace.maxY = _desiredStartingPosition[1] + 0.08;
+            _safeWorkspace.minY = _desiredEndPosition[1] - 0.08;
+            _safeWorkspace.maxY = _desiredStartingPosition[1] + 0.08;
 
         }
     }
@@ -121,7 +121,7 @@ void Hand::updateRobotReachableSpace()
 
 void Hand::setStartingPose ( Vector& pos, Vector& orient )
 {
-    if(pos[0] > _robotReachableSpace.disasterX)
+    if(pos[0] > _safeWorkspace.disasterX)
     {
         cerr << _dbgtag << "Invalid x position" << endl;
         return;
@@ -130,14 +130,16 @@ void Hand::setStartingPose ( Vector& pos, Vector& orient )
     _desiredStartingPosition = pos;
     _desiredStartingOrientation = orient;
     _desiredStartingPose_isValid = true;
-    updateRobotReachableSpace(); // This must be done after isValid is set to true;
+    //updateSafeWorkspace(pos, orient);
+
+    updateSafeWorkspace(); // This must be done after isValid is set to true;
     printPose(pos, orient);
 
 }
 
 void Hand::setEndPose ( Vector& pos, Vector& orient )
 {
-    if(pos[0] > _robotReachableSpace.disasterX)
+    if(pos[0] > _safeWorkspace.disasterX)
     {
         cerr << _dbgtag << "Invalid x position" << endl;
         return;
@@ -145,7 +147,7 @@ void Hand::setEndPose ( Vector& pos, Vector& orient )
     _desiredEndPosition = pos;
     _desiredEndOrientation = orient;
     _desiredEndPose_isValid = true;
-    updateRobotReachableSpace();
+    updateSafeWorkspace();
     printPose(pos, orient);
 }
 
@@ -266,13 +268,13 @@ void Hand::configure(yarp::os::ResourceFinder rf){
     //// This get updated when I read the
     /// Starting and ending positions
 
-    _robotReachableSpace.minX = -0.4;
-    _robotReachableSpace.maxX = -0.2;
-    _robotReachableSpace.minY =  0; // This works for both arms
-    _robotReachableSpace.maxY =  0; // This works for both arms
-    _robotReachableSpace.minZ = -0.1;
-    _robotReachableSpace.maxZ =  0.1;
-    _robotReachableSpace.disasterX = -0.2; // Beyond this point you will break the hand
+    _safeWorkspace.minX = -0.4;
+    _safeWorkspace.maxX = -0.2;
+    _safeWorkspace.minY =  0; // This works for both arms
+    _safeWorkspace.maxY =  0; // This works for both arms
+    _safeWorkspace.minZ = -0.1;
+    _safeWorkspace.maxZ =  0.1;
+    _safeWorkspace.disasterX = -0.2; // Beyond this point you will break the hand
 
 
     _moduleName = rf.check("moduleName", Value("object-exploration-server"),
@@ -477,6 +479,10 @@ void Hand::configure(yarp::os::ResourceFinder rf){
 
 
 
+}
+
+void Hand::waitMotionDone(const double period, const double timeout){
+    _armCartesianCtrl->waitMotionDone(period, timeout);
 }
 
 bool SimHand::configure(yarp::os::ResourceFinder& rf){

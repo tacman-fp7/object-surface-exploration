@@ -49,10 +49,6 @@ public:
     void threadRelease();
 
 
-    //double getContactForce();
-
-
-
     void setEndPose(Vector& pos, Vector& orient);
     void setStartingPose(Vector& pos, Vector& orient);
     bool getDesiredEndPose(Vector& pos, Vector& orient);
@@ -70,17 +66,15 @@ public:
 
     const int& getExplorationThreadPeriod();
 
-    void setArmController_jnt(yarp::dev::IEncoders *encoder, yarp::dev::IPositionControl *jointCtrl);
-    void setArmController_cart(yarp::dev::ICartesianControl * cartesianCtrl);
-    void setArmController_mode(yarp::dev::IControlMode2 *armJointCtrlmode);
+
     bool isExplorationValid(){return _isExplorationValid;}
-    //double getProximalJointAngle(){return _proximalJointAngle;}
+
 
 
     void publishContactState(int contactState);
     void publishFingertipPosition(Vector pos);
 
-    bool prepGP();
+
 
 
     void updateContactState(int contactState){_contactState = contactState;
@@ -114,28 +108,19 @@ protected:
     string _moduleName;
     string _whichFinger;
 
-//    int _trajectoryTime;
-
-
-
 
     int _contactState;
 
     ////// Exploration parameters ///////
-    //int _maintainContactPeriod;
-    //int _readTactilePeriod;
     int _explorationThreadPeriod;
     bool _isExplorationValid;
 
-   //double _desiredFroce;
-   // Mutex _desiredForceMutex;
 
 
     bool _desiredStartingPose_isValid;
     Vector _desiredStartingPosition;
     Vector _desiredStartingOrientation;
-    //double _zMax;
-    //double _zMin;
+
 
     bool _desiredEndPose_isValid;
     Vector _desiredEndPosition;
@@ -145,25 +130,8 @@ protected:
     Vector _homePosition;
     Vector _homeOrientation;
 
-    //////// Object Features ////////////
-
-    //Mutex _tactileMutex;
-    //BufferedPort<Bottle> _contactForceCoPPort;
-   // double _contactForce;
 
 
-
-
-    /// Clean them a little later /////
-
-    ///
-    //Mutex _armJointMutex;
-    //Vector _armJoints;
-
-    /// Arm pose and orient is actually gripper pose and orient!!!!
-    //Mutex _armPoseMutex;
-    //Vector _armPosition;
-    //Vector _armOrientation;
 
     bool _wayPoint_isValid;
     Vector _wayPointPos;
@@ -184,7 +152,7 @@ protected:
     objectExploration::SurfaceModelGP *_objectSurfaceModelGP;
 
 
-    reachableSpace _robotReachableSpace;
+    workspace _robotReachableSpace;
 
 
 };

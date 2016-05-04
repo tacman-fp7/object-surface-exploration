@@ -20,16 +20,53 @@ using gurls::gMat2D;
 using gurls::gVec;
 using yarp::sig::Vector;
 
-class SurfaceModelGP
-{
+class SurfaceModel{
+public:
+
+    //SurfaceModel(){}
+    //SurfaceModel(const std::string objectName);
+    //~SurfaceModel();
+    virtual bool trainModel() = 0; // with some sort of input
+   //virtual bool loadModel(); // from the disk
+    //virtual bool saveModel(); //to the disk
+    virtual bool updateModel() = 0;
+    //virtual void saveModelOutput();
+    virtual bool updateSurfaceEstimate(const unsigned int nGrid = 120, const double offset = 0.0/1000) = 0;
+
+
+    virtual void loadContactData(const std::string type) = 0;
+    virtual void addContactPoint(const Vector fingertipPosition) = 0;
+    virtual void addContactPoint(gVec<double> posXY, gVec<double> posZ) = 0;
+    virtual void saveContactPoints() = 0;
+    virtual void padBoundingBox() = 0;
+    virtual void padBoundingBox(double xMin, double xMax, double yMin, double yMax, double zMin, int nSteps = 5, double offset = 0.0/1000) = 0;
+    virtual void setBoundingBox(const unsigned int nPoints = 120, const double offset = 0.0/1000) = 0;
+    virtual void setBoundingBox(const double xMin, const double xMax, const double yMin, const double yMax,
+                        const unsigned int nPoints = 120, const double offset = 0.0/1000) = 0;
+
+    virtual bool getMaxVariancePose(Vector &maxVariancePos) = 0;
+    virtual bool getMaxEstimatePos(Vector &maxEstimatePos) = 0;
+    virtual bool getNextSamplingPosition(Vector &nextSamplingPosition, bool nextRow = false) = 0;
+    virtual bool getNextRefinementPosition(Vector &nextSamplingPosition) = 0;
+    virtual bool getNextValidationPosition(Vector &validationPosition) = 0;
+    virtual void enableRefinement() = 0;
+    virtual void disableRefinement() = 0;
+    virtual void enableValidation() = 0;
+    virtual void disableValidation() = 0;
+    virtual bool validatePosition(Vector &validationPosition) = 0;
+
+
+};
+
+class SurfaceModelGP: public SurfaceModel{
 public:
     SurfaceModelGP(const std::string objectName);
     ~SurfaceModelGP();
     bool trainModel(); // with some sort of input
-    bool loadModel(); // from the disk
-    bool saveModel(); //to the disk
+    //bool loadModel(); // from the disk
+    //bool saveModel(); //to the disk
     bool updateModel();
-    void saveModelOutput();
+    //void saveModelOutput();
     //void clearModel();
     bool updateSurfaceEstimate(const unsigned int nGrid = 120, const double offset = 0.0/1000);
     //bool saveMeshCSV();

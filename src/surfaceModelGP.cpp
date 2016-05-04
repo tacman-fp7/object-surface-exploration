@@ -19,8 +19,7 @@ using std::string;
 //_objectModel.
 //}
 
-SurfaceModelGP::SurfaceModelGP(const std::string objectName)
-{
+SurfaceModelGP::SurfaceModelGP(const std::string objectName){
     _dbgtg = "surfaceModelGP ( " + objectName + " ):";
     _objectName = objectName;
     _opt = NULL;

@@ -24,40 +24,9 @@ using std::cerr;
 using yarp::os::Mutex;
 
 
-/*
- * 192 for hand data, where 1-60 are taxels of fingertips (12 each in this order:
- * index, middle, ring, little, thumb); 61-96 zeros; 97-144 palm taxels
- * (inside these, 108, 120, 132, and 140 are thermal pads ~ 0s); 145-192 zeros.
- */
+
 void ObjectFeaturesThread::run()
 {
-
-
-    //cout << _dbgtag << "Still running!" << endl;
-    ///// Read the tactile data ///////
-    //Bottle* tactileData = _tactilePort.read(true); // Wait for data
-    //Bottle* contactForceCoP = _contactForceCoPPort.read(true); // Wait for data
-
-    //// Read the corresponding arm position. //////
-    //Bottle* armPose = _armPositionPort.read(true);
-
-    /*if(contactForceCoP == NULL )
-    {
-        // TODO: figure out why it gets run when deleting the thread  <--- becuase it is was waiting for the tactile data
-        cerr << _dbgtag << "Run: Null pointers!" << endl;
-        return;
-    }
-    if(contactForceCoP->isNull())
-    {
-        cerr << "Did not receive tactile or arm data" << endl;
-        return;
-    }*/
-
-
-    //_tactileMutex.lock();
-    //_contactForce = contactForceCoP->get(0).asDouble(); // Contact force field is the first one
-    //_tactileMutex.unlock();
-
 
     // Read the fingertip position
     Vector fingertipPosition;
@@ -280,40 +249,7 @@ bool ObjectFeaturesThread::threadInit()
 
     _contactState = 0;
 
-    _dbgtag = "\n\nObjectFeaturesThread.cpp: ";
-
-
-    ///////// Connect to the force port ///////////////////////
-
-//  /force-cop-estimator/left_index/force:o
-
-
-    ////////////////// Connect to the forceCoP port ///////////////////////
-   /* if(!_contactForceCoPPort.open("/" + _moduleName + "/skin/" + _arm + "_hand/" + _whichFinger + "/force-CoP:i"))
-    {
-        ret = false;
-        cerr << _dbgtag << "Failed to open " << "/" << _moduleName << "/skin" << _arm << "_hand/" <<
-                _whichFinger << "/force-CoP:i" << endl;
-        _isExplorationValid = false;
-        //        printf("Failed to open local tactile port\n");
-    }*/
-
-    ///////////////////////////////////////
-    //TODO: Change the incoming port!
-    ////////////////////////////////////////
-  /*  if(!Network::connect("/force-reconstruction/" + _arm + "_index/force-CoP",
-                         "/" + _moduleName + "/skin/" + _arm + "_hand/" + _whichFinger + "/force-CoP:i"))
-    {
-        _isExplorationValid = false;
-        cerr << _dbgtag << "Failed to connect:" << endl;
-        cerr << "/force-reconstruction/" + _arm + "_index/force-CoP" << " and" << endl;
-        cerr << "/" + _moduleName + "/skin/" + _arm + "_hand/" + _whichFinger + "/force-CoP:i" << endl << endl;
-    }*/
-
-
-
-
-
+    _dbgtag = "\n\nObjectFeaturesThread.cpp: ";   
 
 
     _contactStatePort_out.open("/object-exploration/contact/state:o");
@@ -328,8 +264,7 @@ bool ObjectFeaturesThread::threadInit()
     else
         cerr << _dbgtag << "Error, object features thread failed during configuration" << endl;
 
-    _objectSurfaceModelGP = new objectExploration::SurfaceModelGP("hut"); //TODO: use the config file
-    return ret;
+     return ret;
 }
 
 void ObjectFeaturesThread::threadRelease()
@@ -338,38 +273,7 @@ void ObjectFeaturesThread::threadRelease()
 
 }
 
-bool ObjectFeaturesThread::prepGP()
-{
 
-    bool ret = true;
-
-    _objectSurfaceModelGP->loadContactData("blindSearch"); //TODO: put this in a config file
-    _objectSurfaceModelGP->trainModel();
-    _objectSurfaceModelGP->updateSurfaceEstimate();
-    //_objectSurfaceModelGP->saveMeshCSV();
-
-
-    Vector maxVariancePos;
-    Vector orient;
-
-    // Get the valid point from object features
-    if(getWayPoint(maxVariancePos, orient))
-    {
-
-        // I have to make sure the new waypoint is valid
-        if(_objectSurfaceModelGP->getMaxVariancePose(maxVariancePos))
-            ret = ret && setWayPoint(maxVariancePos, orient);
-
-    }
-    else
-    {
-        cerr << _dbgtag << "Invalid initial waypoint" << endl;
-        ret = false;
-    }
-
-    return ret;
-
-}
 
 void ObjectFeaturesThread::publishFingertipControl(Bottle controlCommand)
 {
@@ -458,6 +362,7 @@ ObjectFeaturesThread::ObjectFeaturesThread ( int period, ResourceFinder rf ) : R
     //_armOrientation.resize(4);
     //_armPosition.resize(3);
 
+    _objectSurfaceModelGP = new objectExploration::SurfaceModelGP("hut"); //TODO: use the config file
 
     //_contactForce = 0;
     _rf = rf;

@@ -6,22 +6,6 @@
 
 
 
-class robotControl_setHomePose : public yarp::os::Portable {
-public:
-  bool _return;
-  void init();
-  virtual bool write(yarp::os::ConnectionWriter& connection);
-  virtual bool read(yarp::os::ConnectionReader& connection);
-};
-
-class robotControl_goToHomePose : public yarp::os::Portable {
-public:
-  bool _return;
-  void init();
-  virtual bool write(yarp::os::ConnectionWriter& connection);
-  virtual bool read(yarp::os::ConnectionReader& connection);
-};
-
 class robotControl_setStartingPose : public yarp::os::Portable {
 public:
   bool _return;
@@ -56,8 +40,10 @@ public:
 
 class robotControl_startExploring : public yarp::os::Portable {
 public:
+  std::string type;
+  std::string objectName;
   bool _return;
-  void init();
+  void init(const std::string& type, const std::string& objectName);
   virtual bool write(yarp::os::ConnectionWriter& connection);
   virtual bool read(yarp::os::ConnectionReader& connection);
 };
@@ -99,23 +85,6 @@ class robotControl_calibrateHand : public yarp::os::Portable {
 public:
   bool _return;
   void init();
-  virtual bool write(yarp::os::ConnectionWriter& connection);
-  virtual bool read(yarp::os::ConnectionReader& connection);
-};
-
-class robotControl_startExploringGP : public yarp::os::Portable {
-public:
-  bool _return;
-  void init();
-  virtual bool write(yarp::os::ConnectionWriter& connection);
-  virtual bool read(yarp::os::ConnectionReader& connection);
-};
-
-class robotControl_exploreGPSurface : public yarp::os::Portable {
-public:
-  std::string objectName;
-  bool _return;
-  void init(const std::string& objectName);
   virtual bool write(yarp::os::ConnectionWriter& connection);
   virtual bool read(yarp::os::ConnectionReader& connection);
 };
@@ -184,48 +153,6 @@ public:
   virtual bool write(yarp::os::ConnectionWriter& connection);
   virtual bool read(yarp::os::ConnectionReader& connection);
 };
-
-bool robotControl_setHomePose::write(yarp::os::ConnectionWriter& connection) {
-  yarp::os::idl::WireWriter writer(connection);
-  if (!writer.writeListHeader(1)) return false;
-  if (!writer.writeTag("setHomePose",1,1)) return false;
-  return true;
-}
-
-bool robotControl_setHomePose::read(yarp::os::ConnectionReader& connection) {
-  yarp::os::idl::WireReader reader(connection);
-  if (!reader.readListReturn()) return false;
-  if (!reader.readBool(_return)) {
-    reader.fail();
-    return false;
-  }
-  return true;
-}
-
-void robotControl_setHomePose::init() {
-  _return = false;
-}
-
-bool robotControl_goToHomePose::write(yarp::os::ConnectionWriter& connection) {
-  yarp::os::idl::WireWriter writer(connection);
-  if (!writer.writeListHeader(1)) return false;
-  if (!writer.writeTag("goToHomePose",1,1)) return false;
-  return true;
-}
-
-bool robotControl_goToHomePose::read(yarp::os::ConnectionReader& connection) {
-  yarp::os::idl::WireReader reader(connection);
-  if (!reader.readListReturn()) return false;
-  if (!reader.readBool(_return)) {
-    reader.fail();
-    return false;
-  }
-  return true;
-}
-
-void robotControl_goToHomePose::init() {
-  _return = false;
-}
 
 bool robotControl_setStartingPose::write(yarp::os::ConnectionWriter& connection) {
   yarp::os::idl::WireWriter writer(connection);
@@ -313,8 +240,10 @@ void robotControl_goToEndPose::init() {
 
 bool robotControl_startExploring::write(yarp::os::ConnectionWriter& connection) {
   yarp::os::idl::WireWriter writer(connection);
-  if (!writer.writeListHeader(1)) return false;
+  if (!writer.writeListHeader(3)) return false;
   if (!writer.writeTag("startExploring",1,1)) return false;
+  if (!writer.writeString(type)) return false;
+  if (!writer.writeString(objectName)) return false;
   return true;
 }
 
@@ -328,8 +257,10 @@ bool robotControl_startExploring::read(yarp::os::ConnectionReader& connection) {
   return true;
 }
 
-void robotControl_startExploring::init() {
+void robotControl_startExploring::init(const std::string& type, const std::string& objectName) {
   _return = false;
+  this->type = type;
+  this->objectName = objectName;
 }
 
 bool robotControl_stopExploring::write(yarp::os::ConnectionWriter& connection) {
@@ -437,50 +368,6 @@ bool robotControl_calibrateHand::read(yarp::os::ConnectionReader& connection) {
 
 void robotControl_calibrateHand::init() {
   _return = false;
-}
-
-bool robotControl_startExploringGP::write(yarp::os::ConnectionWriter& connection) {
-  yarp::os::idl::WireWriter writer(connection);
-  if (!writer.writeListHeader(1)) return false;
-  if (!writer.writeTag("startExploringGP",1,1)) return false;
-  return true;
-}
-
-bool robotControl_startExploringGP::read(yarp::os::ConnectionReader& connection) {
-  yarp::os::idl::WireReader reader(connection);
-  if (!reader.readListReturn()) return false;
-  if (!reader.readBool(_return)) {
-    reader.fail();
-    return false;
-  }
-  return true;
-}
-
-void robotControl_startExploringGP::init() {
-  _return = false;
-}
-
-bool robotControl_exploreGPSurface::write(yarp::os::ConnectionWriter& connection) {
-  yarp::os::idl::WireWriter writer(connection);
-  if (!writer.writeListHeader(2)) return false;
-  if (!writer.writeTag("exploreGPSurface",1,1)) return false;
-  if (!writer.writeString(objectName)) return false;
-  return true;
-}
-
-bool robotControl_exploreGPSurface::read(yarp::os::ConnectionReader& connection) {
-  yarp::os::idl::WireReader reader(connection);
-  if (!reader.readListReturn()) return false;
-  if (!reader.readBool(_return)) {
-    reader.fail();
-    return false;
-  }
-  return true;
-}
-
-void robotControl_exploreGPSurface::init(const std::string& objectName) {
-  _return = false;
-  this->objectName = objectName;
 }
 
 bool robotControl_enableSurfaceSampling::write(yarp::os::ConnectionWriter& connection) {
@@ -656,26 +543,6 @@ void robotControl_quit::init() {
 robotControl::robotControl() {
   yarp().setOwner(*this);
 }
-bool robotControl::setHomePose() {
-  bool _return = false;
-  robotControl_setHomePose helper;
-  helper.init();
-  if (!yarp().canWrite()) {
-    yError("Missing server method '%s'?","bool robotControl::setHomePose()");
-  }
-  bool ok = yarp().write(helper,helper);
-  return ok?helper._return:_return;
-}
-bool robotControl::goToHomePose() {
-  bool _return = false;
-  robotControl_goToHomePose helper;
-  helper.init();
-  if (!yarp().canWrite()) {
-    yError("Missing server method '%s'?","bool robotControl::goToHomePose()");
-  }
-  bool ok = yarp().write(helper,helper);
-  return ok?helper._return:_return;
-}
 bool robotControl::setStartingPose() {
   bool _return = false;
   robotControl_setStartingPose helper;
@@ -716,12 +583,12 @@ bool robotControl::goToEndPose() {
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-bool robotControl::startExploring() {
+bool robotControl::startExploring(const std::string& type, const std::string& objectName) {
   bool _return = false;
   robotControl_startExploring helper;
-  helper.init();
+  helper.init(type,objectName);
   if (!yarp().canWrite()) {
-    yError("Missing server method '%s'?","bool robotControl::startExploring()");
+    yError("Missing server method '%s'?","bool robotControl::startExploring(const std::string& type, const std::string& objectName)");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
@@ -772,26 +639,6 @@ bool robotControl::calibrateHand() {
   helper.init();
   if (!yarp().canWrite()) {
     yError("Missing server method '%s'?","bool robotControl::calibrateHand()");
-  }
-  bool ok = yarp().write(helper,helper);
-  return ok?helper._return:_return;
-}
-bool robotControl::startExploringGP() {
-  bool _return = false;
-  robotControl_startExploringGP helper;
-  helper.init();
-  if (!yarp().canWrite()) {
-    yError("Missing server method '%s'?","bool robotControl::startExploringGP()");
-  }
-  bool ok = yarp().write(helper,helper);
-  return ok?helper._return:_return;
-}
-bool robotControl::exploreGPSurface(const std::string& objectName) {
-  bool _return = false;
-  robotControl_exploreGPSurface helper;
-  helper.init(objectName);
-  if (!yarp().canWrite()) {
-    yError("Missing server method '%s'?","bool robotControl::exploreGPSurface(const std::string& objectName)");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
@@ -886,28 +733,6 @@ bool robotControl::read(yarp::os::ConnectionReader& connection) {
   if (direct) tag = reader.readTag();
   while (!reader.isError()) {
     // TODO: use quick lookup, this is just a test
-    if (tag == "setHomePose") {
-      bool _return;
-      _return = setHomePose();
-      yarp::os::idl::WireWriter writer(reader);
-      if (!writer.isNull()) {
-        if (!writer.writeListHeader(1)) return false;
-        if (!writer.writeBool(_return)) return false;
-      }
-      reader.accept();
-      return true;
-    }
-    if (tag == "goToHomePose") {
-      bool _return;
-      _return = goToHomePose();
-      yarp::os::idl::WireWriter writer(reader);
-      if (!writer.isNull()) {
-        if (!writer.writeListHeader(1)) return false;
-        if (!writer.writeBool(_return)) return false;
-      }
-      reader.accept();
-      return true;
-    }
     if (tag == "setStartingPose") {
       bool _return;
       _return = setStartingPose();
@@ -953,8 +778,18 @@ bool robotControl::read(yarp::os::ConnectionReader& connection) {
       return true;
     }
     if (tag == "startExploring") {
+      std::string type;
+      std::string objectName;
+      if (!reader.readString(type)) {
+        reader.fail();
+        return false;
+      }
+      if (!reader.readString(objectName)) {
+        reader.fail();
+        return false;
+      }
       bool _return;
-      _return = startExploring();
+      _return = startExploring(type,objectName);
       yarp::os::idl::WireWriter writer(reader);
       if (!writer.isNull()) {
         if (!writer.writeListHeader(1)) return false;
@@ -1015,33 +850,6 @@ bool robotControl::read(yarp::os::ConnectionReader& connection) {
     if (tag == "calibrateHand") {
       bool _return;
       _return = calibrateHand();
-      yarp::os::idl::WireWriter writer(reader);
-      if (!writer.isNull()) {
-        if (!writer.writeListHeader(1)) return false;
-        if (!writer.writeBool(_return)) return false;
-      }
-      reader.accept();
-      return true;
-    }
-    if (tag == "startExploringGP") {
-      bool _return;
-      _return = startExploringGP();
-      yarp::os::idl::WireWriter writer(reader);
-      if (!writer.isNull()) {
-        if (!writer.writeListHeader(1)) return false;
-        if (!writer.writeBool(_return)) return false;
-      }
-      reader.accept();
-      return true;
-    }
-    if (tag == "exploreGPSurface") {
-      std::string objectName;
-      if (!reader.readString(objectName)) {
-        reader.fail();
-        return false;
-      }
-      bool _return;
-      _return = exploreGPSurface(objectName);
       yarp::os::idl::WireWriter writer(reader);
       if (!writer.isNull()) {
         if (!writer.writeListHeader(1)) return false;
@@ -1177,8 +985,6 @@ std::vector<std::string> robotControl::help(const std::string& functionName) {
   std::vector<std::string> helpString;
   if(showAll) {
     helpString.push_back("*** Available commands:");
-    helpString.push_back("setHomePose");
-    helpString.push_back("goToHomePose");
     helpString.push_back("setStartingPose");
     helpString.push_back("goToStartingPose");
     helpString.push_back("setEndPose");
@@ -1189,8 +995,6 @@ std::vector<std::string> robotControl::help(const std::string& functionName) {
     helpString.push_back("prepHand");
     helpString.push_back("openHand");
     helpString.push_back("calibrateHand");
-    helpString.push_back("startExploringGP");
-    helpString.push_back("exploreGPSurface");
     helpString.push_back("enableSurfaceSampling");
     helpString.push_back("disableSurfaceSampling");
     helpString.push_back("refineModelEnable");
@@ -1202,12 +1006,6 @@ std::vector<std::string> robotControl::help(const std::string& functionName) {
     helpString.push_back("help");
   }
   else {
-    if (functionName=="setHomePose") {
-      helpString.push_back("bool setHomePose() ");
-    }
-    if (functionName=="goToHomePose") {
-      helpString.push_back("bool goToHomePose() ");
-    }
     if (functionName=="setStartingPose") {
       helpString.push_back("bool setStartingPose() ");
     }
@@ -1221,7 +1019,7 @@ std::vector<std::string> robotControl::help(const std::string& functionName) {
       helpString.push_back("bool goToEndPose() ");
     }
     if (functionName=="startExploring") {
-      helpString.push_back("bool startExploring() ");
+      helpString.push_back("bool startExploring(const std::string& type, const std::string& objectName) ");
     }
     if (functionName=="stopExploring") {
       helpString.push_back("bool stopExploring() ");
@@ -1237,12 +1035,6 @@ std::vector<std::string> robotControl::help(const std::string& functionName) {
     }
     if (functionName=="calibrateHand") {
       helpString.push_back("bool calibrateHand() ");
-    }
-    if (functionName=="startExploringGP") {
-      helpString.push_back("bool startExploringGP() ");
-    }
-    if (functionName=="exploreGPSurface") {
-      helpString.push_back("bool exploreGPSurface(const std::string& objectName) ");
     }
     if (functionName=="enableSurfaceSampling") {
       helpString.push_back("bool enableSurfaceSampling() ");

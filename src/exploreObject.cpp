@@ -131,14 +131,7 @@ ExploreObject::~ExploreObject()
         delete(_exploreGPSurface_thread);
         _exploreGPSurface_thread = NULL;
     }
-    /*if(_contactSafetyThread != NULL)
-    {
-        if(_contactSafetyThread->isRunning())
-            _contactSafetyThread->stop();
-        delete(ContactSafetyThread);
-        _contactSafetyThread = NULL;
 
-    }*/
 
     if(_objectFeaturesThread != NULL)
     {
@@ -192,7 +185,7 @@ bool ExploreObject::setEndPose()
     Vector pos, orient;
     pos.resize(3); // x,y,z position
     orient.resize(4); // x,y,z,w prientation
-    _armCartesianController->getPose(pos, orient);
+    _robotHand->getPose(pos, orient);
     _objectFeaturesThread->setEndPose(pos, orient);
     return true;
 }
@@ -227,7 +220,7 @@ bool ExploreObject::exploreGPSurface(const std::string& objectName)
         //prepHand();
         if(!this->goToStartingPose())
             ret = false;
-        _armCartesianController->waitMotionDone(0.1, 5);
+        _robotHand->waitMotionDone(0.1, 5);
 
         // Ge the current position of the arm.
         Vector pos, orient;
@@ -244,6 +237,9 @@ bool ExploreObject::exploreGPSurface(const std::string& objectName)
             cerr << _dbgtag << "Failed to set the initial waypoint. Aborting exploration!" << endl;
             return false;
         }
+
+        _exploreGPSurface_thread = new ExploreGPSurfaceThread(_objectFeaturesThread->getExplorationThreadPeriod(),
+                                                              _robotHand, _explorationFinger, "fix", _objectFeaturesThread);
 
 
         if(!_exploreGPSurface_thread->start())
@@ -268,7 +264,7 @@ bool ExploreObject::exploreGPSurface(const std::string& objectName)
 }
 
 
-bool ExploreObject::startExploringGP()
+bool ExploreObject::startExploringGP(const string& objectName)
 {
     bool ret = true;
 
@@ -287,7 +283,8 @@ bool ExploreObject::startExploringGP()
         prepHand();
         if(!this->goToStartingPose())
             ret = false;
-        _armCartesianController->waitMotionDone(0.1, 20);
+        _robotHand->waitMotionDone(0.1, 20);
+        //_armCartesianController->waitMotionDone(0.1, 20);
 
         // Ge the current position of the arm.
         Vector pos, orient;
@@ -307,14 +304,10 @@ bool ExploreObject::startExploringGP()
             return false;
         }
 
-        /* Vector startingPos, endingPos, startingOrient, endingOrient;
-        _objectFeaturesThread->getStartingPose(startingPos, startingOrient);
-        _objectFeaturesThread->getEndingPose(endingPos, endingOrient);
-        _exploreObjectGP_thread->initialiseGP(startingPos, startingOrient,
-                                              endingPos, endingOrient);
-        //_objectFeaturesThread->prepGP();
 
-        */
+        _exploreObjectGP_thread =
+                new GPExplorationThread(_objectFeaturesThread->getExplorationThreadPeriod(),
+                                        _robotHand, _explorationFinger, objectName, _objectFeaturesThread);
 
         if(!_exploreObjectGP_thread->start())
             ret = false;
@@ -354,7 +347,7 @@ bool ExploreObject::disableSurfaceSampling()
     return true;
 }
 
-bool ExploreObject::startExploring()
+bool ExploreObject::startExploringGrid(const string objectName)
 {
     bool ret = true;
 
@@ -373,7 +366,7 @@ bool ExploreObject::startExploring()
         prepHand();
         if(!this->goToStartingPose())
             ret = false;
-        _armCartesianController->waitMotionDone(0.1, 20);
+        _robotHand->waitMotionDone(0.1, 20);
 
         // Ge the current position of the arm.
         Vector pos, orient;
@@ -393,9 +386,11 @@ bool ExploreObject::startExploring()
         }
 
 
-        // Then explore the object
-        //if(!_maintainContactThread->start())
-        //    ret = false;
+
+
+        _exploreObjectThread =
+                new TappingExplorationThread(_objectFeaturesThread->getExplorationThreadPeriod(),
+                                             _robotHand, _explorationFinger, objectName, _objectFeaturesThread);
 
         if(!_exploreObjectThread->start())
             ret = false;
@@ -410,6 +405,16 @@ bool ExploreObject::startExploring()
     }
 
     return ret;
+}
+
+bool ExploreObject::startExploring(const std::string &type, const std::string &objectName){
+
+    if(type.compare("gp") == 0){
+        startExploringGP(objectName);
+    }
+    else if(type.compare("grid") == 0){
+        startExploringGrid(objectName);
+    }
 }
 
 bool ExploreObject::stopExploring()
@@ -428,13 +433,28 @@ bool ExploreObject::stopExploring()
 
         // 0 is invalid state!
         _objectFeaturesThread->updateContactState(0);
-        if(_exploreObjectThread->isRunning())
-            _exploreObjectThread->stop();
-        if(_exploreObjectGP_thread->isRunning())
-            _exploreObjectGP_thread->stop();
-        if(_exploreGPSurface_thread->isRunning())
-            _exploreGPSurface_thread->stop();
 
+        if(_exploreObjectThread != NULL){
+            if(_exploreObjectThread->isRunning()){
+                _exploreObjectThread->stop();
+            }
+            delete _exploreObjectThread;
+            _exploreObjectThread = NULL;
+        }
+        if(_exploreObjectGP_thread != NULL){
+            if(_exploreObjectGP_thread->isRunning()){
+                _exploreObjectGP_thread->stop();
+            }
+            delete _exploreObjectGP_thread;
+            _exploreObjectGP_thread = NULL;
+        }
+        if(_exploreGPSurface_thread != NULL){
+            if(_exploreGPSurface_thread->isRunning()){
+                _exploreGPSurface_thread->stop();
+            }
+            delete _exploreGPSurface_thread;
+            _exploreGPSurface_thread = NULL;
+        }
 
         cout << "stopped" << endl;
 
@@ -452,15 +472,11 @@ bool ExploreObject::stopExploring()
 
 
 // Attach the port as a server
-bool ExploreObject::attach ( yarp::os::Port& source )
-{
-
+bool ExploreObject::attach ( yarp::os::Port& source ){
     return this->yarp().attachAsServer(source);
 }
 
-bool ExploreObject::configure(yarp::os::ResourceFinder& rf )
-{
-
+bool ExploreObject::configure(yarp::os::ResourceFinder& rf ){
 
     bool ret = true;
 
@@ -488,36 +504,7 @@ bool ExploreObject::configure(yarp::os::ResourceFinder& rf )
 
 
 
-    ObjectFeaturesThread& systemParameters = *_objectFeaturesThread; // Just for better naming
 
-
-
-    ////////////////////////////////////////////////////////////////////////////////////////
-    ////////// Setting up the tactile data reading thread //////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////////////////
-
-
-    //_objectFeaturesThread->setArmController_cart(_armCartesianController);
-    //_objectFeaturesThread->setArmController_jnt(_armEncoders, _armJointPositionController);
-    //_objectFeaturesThread->setArmController_mode(_armController_mode);
-
-    //_objectFeaturesThread->start();
-
-
-
-
-    /////////////////////////////////////////////////////////////////////////////////////////////////
-    ////////////////////////// Setting up the exploration strategy thread ///////////////////////////
-    //////////////////////////////////////////////////////////////////////////////////////////////////
-    _exploreObjectThread = new TappingExplorationThread(systemParameters.getExplorationThreadPeriod(),
-                                                        _robotHand, _explorationFinger,_objectFeaturesThread);
-
-
-    _exploreObjectGP_thread = new GPExplorationThread(systemParameters.getExplorationThreadPeriod(),
-                                                      _robotHand, _explorationFinger, _objectFeaturesThread);
-
-    _exploreGPSurface_thread = new ExploreGPSurfaceThread(systemParameters.getExplorationThreadPeriod(),
-                                                          _robotHand, _explorationFinger, _objectFeaturesThread);
 
 
     std::string portName= "/";
@@ -530,7 +517,7 @@ bool ExploreObject::configure(yarp::os::ResourceFinder& rf )
 
     this->attach(_robotControl_port);
 
-    //setHomePose();
+
 
     return ret;
 }
@@ -553,15 +540,15 @@ bool ExploreObject::close()
 
     // Close neatly, this function is called when Ctl+C is registered
     /// To be safe, stop the control
-    _armCartesianController->stopControl();
+    //_robotHand->stopControl();
 
     /// Store the old context to return the robot to the settings before
     /// this module
-    _armCartesianController->restoreContext(_cartCtrlStartupIDstartupID);
-    _deviceController.close();
+    //_armCartesianController->restoreContext(_cartCtrlStartupIDstartupID);
+    //_deviceController.close();
 
 
-    _deviceController_joint.close();
+    //_deviceController_joint.close();
 
     _robotControl_port.close();
     // Close the device controller

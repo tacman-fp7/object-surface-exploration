@@ -8,10 +8,11 @@
 #include <yarp/dev/CartesianControl.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/IPositionControl.h>
+//#include "contactSafetyThread.h"
 
 namespace objectExploration {
 
-struct reachableSpace
+struct workspace
 {
     double minX;
     double maxX;
@@ -41,14 +42,21 @@ public:
     bool goToEndPose();
     bool checkOpenMotionDone(); //Rename to reduce confusion
     bool checkMotionDone(bool* motionDone);
+    void waitMotionDone(double period, double timeout = 0.0);
+    void updateSafeWorkspace();
     Finger* getIndexFinger(){return _indexFinger;}
     string getArmName(){return _whichHand;}
     string getRobotName(){return _robotName;}
+
+    bool setWayPoint(Vector pos, Vector orient);
+    bool setWayPointGP(Vector pos, Vector orient);
+    bool getWayPoint(Vector& pos, Vector& orient, bool invalidateWayPoint = true);
+
 protected:
     void configure(ResourceFinder rf);
 private:
 
-    void updateRobotReachableSpace();
+    //void updateRobotReachableSpace();
     void printPose(Vector& pos, Vector& orient);
 
 protected:
@@ -65,7 +73,7 @@ protected:
     yarp::dev::IControlMode2 *_armJointModeCtrl;
     yarp::dev::IPositionControl *_armJointPositionCtrl;
     yarp::dev::ICartesianControl* _armCartesianCtrl;
-
+    //ContactSafetyThread* _contactSafetyThread;
 
 private:
 
@@ -85,7 +93,7 @@ private:
     Vector _homePosition;
     Vector _homeOrientation;
 
-    reachableSpace _robotReachableSpace;
+    workspace _safeWorkspace;
     //////
     ///
 private:
