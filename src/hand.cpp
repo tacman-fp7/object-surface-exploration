@@ -163,12 +163,12 @@ bool Hand::getPose(Vector &pos, Vector &orient)
 
 bool Hand::goToPoseSync(yarp::sig::Vector& pos, yarp::sig::Vector& orient, double timeout){
 
-        bool ret;
-        ret =  _armCartesianCtrl->goToPoseSync(pos, orient);
-        if(timeout > 0){
+    bool ret;
+    ret =  _armCartesianCtrl->goToPoseSync(pos, orient);
+    if(timeout > 0){
         _armCartesianCtrl->waitMotionDone(0.1, timeout);
-        }
-        return ret;
+    }
+    return ret;
 
 
 }
@@ -194,11 +194,11 @@ bool Hand::goToStartingPose(){
     if(getStartingPose(desiredFingerPos, desiredArmOrient))
     {
 
-      // Move the arm up before moving sideways
+        // Move the arm up before moving sideways
         _indexFinger->toArmPosition(desiredFingerPos, desiredArmPos);
 
         // Get the current arm pose
-       getPose(currentArmPos, currentArmOrient);
+        getPose(currentArmPos, currentArmOrient);
         currentArmPos[2] = desiredArmPos[2];
         goToPoseSync(currentArmPos, desiredArmOrient,10);
 
@@ -207,6 +207,7 @@ bool Hand::goToStartingPose(){
             checkMotionDone(&motionDone);
         }
         goToPoseSync(desiredArmPos, desiredArmOrient);
+
         return true;
     }
 
@@ -232,18 +233,11 @@ bool Hand::goToEndPose(){
         _indexFinger->toArmPosition(desiredFingerPos, desiredArmPos);
 
         // Move the hand up before moving sidways.
-       getPose(currentArmPos, currentArmOrient);
+        getPose(currentArmPos, currentArmOrient);
         currentArmPos[2] = desiredArmPos[2];
         goToPoseSync(currentArmPos, currentArmOrient, 10);
-        bool motionDone = false;
-        while(!motionDone){
-            checkMotionDone(&motionDone);
-        }
-        goToPoseSync(desiredArmPos, desiredArmOrient);
-        motionDone = false;
-        while(!motionDone){
-            checkMotionDone(&motionDone);
-        }
+        goToPoseSync(desiredArmPos, desiredArmOrient, 10);
+
 
 
     }
@@ -252,6 +246,121 @@ bool Hand::goToEndPose(){
 
 void Hand::stopControl(){
     _armCartesianCtrl->stopControl();
+}
+
+bool Hand::setWayPoint( Vector pos, Vector orient ){
+    _wayPoint_isValid = true;
+
+    // Breaching this will be disasterous for the robot!
+    if(pos[0] >= _safeWorkspace.disasterX)
+    {
+        cerr << _dbgtag << "Cannot have positive x-axis value" << endl;
+        _wayPoint_isValid = false;
+        return false;
+    }
+
+    if(pos[0] < _safeWorkspace.minX )
+    {
+        cerr << _dbgtag << "X position outside allowable range ( "
+             << _safeWorkspace.minX << ", "
+             <<  _safeWorkspace.maxX << "): " << pos[0] << endl;
+
+        pos[0] = _safeWorkspace.minX;
+        _wayPoint_isValid =  false;
+        //return _wayPoint_isValid;
+    }
+
+    if( pos[0] > _safeWorkspace.maxX)
+    {
+        cerr << _dbgtag << "X position outside allowable range ( "
+             << _safeWorkspace.minX << ", "
+             <<  _safeWorkspace.maxX << "): " << pos[0] << endl;
+
+        pos[0]  = _safeWorkspace.maxX;
+        _wayPoint_isValid = false;
+        //return _wayPoint_isValid;
+    }
+
+
+    if(pos[1] < _safeWorkspace.minY )
+    {
+        cerr << _dbgtag << "Y position outside allowable range ( "
+             << _safeWorkspace.minY << ", "
+             <<  _safeWorkspace.maxY << "): " << pos[1] << endl;
+
+        pos[1] = _safeWorkspace.minY;
+        _wayPoint_isValid = false;
+
+    }
+
+    if( pos[1] > _safeWorkspace.maxY)
+    {
+        cerr << _dbgtag << "Y position outside allowable range ( "
+             << _safeWorkspace.minY << ", "
+             <<  _safeWorkspace.maxY << "): " << pos[1] << endl;
+
+        pos[1] = _safeWorkspace.maxY;
+        _wayPoint_isValid = false;
+        //return _wayPoint_isValid;
+    }
+
+    if(pos[2] < _safeWorkspace.minZ)
+    {
+
+        cerr << _dbgtag << "Exceeded the z-axis limit ( " << _safeWorkspace.minZ << " ): " << pos[2] << endl;
+        pos[2] = _safeWorkspace.minZ;
+
+        if(_wayPointPos[2] == _safeWorkspace.minZ)
+            _wayPoint_isValid = false;
+    }
+
+    if(pos[2] > _safeWorkspace.maxZ)
+    {
+        cerr << _dbgtag << "Exceeded the z-axis limit ( " << _safeWorkspace.maxZ << " ): " << pos[2] << endl;
+        pos[2] = _safeWorkspace.maxZ;
+
+        if(_wayPointPos[2] == _safeWorkspace.maxZ)
+            _wayPoint_isValid = false;
+    }
+
+
+    _wayPointPos = pos;
+    _wayPointOrient = orient;
+
+    return _wayPoint_isValid;
+
+}
+
+bool Hand::setWayPointGP(yarp::sig::Vector pos, yarp::sig::Vector orient)
+{
+    // Breaching this will be disasterous for the robot!
+    if(pos[0] >= _safeWorkspace.disasterX)
+    {
+        cerr << _dbgtag << "Cannot have positive x-axis value" << endl;
+        _wayPoint_isValid = false;
+        return false;
+    }
+
+
+    pos[2] = _desiredStartingPosition[2];
+    setWayPoint (pos, orient );
+    _wayPoint_isValid = true;
+
+    return true;
+}
+
+bool Hand::getWayPoint ( Vector& pos, Vector& orient, bool invalidateWayPoint )
+{
+
+    bool ret = _wayPoint_isValid;
+    //if(_wayPoint_isValid)
+    //{
+    pos = _wayPointPos;
+    orient = _wayPointOrient;
+    _wayPoint_isValid = !invalidateWayPoint;
+    //  return true;
+    //}
+    return ret;
 }
 
 void Hand::printPose ( Vector& pos, Vector& orient )
@@ -278,7 +387,7 @@ void Hand::configure(yarp::os::ResourceFinder rf){
 
 
     _moduleName = rf.check("moduleName", Value("object-exploration-server"),
-                            "module name (string)").asString().c_str();
+                           "module name (string)").asString().c_str();
 
 
     Bottle &robotParameters = rf.findGroup("RobotParameters");
@@ -333,7 +442,7 @@ void Hand::configure(yarp::os::ResourceFinder rf){
     _armCartesianCtrl->storeContext(&_cartCtrlStartupIDstartupID);
 
     // Set the trajectory time
-   //cout << "Trajectory time: " << trajectoryTime << endl;
+    //cout << "Trajectory time: " << trajectoryTime << endl;
     _armCartesianCtrl->setTrajTime(trajectoryTime);
 
 
@@ -370,8 +479,8 @@ void Hand::configure(yarp::os::ResourceFinder rf){
     {
         cerr << _dbgtag << "Failed to open the device: " << "urgh" << endl; //systemParameters.getControllerType() << endl;
         // Cannot explore
-      //  _exploreObjectValid = false;
-       // return false;
+        //  _exploreObjectValid = false;
+        // return false;
     }
 
     //open an armcontroller_mode view
@@ -388,7 +497,7 @@ void Hand::configure(yarp::os::ResourceFinder rf){
     {
         cerr << _dbgtag << "Failed to open Encoder view" << endl;
         // Cannot explore
-       // _exploreObjectValid = false;
+        // _exploreObjectValid = false;
         //return false;
     }
 
@@ -407,7 +516,7 @@ void Hand::configure(yarp::os::ResourceFinder rf){
     for (int i = 11; i < 15; ++i) {
         refSpeeds[i] = 50;
     }
-   _armJointPositionCtrl->setRefSpeeds(&refSpeeds[0]);
+    _armJointPositionCtrl->setRefSpeeds(&refSpeeds[0]);
 
     //_armCartesianController->getPose()
 
@@ -522,7 +631,7 @@ bool icubHand::configure(yarp::os::ResourceFinder rf){
     if(_fingerEncoders.open("/" + _moduleName + "/" + _whichHand + "_hand/analog:i"))
     {
         yarp::os::Network::connect( "/" + _robotName + "/" + _whichHand + "_hand/analog:o",
-                          "/" + _moduleName + "/" + _whichHand + "_hand/analog:i");
+                                    "/" + _moduleName + "/" + _whichHand + "_hand/analog:i");
     }
 
 

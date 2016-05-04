@@ -18,8 +18,8 @@ void GPExplorationThread::run()
 {
 
     Vector startingPos, endingPos, startingOrient, endingOrient;
-    _objectFeatures->getStartingPose(startingPos, startingOrient);
-    _objectFeatures->getEndingPose(endingPos, endingOrient);
+    _robotHand->getStartingPose(startingPos, startingOrient);
+    _robotHand->getEndPose(endingPos, endingOrient);
     _contactSafetyThread->start();
     initialiseGP(startingPos, startingOrient, endingPos, endingOrient);
 
@@ -140,13 +140,13 @@ void GPExplorationThread::setWayPoint_GP_validate()
 
     moveIndexFingerBlocking(_curProximal, _curAbduction, 40);
     // Get the valid point from object features
-    _objectFeatures->getWayPoint(armPos, orient, false);
+    _robotHand->getWayPoint(armPos, orient, false);
 
     if( _surfaceModel->getNextValidationPosition(validationPosition))
     {
 
         _explorationFinger->toArmPosition(validationPosition, armPos);
-        ret = _objectFeatures->setWayPointGP(armPos, orient);
+        ret = _robotHand->setWayPointGP(armPos, orient);
     }
     else{
         _validatePositionsEnabled = false;
@@ -185,7 +185,7 @@ void GPExplorationThread::setWayPoint_GP_Refine()
 
     moveIndexFingerBlocking(_curProximal, _curAbduction, 40);
     // Get the valid point from object features
-    _objectFeatures->getWayPoint(armPos, orient, false);
+    _robotHand->getWayPoint(armPos, orient, false);
 
     // I have to make sure the new waypoint is valid
     if( _surfaceModel->getNextRefinementPosition(refinementPosition))
@@ -197,7 +197,7 @@ void GPExplorationThread::setWayPoint_GP_Refine()
         /*maxVariancePos[0] += pos[0];
         maxVariancePos[1] -= pos[1];
         maxVariancePos[2] -= pos[2];*/
-        ret = _objectFeatures->setWayPointGP(armPos, orient);
+        ret = _robotHand->setWayPointGP(armPos, orient);
     }
     else
     {
@@ -491,7 +491,7 @@ void GPExplorationThread::sampleSurface_wiggleFingers()
 
 
     Vector desiredArmPos, desiredArmOrient;
-    _objectFeatures->getStartingPose(desiredArmPos, desiredArmOrient);
+    _robotHand->getStartingPose(desiredArmPos, desiredArmOrient);
 
     // Open the fingertip
 
@@ -627,7 +627,7 @@ void GPExplorationThread::sampleSurface_wiggleFingers()
     moveIndexFingerBlocking(_curProximal, curDistal, _curAbduction, 40);
 
     Vector startingPos, startingOrient;
-    _objectFeatures->getStartingPose(startingPos, startingOrient);
+    _robotHand->getStartingPose(startingPos, startingOrient);
     desiredArmPos[2] += 60.0/1000;
     _robotHand->goToPoseSync(desiredArmPos, startingOrient,0);
 
@@ -936,7 +936,7 @@ void GPExplorationThread::moveArmUp()
 
 
     _robotHand->getPose(armPos, orient);
-    _objectFeatures->getStartingPose(startingPos, startingOrient);
+    _robotHand->getStartingPose(startingPos, startingOrient);
 
     Vector desiredArmPos;
     _explorationFinger->toArmPosition(startingPos, desiredArmPos);
@@ -969,7 +969,7 @@ void GPExplorationThread::moveArmUp()
     cout << "...done!" << endl;
 }
 
-void GPExplorationThread::makeSingleContact(Vector pos, Vector orient)
+/*void GPExplorationThread::makeSingleContact(Vector pos, Vector orient)
 {
     Vector desiredArmPos;
     _explorationFinger->toArmPosition(pos, desiredArmPos);
@@ -1044,7 +1044,7 @@ void GPExplorationThread::makeSingleContact(Vector pos, Vector orient)
     //_objectFeatures->prepHand();
 
     _robotHand->getPose(armPos, armOrient);
-    _objectFeatures->getStartingPose(startingPos, startingOrient);
+    _robotHand->getStartingPose(startingPos, startingOrient);
 
 
     _explorationFinger->toArmPosition(startingPos, desiredArmPos);
@@ -1061,7 +1061,7 @@ void GPExplorationThread::makeSingleContact(Vector pos, Vector orient)
     moveIndexFinger(_curProximal, _curAbduction);
 
 }
-
+*/
 void GPExplorationThread::setWayPoint_GP()
 {
     // Use the GP model to calculate a new waypoint
@@ -1076,7 +1076,7 @@ void GPExplorationThread::setWayPoint_GP()
 
     moveIndexFingerBlocking(_curProximal, _curAbduction, 40);
     // Get the valid point from object features
-    _objectFeatures->getWayPoint(armPos, orient, false);
+    _robotHand->getWayPoint(armPos, orient, false);
 
     // I have to make sure the new waypoint is valid
     if(_surfaceModel->getMaxVariancePose(maxVariancePos))
@@ -1088,7 +1088,7 @@ void GPExplorationThread::setWayPoint_GP()
         /*maxVariancePos[0] += pos[0];
         maxVariancePos[1] -= pos[1];
         maxVariancePos[2] -= pos[2];*/
-        ret = _objectFeatures->setWayPointGP(armPos, orient);
+        ret = _robotHand->setWayPointGP(armPos, orient);
     }
 
 
@@ -1113,9 +1113,9 @@ bool GPExplorationThread::threadInit()
     _skinManagerCommand.open("/object-exploration/skinManager/rpc:o");
     yarp::os::Network::connect("/object-exploration/skinManager/rpc:o", "/skinManager/rpc");
 
-    _tactileData_in.open("/object-exploration/skin/" + _objectFeatures->getArm() + "_hand:i");
-    yarp::os::Network::connect("/" + _objectFeatures->getRobotName() + "/skin/" + _objectFeatures->getArm() +  "_hand",
-                               "/object-exploration/skin/" + _objectFeatures->getArm() + "_hand:i");
+    _tactileData_in.open("/object-exploration/skin/" + _robotHand->getArmName() + "_hand:i");
+    yarp::os::Network::connect("/" + _robotHand->getRobotName() + "/skin/" + _robotHand->getArmName() +  "_hand",
+                               "/object-exploration/skin/" + _robotHand->getArmName() + "_hand:i");
 
 
     return TappingExplorationThread::threadInit();

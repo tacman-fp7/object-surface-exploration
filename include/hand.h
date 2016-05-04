@@ -100,6 +100,10 @@ private:
 
     workspace _safeWorkspace;
 
+    bool _wayPoint_isValid;
+    Vector _wayPointPos;
+    Vector _wayPointOrient;
+
 
 
 private:

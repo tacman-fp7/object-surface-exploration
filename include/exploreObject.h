@@ -77,6 +77,7 @@ private:
     yarp::os::ResourceFinder _rf;
     ObjectFeaturesThread* _objectFeaturesThread; // This is shared between threads. Must have sync
 
+    int _explorationThreadPeriod;
     bool _exploreObjectOnOff;
     bool _exploreObjectValid;
     bool _stopModule;

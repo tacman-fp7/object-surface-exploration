@@ -18,8 +18,8 @@ void ExploreGPSurfaceThread::run()
     // Assuming that there is a valid model saved
     // in the working directory
     Vector startingPos, endingPos, startingOrient, endingOrient;
-    _objectFeatures->getStartingPose(startingPos, startingOrient);
-    _objectFeatures->getEndingPose(endingPos, endingOrient);
+    _robotHand->getStartingPose(startingPos, startingOrient);
+    _robotHand->getEndPose(endingPos, endingOrient);
     initialiseGP(startingPos, startingOrient, endingPos, endingOrient);
 
     _repeats = 0;
@@ -249,7 +249,7 @@ void ExploreGPSurfaceThread::maintainContact()
 
     // set the current fingertip position as the next waypoint;
     Vector desiredArmPos, desiredArmOrient;
-    _objectFeatures->getStartingPose(desiredArmPos, desiredArmOrient);
+    _robotHand->getStartingPose(desiredArmPos, desiredArmOrient);
 
     // Open the fingertip
     _explorationFinger->setProximalAngle(0);
@@ -335,7 +335,7 @@ void ExploreGPSurfaceThread::maintainContact()
 
 
    _robotHand->getPose(armPos, orient);
-    _objectFeatures->getStartingPose(startingPos, startingOrient);
+    _robotHand->getStartingPose(startingPos, startingOrient);
 
 
     _explorationFinger->toArmPosition(startingPos, desiredArmPos);
@@ -412,7 +412,7 @@ void ExploreGPSurfaceThread::setWayPoint_GP()
     while(!_objectFeatures->checkOpenHandDone() && !isStopping())
    */     ;
     // Just to get the desired orientation
-    _objectFeatures->getStartingPose(desiredArmPos, desiredArmOrient);
+    _robotHand->getStartingPose(desiredArmPos, desiredArmOrient);
 
 
     // I have to make sure the new waypoint is valid
@@ -425,7 +425,7 @@ void ExploreGPSurfaceThread::setWayPoint_GP()
         _explorationFinger->toArmPosition(_nextSamplingPos, desiredArmPos);
 
         //_objectFeatures->indexFinger2ArmPosition(_nextSamplingPos, desiredArmPos);
-        _objectFeatures->setWayPointGP(desiredArmPos, desiredArmOrient);
+        _robotHand->setWayPointGP(desiredArmPos, desiredArmOrient);
     }
     else
     {

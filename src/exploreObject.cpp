@@ -95,6 +95,7 @@ ExploreObject::ExploreObject(yarp::os::ResourceFinder& rf)
     Bottle& explorationParameters = _rf.findGroup("ExplorationParameters");
     if(!explorationParameters.isNull())
     {
+        _explorationThreadPeriod = explorationParameters.check("explorationThreadPeriod", Value(20)).asInt();
         readTactilePeriod = explorationParameters.check("readTactilePeriod", Value(20)).asInt();
     }
 
@@ -166,7 +167,7 @@ bool ExploreObject::setStartingPose()
     orient.resize(4); // x,y,z,w prientation
     //_armCartesianController->getPose(pos, orient);
     _robotHand->getPose(pos, orient);
-    _objectFeaturesThread->setStartingPose(pos, orient);
+    _robotHand->setStartingPose(pos, orient);
     return true;
 }
 
@@ -183,10 +184,8 @@ bool ExploreObject::setStartingPose()
 bool ExploreObject::setEndPose()
 {
     Vector pos, orient;
-    pos.resize(3); // x,y,z position
-    orient.resize(4); // x,y,z,w prientation
     _robotHand->getPose(pos, orient);
-    _objectFeaturesThread->setEndPose(pos, orient);
+    _robotHand->setEndPose(pos, orient);
     return true;
 }
 
@@ -206,7 +205,7 @@ bool ExploreObject::exploreGPSurface(const std::string& objectName)
     bool ret = true;
     cout << "Exploring GP generated surface: " << objectName << "." << endl;
 
-    if(!_exploreObjectValid || !_objectFeaturesThread->isExplorationValid())
+    if(!_exploreObjectValid)
     {
         cerr << _dbgtag << "Cannot start exploring, one or more of the dependencies have not been met" << endl;
         return false;
@@ -232,14 +231,15 @@ bool ExploreObject::exploreGPSurface(const std::string& objectName)
 
 
         // Setting the way point to the start of the exploration
-        if(!_objectFeaturesThread->setWayPoint(pos, orient))
+        if(!_robotHand->setWayPoint(pos, orient))
         {
             cerr << _dbgtag << "Failed to set the initial waypoint. Aborting exploration!" << endl;
             return false;
         }
 
-        _exploreGPSurface_thread = new ExploreGPSurfaceThread(_objectFeaturesThread->getExplorationThreadPeriod(),
+        _exploreGPSurface_thread = new ExploreGPSurfaceThread(_explorationThreadPeriod ,
                                                               _robotHand, _explorationFinger, "fix", _objectFeaturesThread);
+
 
 
         if(!_exploreGPSurface_thread->start())
@@ -270,7 +270,7 @@ bool ExploreObject::startExploringGP(const string& objectName)
 
     cout << "Explore object starting" << endl;
 
-    if(!_exploreObjectValid || !_objectFeaturesThread->isExplorationValid())
+    if(!_exploreObjectValid)
     {
         cerr << _dbgtag << "Cannot start exploring, one or more of the dependencies have not been met" << endl;
         return false;
@@ -298,7 +298,7 @@ bool ExploreObject::startExploringGP(const string& objectName)
 
 
         // Setting the way point to the start of the exploration
-        if(!_objectFeaturesThread->setWayPoint(pos, orient))
+        if(!_robotHand->setWayPoint(pos, orient))
         {
             cerr << _dbgtag << "Failed to set the initial waypoint. Aborting exploration!" << endl;
             return false;
@@ -306,7 +306,7 @@ bool ExploreObject::startExploringGP(const string& objectName)
 
 
         _exploreObjectGP_thread =
-                new GPExplorationThread(_objectFeaturesThread->getExplorationThreadPeriod(),
+                new GPExplorationThread(_explorationThreadPeriod,
                                         _robotHand, _explorationFinger, objectName, _objectFeaturesThread);
 
         if(!_exploreObjectGP_thread->start())
@@ -353,7 +353,7 @@ bool ExploreObject::startExploringGrid(const string objectName)
 
     cout << "Explore object starting" << endl;
 
-    if(!_exploreObjectValid || !_objectFeaturesThread->isExplorationValid())
+    if(!_exploreObjectValid)
     {
         cerr << _dbgtag << "Cannot start exploring, one or more of the dependencies have not been met" << endl;
         return false;
@@ -379,7 +379,7 @@ bool ExploreObject::startExploringGrid(const string objectName)
         }
 
         // Setting the way point to the start of the exploration
-        if(!_objectFeaturesThread->setWayPoint(pos, orient))
+        if(!_robotHand->setWayPoint(pos, orient))
         {
             cerr << _dbgtag << "Failed to set the initial waypoint. Aborting exploration!" << endl;
             return false;
@@ -389,7 +389,7 @@ bool ExploreObject::startExploringGrid(const string objectName)
 
 
         _exploreObjectThread =
-                new TappingExplorationThread(_objectFeaturesThread->getExplorationThreadPeriod(),
+                new TappingExplorationThread(_explorationThreadPeriod ,
                                              _robotHand, _explorationFinger, objectName, _objectFeaturesThread);
 
         if(!_exploreObjectThread->start())

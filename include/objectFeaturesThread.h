@@ -48,112 +48,27 @@ public:
     bool threadInit();
     void threadRelease();
 
-
-    void setEndPose(Vector& pos, Vector& orient);
-    void setStartingPose(Vector& pos, Vector& orient);
-    bool getDesiredEndPose(Vector& pos, Vector& orient);
-    bool getStartingPose(Vector& pos, Vector& orient);
-    bool getEndingPose(Vector& pos, Vector& orient);
-
-    bool setWayPoint(Vector pos, Vector orient);
-    bool setWayPointGP(Vector pos, Vector orient);
-    bool getWayPoint(Vector& pos, Vector& orient, bool invalidateWayPoint = true);
-
-
-    const string& getArm();
-    const string& getRobotName();
-
-
-    const int& getExplorationThreadPeriod();
-
-
-    bool isExplorationValid(){return _isExplorationValid;}
-
-
-
     void publishContactState(int contactState);
     void publishFingertipPosition(Vector pos);
 
 
-
-
-    void updateContactState(int contactState){_contactState = contactState;
-
-                                              publishContactState(_contactState);}
-
-
-
-    objectExploration::SurfaceModelGP* getGPSurfaceModel(){
-        return _objectSurfaceModelGP;
-    }
-
-
-
-
+    void updateContactState(int contactState){
+        _contactState = contactState;
+        publishContactState(_contactState);}
 
 private:
-    void printPose(Vector& pos, Vector& prient);
-    void updateRobotReachableSpace();
     void publishFingertipControl(Bottle controlCommand);
-    bool readParameters();
+
 
 protected:
-    ResourceFinder _rf;
-
-    /////// Robot parameters ///////////
-    string _arm;
-    string _robotName;
-    string _controller;
-    string _controllerName;
     string _moduleName;
-    string _whichFinger;
-
-
     int _contactState;
 
-    ////// Exploration parameters ///////
-    int _explorationThreadPeriod;
-    bool _isExplorationValid;
-
-
-
-    bool _desiredStartingPose_isValid;
-    Vector _desiredStartingPosition;
-    Vector _desiredStartingOrientation;
-
-
-    bool _desiredEndPose_isValid;
-    Vector _desiredEndPosition;
-    Vector _desiredEndOrientation;
-
-    bool _homePose_isValid;
-    Vector _homePosition;
-    Vector _homeOrientation;
-
-
-
-
-    bool _wayPoint_isValid;
-    Vector _wayPointPos;
-    Vector _wayPointOrient;
-
     std::string _dbgtag;
-
-
-
 
     BufferedPort<Bottle> _contactStatePort_out;
     BufferedPort<Bottle> _fingertipPosition_out;
     BufferedPort<Bottle> _fingertipControlPort_out;
-
-
-
-    ////
-    objectExploration::SurfaceModelGP *_objectSurfaceModelGP;
-
-
-    workspace _robotReachableSpace;
-
 
 };
 

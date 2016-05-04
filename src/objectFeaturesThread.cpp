@@ -43,7 +43,7 @@ void ObjectFeaturesThread::run()
 
 
 
-void ObjectFeaturesThread::setEndPose ( Vector& pos, Vector& orient )
+/*void ObjectFeaturesThread::setEndPose ( Vector& pos, Vector& orient )
 {
     if(pos[0] > _robotReachableSpace.disasterX)
     {
@@ -56,8 +56,9 @@ void ObjectFeaturesThread::setEndPose ( Vector& pos, Vector& orient )
     updateRobotReachableSpace();
     printPose(pos, orient);
 }
+*/
 
-void ObjectFeaturesThread::setStartingPose ( Vector& pos, Vector& orient )
+/*void ObjectFeaturesThread::setStartingPose ( Vector& pos, Vector& orient )
 {
     if(pos[0] > _robotReachableSpace.disasterX)
     {
@@ -71,9 +72,9 @@ void ObjectFeaturesThread::setStartingPose ( Vector& pos, Vector& orient )
     updateRobotReachableSpace(); // This must be done after isValid is set to true;
     printPose(pos, orient);
 
-}
+}*/
 
-bool ObjectFeaturesThread::getDesiredEndPose ( Vector& pos, Vector& orient )
+/*bool ObjectFeaturesThread::getDesiredEndPose ( Vector& pos, Vector& orient )
 {
     if(_desiredEndPose_isValid)
     {
@@ -81,11 +82,11 @@ bool ObjectFeaturesThread::getDesiredEndPose ( Vector& pos, Vector& orient )
         orient = _desiredEndOrientation;
     }
     return _desiredEndPose_isValid;
-}
+}*/
 
 
 
-bool ObjectFeaturesThread::setWayPointGP(yarp::sig::Vector pos, yarp::sig::Vector orient)
+/*bool ObjectFeaturesThread::setWayPointGP(yarp::sig::Vector pos, yarp::sig::Vector orient)
 {
     // Breaching this will be disasterous for the robot!
     if(pos[0] >= _robotReachableSpace.disasterX)
@@ -101,9 +102,9 @@ bool ObjectFeaturesThread::setWayPointGP(yarp::sig::Vector pos, yarp::sig::Vecto
     _wayPoint_isValid = true;
 
     return true;
-}
+}*/
 
-bool ObjectFeaturesThread::setWayPoint ( Vector pos, Vector orient )
+/*bool ObjectFeaturesThread::setWayPoint ( Vector pos, Vector orient )
 {
     _wayPoint_isValid = true;
 
@@ -186,9 +187,9 @@ bool ObjectFeaturesThread::setWayPoint ( Vector pos, Vector orient )
     return _wayPoint_isValid;
 
 }
+*/
 
-
-bool ObjectFeaturesThread::getWayPoint ( Vector& pos, Vector& orient, bool invalidateWayPoint )
+/*bool ObjectFeaturesThread::getWayPoint ( Vector& pos, Vector& orient, bool invalidateWayPoint )
 {
 
     bool ret = _wayPoint_isValid;
@@ -200,9 +201,9 @@ bool ObjectFeaturesThread::getWayPoint ( Vector& pos, Vector& orient, bool inval
     //  return true;
     //}
     return ret;
-}
+}*/
 
-bool ObjectFeaturesThread::getStartingPose ( Vector& pos, Vector& orient )
+/*bool ObjectFeaturesThread::getStartingPose ( Vector& pos, Vector& orient )
 {
     if(_desiredStartingPose_isValid)
     {
@@ -211,9 +212,9 @@ bool ObjectFeaturesThread::getStartingPose ( Vector& pos, Vector& orient )
     }
     return _desiredStartingPose_isValid;
 
-}
+}*/
 
-bool ObjectFeaturesThread::getEndingPose( Vector& pos, Vector& orient )
+/*bool ObjectFeaturesThread::getEndingPose( Vector& pos, Vector& orient )
 {
     if(_desiredEndPose_isValid)
     {
@@ -222,12 +223,12 @@ bool ObjectFeaturesThread::getEndingPose( Vector& pos, Vector& orient )
     }
     return _desiredEndPose_isValid;
 
-}
-void ObjectFeaturesThread::printPose ( Vector& pos, Vector& orient )
+}*/
+/*void ObjectFeaturesThread::printPose ( Vector& pos, Vector& orient )
 {
     cout << "Position: " << pos.toString() << endl;
     cout << "Orientation: " << orient.toString() << endl;
-}
+}*/
 
 /*double ObjectFeaturesThread::getContactForce()
 {
@@ -269,7 +270,7 @@ bool ObjectFeaturesThread::threadInit()
 
 void ObjectFeaturesThread::threadRelease()
 {
-    delete _objectSurfaceModelGP;
+   // delete _objectSurfaceModelGP;
 
 }
 
@@ -333,166 +334,24 @@ ObjectFeaturesThread::~ObjectFeaturesThread()
 ObjectFeaturesThread::ObjectFeaturesThread ( int period, ResourceFinder rf ) : RateThread ( period )
 {
 
-    // Some sane and safe default values
-    //_trajectoryTime = 5; // By default take 5 seconds to complete a trajectory
-    //_maintainContactPeriod = 20;
-    //_readTactilePeriod = 20;
-    _explorationThreadPeriod = 20;
-    _isExplorationValid = true; // assume true,
-
-    //_desiredFroce = 0;
-
-    _desiredStartingPose_isValid = false;
-    _desiredStartingPosition.resize(3); // x,y,z position
-    _desiredStartingOrientation.resize(4); // Axis angle
-
-    _desiredEndPose_isValid = false;
-    _desiredEndOrientation.resize(4);
-    _desiredEndPosition.resize(3);
-
-    _homePose_isValid = false;
-    _homeOrientation.resize(4);
-    _homePosition.resize(3);
-
-    _wayPoint_isValid = false;
-    _wayPointOrient.resize(4);
-    _wayPointPos.resize(3);
-
-
-    //_armOrientation.resize(4);
-    //_armPosition.resize(3);
-
-    _objectSurfaceModelGP = new objectExploration::SurfaceModelGP("hut"); //TODO: use the config file
-
-    //_contactForce = 0;
-    _rf = rf;
+    //_explorationThreadPeriod = 20;
 
 
 
 
-    ////////////// read the parameters from the config file ///////////////
-    this->readParameters();
 
 
 
 
-}
-
-bool ObjectFeaturesThread::readParameters()
-{
-
-    ///// Set a safe workspace for the robot
-    //// This get updated when I read the
-    /// Starting and ending positions
-
-    _robotReachableSpace.minX = -0.4;
-    _robotReachableSpace.maxX = -0.2;
-    _robotReachableSpace.minY =  0; // This works for both arms
-    _robotReachableSpace.maxY =  0; // This works for both arms
-    _robotReachableSpace.minZ = -0.1;
-    _robotReachableSpace.maxZ =  0.1;
-    _robotReachableSpace.disasterX = -0.2; // Beyond this point you will break the hand
-
-
-    _moduleName = _rf.check("moduleName", Value("object-exploration-server"),
+    _moduleName = rf.check("moduleName", Value("object-exploration-server"),
                             "module name (string)").asString().c_str();
 
 
-    Bottle &robotParameters = _rf.findGroup("RobotParameters");
-    if(!robotParameters.isNull()){
-        // Read the arm configuration
-        _arm = robotParameters.check("arm", Value("left")).asString();
-        _robotName = robotParameters.check("robotName", Value("icubSim")).asString();
-        _controller = robotParameters.check("controller", Value("Error")).asString();
-        _controllerName = robotParameters.check("controllerName", Value("Error")).asString();
-        //_trajectoryTime = robotParameters.check("trajectoryTime", Value(5)).asInt();
-
-        _whichFinger = robotParameters.check("whichFinger", Value("left_index")).asString();
-
-    }
-
-
-    Bottle& explorationParameters = _rf.findGroup("ExplorationParameters");
-    Bottle* startingPose;
-    Bottle* endPose;
-    if(!explorationParameters.isNull())
-    {
-        //_maintainContactPeriod = explorationParameters.check("maintainContactPeriod", Value(20)).asInt();
-        //_desiredFroce = explorationParameters.check("desiredFroce", Value(0)).asDouble();
-        //_readTactilePeriod = explorationParameters.check("readTactilePeriod", Value(20)).asInt();
-        _explorationThreadPeriod = explorationParameters.check("explorationThreadPeriod", Value(20)).asInt();
-        startingPose = explorationParameters.find("startingPose").asList();
-        endPose = explorationParameters.find("endPose").asList();
-    }
-
-
-    //////// Initialise the starting pose //////
-    if(startingPose->size() < 7)
-        cout << "startingPose is invalid" << endl;
-    else
-    {
-        Vector pos, orient;
-        pos.resize(3);
-        orient.resize(4);
-
-        for(int i = 0; i < 3; i++)
-            pos[i] = startingPose->get(i).asDouble();
-        for(int i = 3; i < 7; i++)
-            orient[i-3] = startingPose->get(i).asDouble();
-
-        setStartingPose(pos, orient);
-
-        _desiredStartingPose_isValid = true;
-    }
-    /////////////////////////// Naiwd fix this! ////////
-    if(endPose->size() < 7)
-        cout << "End pose is invalid!" << endl;
-    else
-    {
-        for(int i = 0; i < 3; i++)
-            _desiredEndPosition[i] = endPose->get(i).asDouble();
-        for(int i = 3; i < 7; i++)
-            _desiredEndOrientation[i-3] = endPose->get(i).asDouble();
-
-        _desiredEndPose_isValid = true;
-        updateRobotReachableSpace();
-    }
-
-    cout << "Read the following configuration from the file:" << endl;
-    cout << "Robot name: " << _robotName << endl;
-    cout << "Arm: " << _arm << endl;
-    cout << "Controller: " << _controller << endl;
-    cout << "Controller name: " << _controllerName << endl;
-    //cout << "Trajectory time: " << _trajectoryTime << endl;
-
-    if(_desiredStartingPose_isValid)
-    {
-
-        cout << "Starting position: " << _desiredStartingPosition.toString() << endl;
-        cout << "Starting orientation: " << _desiredStartingOrientation.toString() << endl;
-    }
-
-    if(_desiredEndPose_isValid)
-    {
-        cout << "End position: " << _desiredEndPosition.toString() << endl;
-        cout << "End orientation: " << _desiredEndOrientation.toString() << endl;
-    }
-
-   // cout << "Maintain contact thread period: " << _maintainContactPeriod << endl;
-    //cout << "Desired force: " << _desiredFroce << endl;
-    //cout << "Read tactile sensors thread period: " << _readTactilePeriod << endl;
-    cout << "Exploration thread period: " << _explorationThreadPeriod << endl;
-    cout << endl;
-
-    /*if(_whichFinger.compare(_whichFinger.size()-5, 5, "index")==0)
-        _proximalJoint_index = 11;
-    else
-        _proximalJoint_index = 9;
-*/
-
 }
 
-void ObjectFeaturesThread::updateRobotReachableSpace()
+
+
+/*void ObjectFeaturesThread::updateRobotReachableSpace()
 {
     if(_desiredStartingPose_isValid) // && _desiredEndPose_isValid)
     {
@@ -518,12 +377,12 @@ void ObjectFeaturesThread::updateRobotReachableSpace()
 
         }
     }
-}
+}*/
 
-const string& ObjectFeaturesThread::getArm()
+/*const string& ObjectFeaturesThread::getArm()
 {
     return _arm;
-}
+}*/
 
 
 
@@ -532,20 +391,20 @@ const string& ObjectFeaturesThread::getArm()
     return _controller;
 }*/
 
-const string& ObjectFeaturesThread::getRobotName()
+/*const string& ObjectFeaturesThread::getRobotName()
 {
     return _robotName;
-}
+}*/
 
 /*const int& ObjectFeaturesThread::getTrajectoryTime()
 {
     return _trajectoryTime;
 }*/
 
-const int& ObjectFeaturesThread::getExplorationThreadPeriod()
+/*const int& ObjectFeaturesThread::getExplorationThreadPeriod()
 {
     return _explorationThreadPeriod;
-}
+}*/
 
 
 

@@ -133,9 +133,9 @@ void TappingExplorationThread::finshExploration()
     if( _robotHand->getPose(starting_pos, starting_orient))// _robotCartesianController->getPose(starting_pos, starting_orient))
     {
         starting_pos[2] = 0.05; // TODO: remove the magic number
-        _objectFeatures->setWayPoint(starting_pos, starting_orient);
+        _robotHand->setWayPoint(starting_pos, starting_orient);
 
-        _objectFeatures->getWayPoint(starting_pos, starting_orient, false);
+        _robotHand->getWayPoint(starting_pos, starting_orient, false);
 
         _robotHand->goToPoseSync(starting_pos, starting_orient, 20);
        // _robotCartesianController->goToPoseSync(starting_pos, starting_orient);
@@ -150,7 +150,7 @@ void TappingExplorationThread::finshExploration()
     moveIndexFingerBlocking(_curProximal, _curAbduction, 40);
 
 
-    if(_objectFeatures->getStartingPose(starting_pos, starting_orient))
+    if(_robotHand->getStartingPose(starting_pos, starting_orient))
     {
         _robotHand->goToPoseSync(starting_pos, starting_orient, 20);
         //_robotCartesianController->goToPoseSync(starting_pos, starting_orient);
@@ -203,7 +203,7 @@ void TappingExplorationThread::calculateNewWaypoint()
     waypointOrient.resize(4);
 
     // The check is necessary so we do not break the robot.
-    if(_objectFeatures->getWayPoint(waypointPos, waypointOrient))
+    if(_robotHand->getWayPoint(waypointPos, waypointOrient))
     {
 
 
@@ -217,7 +217,7 @@ void TappingExplorationThread::calculateNewWaypoint()
 
 
         Vector prepDeltaPosition;
-        //_objectFeatures->getIndexFingertipPosition(prepDeltaPosition);
+        //_robotHand->getIndexFingertipPosition(prepDeltaPosition);
         _explorationFinger->getPosition(prepDeltaPosition);
         fingertipPosition[2] -= prepDeltaPosition[2];// + 0.003; // Take the current delta z out
 
@@ -228,7 +228,7 @@ void TappingExplorationThread::calculateNewWaypoint()
         }
 
         waypointPos[2] += fingertipPosition[2];
-        _objectFeatures->setWayPoint(waypointPos, waypointOrient);
+        _robotHand->setWayPoint(waypointPos, waypointOrient);
         _contactState = APPROACH_OBJECT;
     }
     else
@@ -257,7 +257,7 @@ void TappingExplorationThread::moveArmToWayPoint(yarp::sig::Vector pos, yarp::si
 
             _explorationFinger->getAngels(indexFingerAngles);
 
-            //_objectFeatures->getIndexFingerAngles(indexFingerAngles);
+            //_robotHand->getIndexFingerAngles(indexFingerAngles);
 
             if(indexFingerAngles[1] < 20 )
             {
@@ -287,8 +287,8 @@ void TappingExplorationThread::moveIndexFingerBlocking(double proximalAngle, dou
 //TODO: should wait for abduction as well!
 
 
-    //_objectFeatures->setIndexFingerAngles(proximalAngle, distalAngle, abductionAngle, speed);
-//    while(!_objectFeatures->checkOpenHandDone() && !isStopping() )
+    //_robotHand->setIndexFingerAngles(proximalAngle, distalAngle, abductionAngle, speed);
+//    while(!_robotHand->checkOpenHandDone() && !isStopping() )
 //        ;
 }
 
@@ -305,8 +305,8 @@ void TappingExplorationThread::moveIndexFinger(double proximalAngle, double abdu
     _curAbduction = abductionAngle;
     //_curDistal = 90 - _curProximal;
     //logFingertipControl();
-    //_objectFeatures->setProximalAngle(_curProximal);
-   // _objectFeatures->setIndexFingerAngles(_curProximal, _curAbduction, speed);
+    //_robotHand->setProximalAngle(_curProximal);
+   // _robotHand->setIndexFingerAngles(_curProximal, _curAbduction, speed);
     _robotHand->setAbduction(abductionAngle, speed);
     _explorationFinger->setAngles(_curProximal, speed);
 
@@ -327,7 +327,7 @@ void TappingExplorationThread::approachObject()
 
 
     // Go to the wayPoint if only it is a valid wayPoint.
-    if(_objectFeatures->getWayPoint(px, ox, false))
+    if(_robotHand->getWayPoint(px, ox, false))
     {
         moveArmToWayPoint(px, ox);
     }
@@ -375,7 +375,7 @@ void TappingExplorationThread::detectContact(double maxAngle)
         // Get the angles
         _explorationFinger->getAngels(indexFingerAngles);
 
-        //_objectFeatures->getIndexFingerAngles(indexFingerAngles);
+        //_robotHand->getIndexFingerAngles(indexFingerAngles);
 
 
         if(isStopping() || (_contactState == STOP))
@@ -407,7 +407,7 @@ void TappingExplorationThread::detectContact(double maxAngle)
     // This is used later to move the relative to the contact
     // and prep position.
     _explorationFinger->readEncoders(_indexFingerEncoders);
-    //_objectFeatures->getIndexFingerEncoder(_indexFingerEncoders);
+    //_robotHand->getIndexFingerEncoder(_indexFingerEncoders);
 }
 
 bool TappingExplorationThread::confrimContact(double maxAngle)
@@ -431,7 +431,7 @@ bool TappingExplorationThread::confrimContact(double maxAngle)
         {
             _explorationFinger->getAngels(indexFingerAngles);
 
-            //_objectFeatures->getIndexFingerAngles(indexFingerAngles);
+            //_robotHand->getIndexFingerAngles(indexFingerAngles);
 
             if(_explorationFinger->getContactForce() >= _forceThreshold)
             {
@@ -462,14 +462,14 @@ bool TappingExplorationThread::confrimContact(double maxAngle)
         // position and reapproach the point.
         double r = ((double) rand() / (RAND_MAX)) - 0.5;
         Vector pos, orient;
-        _objectFeatures->getWayPoint(pos, orient, false);
+        _robotHand->getWayPoint(pos, orient, false);
         cout << "Pos: " << pos.toString() << endl;
         pos[0] += r * 0.0125;
         pos[1] += r * 0.0125;
         pos[2] += 0.003;
         cout << "Pos: " << pos.toString() << endl;
 
-        _objectFeatures->setWayPoint(pos, orient);
+        _robotHand->setWayPoint(pos, orient);
         cout << "contact NOT confirmed" << endl;
         _contactState = APPROACH_OBJECT;
     }
@@ -504,13 +504,13 @@ void TappingExplorationThread::moveToNewLocation()
     wayPoint_pos.resize(3);
     wayPoint_orient.resize(4);
 
-    if(!_objectFeatures->getStartingPose(starting_pos, starting_orient))
+    if(!_robotHand->getStartingPose(starting_pos, starting_orient))
     {
         cerr  << "Cannot set a new location. Starting point is invalid" << endl;
         return;
     }
 
-    if(!_objectFeatures->getDesiredEndPose(end_pos, end_orient))
+    if(!_robotHand->getEndPose(end_pos, end_orient))
     {
         cerr << "Cannot set a new location. Desired end-point is invalid" << endl;
         return;
@@ -518,7 +518,7 @@ void TappingExplorationThread::moveToNewLocation()
 
 
     // Get the current wayPoint
-    if(_objectFeatures->getWayPoint(wayPoint_pos, wayPoint_orient, false))
+    if(_robotHand->getWayPoint(wayPoint_pos, wayPoint_orient, false))
     {
         cerr << "The current waypoint is invalid" << endl;
     }
@@ -537,7 +537,7 @@ void TappingExplorationThread::moveToNewLocation()
     wayPoint_pos[1] += ((end_pos[1] - starting_pos[1]) * factor);
     wayPoint_pos[2] = starting_pos[2];
 
-    _objectFeatures->setWayPoint(wayPoint_pos, wayPoint_orient);
+    _robotHand->setWayPoint(wayPoint_pos, wayPoint_orient);
 
 
     //cout << "WayPoint: " << fabs(wayPoint_pos[1] - end_pos[1]) << " " << "EndPos: " << fabs(end_pos[1] - starting_pos[1]) * factor << endl;
@@ -553,10 +553,10 @@ void TappingExplorationThread::moveToNewLocation()
             starting_pos[0] -= 0.01;
             end_pos[0] -= 0.01;
 
-            _objectFeatures->setStartingPose(starting_pos, starting_orient);
-            _objectFeatures->setEndPose(end_pos, end_orient);
+            _robotHand->setStartingPose(starting_pos, starting_orient);
+            _robotHand->setEndPose(end_pos, end_orient);
             _nGrid++;
-            _objectFeatures->setWayPoint(starting_pos, starting_orient);
+            _robotHand->setWayPoint(starting_pos, starting_orient);
             _contactState = APPROACH_OBJECT;
         }
         else

@@ -16,9 +16,16 @@ public:
                            ObjectFeaturesThread* objectFeatures):
         GPExplorationThread(period, robotHand, explorationFinger, objectName, objectFeatures)
     {
-        _surfaceModel = objectFeatures->getGPSurfaceModel();
+        _surfaceModel = new SurfaceModelGP(objectName);
         _forceThreshold = FORCE_TH;
         _wayPointListComplete = false;
+    }
+
+    ~ExploreGPSurfaceThread(){
+        if(_surfaceModel != NULL){
+            delete _surfaceModel;
+            _surfaceModel = NULL;
+        }
     }
 
     virtual void run();

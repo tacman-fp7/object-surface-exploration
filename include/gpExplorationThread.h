@@ -21,10 +21,21 @@ public:
                         ObjectFeaturesThread* objectFeatures):
         TappingExplorationThread(period, robotHand, explorationFinger, objectName,
                                  objectFeatures){
-        _surfaceModel = objectFeatures->getGPSurfaceModel();
-        _forceThreshold = FORCE_TH; _sampleSurface = true;
-        _refineModel = false; _validatePositionsEnabled = false;
-        _contactSafetyThread = NULL;}
+        _surfaceModel = new SurfaceModelGP(objectName);
+        _forceThreshold = FORCE_TH;
+        _sampleSurface = true;
+        _refineModel = false;
+        _validatePositionsEnabled = false;
+        _contactSafetyThread = NULL;
+    }
+
+    ~GPExplorationThread(){
+
+        if(_surfaceModel != NULL){
+            delete _surfaceModel;
+            _surfaceModel = NULL;
+        }
+    }
 
     virtual void run();
     virtual bool threadInit();
