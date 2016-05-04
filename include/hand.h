@@ -27,36 +27,42 @@ using yarp::os::ResourceFinder;
 class Hand{
 public:
     Hand( ResourceFinder rf);
+
     bool prepare();
     bool open();
     bool setAbduction(double angle, double speed = 20);
     bool getPose(Vector& pos, Vector& orient);
     bool calibrate();
+    bool goToPoseSync(yarp::sig::Vector& pos, yarp::sig::Vector& orient, double timeout = 0.0);
+    void stopControl();
+    bool checkOpenMotionDone(); //Rename to reduce confusion
+    bool checkMotionDone(bool* motionDone);
+    void waitMotionDone(double period, double timeout = 0.0);
+
     void setEndPose(Vector& pos, Vector& orient);
     void setStartingPose(Vector& pos, Vector& orient);
     bool getStartingPose(Vector& pos, Vector& orient);
     bool getEndPose(Vector& pos, Vector& orient);
-    bool goToPoseSync(yarp::sig::Vector& pos, yarp::sig::Vector& orient, double timeout = 0.0);
-    void stopControl();
+    bool setWayPoint(Vector pos, Vector orient);
+    bool setWayPointGP(Vector pos, Vector orient);
+    bool getWayPoint(Vector& pos, Vector& orient, bool invalidateWayPoint = true);
     bool goToStartingPose();
     bool goToEndPose();
-    bool checkOpenMotionDone(); //Rename to reduce confusion
-    bool checkMotionDone(bool* motionDone);
-    void waitMotionDone(double period, double timeout = 0.0);
-    void updateSafeWorkspace();
+
+
+
     Finger* getIndexFinger(){return _indexFinger;}
     string getArmName(){return _whichHand;}
     string getRobotName(){return _robotName;}
 
-    bool setWayPoint(Vector pos, Vector orient);
-    bool setWayPointGP(Vector pos, Vector orient);
-    bool getWayPoint(Vector& pos, Vector& orient, bool invalidateWayPoint = true);
+
 
 protected:
     void configure(ResourceFinder rf);
+
 private:
 
-    //void updateRobotReachableSpace();
+    void updateSafeWorkspace();
     void printPose(Vector& pos, Vector& orient);
 
 protected:
@@ -82,8 +88,7 @@ private:
     bool _desiredStartingPose_isValid;
     Vector _desiredStartingPosition;
     Vector _desiredStartingOrientation;
-    //double _zMax;
-    //double _zMin;
+
 
     bool _desiredEndPose_isValid;
     Vector _desiredEndPosition;
@@ -94,11 +99,12 @@ private:
     Vector _homeOrientation;
 
     workspace _safeWorkspace;
-    //////
-    ///
+
+
+
 private:
 
-    // yarp::dev::IControlMode2* _armController_mode;
+
     int _cartCtrlStartupIDstartupID; // Context ID of the controller at the start
     string _dbgtag;
 };
