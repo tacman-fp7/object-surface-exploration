@@ -66,13 +66,14 @@ public:
     virtual bool getAngels(Vector &angles);
     virtual bool getPosition(yarp::sig::Vector &position);
     virtual bool getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders);
-    bool readEncoders(Vector &encoderValues);
+    virtual bool readEncoders(Vector &encoderValues);
     double getContactForce();
     bool getContactCoP(yarp::sig::Vector& contactCoP);
 
 protected:
     Finger(t_controllerData);
     bool setAngle(int joint, double angle, double speed = 30);
+    double _prevContactForce;
 
 private:
     static void initController(ResourceFinder& rf);
@@ -121,6 +122,8 @@ protected:
     double _minMiddle;
     double _maxDistal;
     double _minDistal;
+
+
 
 private:
     void adjustMinMax(const double currentVal, double &min, double &max);

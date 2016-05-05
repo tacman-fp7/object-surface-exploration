@@ -112,6 +112,8 @@ TappingExplorationThread::TappingExplorationThread(int period, Hand* robotHand, 
     _curAbduction = -10;
     _curAbduction = -10;
     _nRepeats = 0;
+    //_indexFingerEncoders.resize(3);
+    //_indexFingerEncoders.zero();
 }
 
 void TappingExplorationThread::setNRepeats(int nRepeats){

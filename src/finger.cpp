@@ -273,9 +273,9 @@ bool icubFinger::getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fin
     //cout << fingerEncoders.toString() << endl;
 
     // TODO: This should be moved to readEncoders method
-    adjustMinMax(fingerEncoders[0], _minProximal, _maxProximal);
-    adjustMinMax(fingerEncoders[1], _minMiddle, _maxMiddle);
-    adjustMinMax(fingerEncoders[2], _minDistal, _maxDistal);
+    //adjustMinMax(fingerEncoders[0], _minProximal, _maxProximal);
+    //adjustMinMax(fingerEncoders[1], _minMiddle, _maxMiddle);
+    //adjustMinMax(fingerEncoders[2], _minDistal, _maxDistal);
 
 
 
@@ -309,6 +309,7 @@ Finger::Finger(t_controllerData ctrlData){
     _armJointModeCtrl = ctrlData.armJointModeCtrl;
     _armJointPositionCtrl = ctrlData.armJointPositionCtrl;
     _armCartesianCtrl = ctrlData.armCartesianCtrl;
+    _prevContactForce = 0;
     //_fingerEncoders = ctrlData.fingerEncoders;
 
     // /force-cop-estimator/left_index/force:o
@@ -375,19 +376,20 @@ bool Finger::getContactCoP(yarp::sig::Vector &contactCoP){
 
 double Finger::getContactForce(){
     int nPendingReads = _contactForce_in.getPendingReads();
-    Bottle* contactForce;
+    Bottle* contactForce = NULL;
 
     for (int i = 0; i < nPendingReads; i++){
         contactForce = _contactForce_in.read();
-        cout << "contact force " << contactForce << endl;
+        //cout << "contact force " << contactForce->get(0).asDouble() << endl;
     }
 
-    if(!contactForce->isNull()){
-        return   contactForce->get(0).asDouble();
+    if(contactForce != NULL){
+        _prevContactForce = contactForce->get(0).asDouble();
+        return   _prevContactForce;
 
     }
     else{
-        return 0;
+        return _prevContactForce;
     }
 }
 
@@ -503,16 +505,18 @@ bool Finger::open(){
 bool icubFinger::readEncoders(yarp::sig::Vector &encoderValues){
     bool ret = false;
 
-    encoderValues.clear();
+
     encoderValues.resize(3);
+    encoderValues.zero();
 
-    int nData = _fingerEncoders->getInputCount();
-    Bottle *handEnc;
+    int pendingReads = _fingerEncoders->getPendingReads();
+    Bottle *handEnc = NULL;
 
-    for(int data = 0; data < nData; data++)
+    for(int i = 0; i < pendingReads; i++){
         handEnc = _fingerEncoders->read();
+    }
 
-    if(!handEnc->isNull())
+    if(handEnc != NULL)
     {
         encoderValues[0] = handEnc->get(_proximalEncoderIndex).asDouble();
         encoderValues[1] = handEnc->get(_middleEncoderIndex).asDouble();
