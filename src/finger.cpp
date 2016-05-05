@@ -326,19 +326,14 @@ Finger::Finger(t_controllerData ctrlData){
             ctrlData.whichFinger + "/cop:i";
 
 
-    if(!_contactForce_in.open(forcePortName_local) || !Network::connect(forcePortName_remote, forcePortName_local)){
-        throw std::runtime_error("Could not connect to port: " + forcePortName_remote);
-    }
 
-    if(!_contactCoP_in.open(copPortName_local) || !Network::connect(copPortName_remote, copPortName_local)){
-        throw std::runtime_error("Could not connect to port: " + copPortName_remote);
-    }
 
-    /*    if(Network::exists(forcePortName_remote)){
+
+    if(Network::exists(forcePortName_remote)){
         Network::connect(forcePortName_remote, forcePortName_local);
     }
     else{
-       cerr << _dbgtag << "Port does not exist: " << forcePortName_remote << endl;
+        cerr << _dbgtag << "Port does not exist: " << forcePortName_remote << endl;
     }
 
     if(Network::exists(copPortName_remote)){
@@ -346,7 +341,7 @@ Finger::Finger(t_controllerData ctrlData){
     }
     else{
         cerr << _dbgtag << "Port does not exist: " << copPortName_remote << endl;
-    }*/
+    }
 }
 
 icubFinger::icubFinger(t_controllerData ctrlData):Finger(ctrlData){
