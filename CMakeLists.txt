@@ -30,7 +30,8 @@ include/objectFeaturesThread.h
 include/tappingExplorationThread.h include/surfaceModelGP.h include/gpExplorationThread.h
 include/exploreGPSurfaceThread.h include/contactSafetyThread.h
 include/finger.h
-include/hand.h)
+include/hand.h
+include/badControllerException.h)
 
 set(SOURCES src/main.cpp src/robotControl.cpp src/exploreObject.cpp
 src/objectFeaturesThread.cpp

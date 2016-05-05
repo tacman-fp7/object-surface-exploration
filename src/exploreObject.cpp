@@ -483,15 +483,21 @@ bool ExploreObject::configure(yarp::os::ResourceFinder& rf ){
     Bottle robotParameters = rf.findGroup("RobotParameters");
     string robotName = robotParameters.check("robotName", Value("error")).asString();
 
-    if(robotName.compare("icub") == 0){
-        _robotHand = new icubHand(rf);
-    }
-    else if(robotName.compare("icubSim") == 0){
-        _robotHand = new SimHand(rf);
-    }
-    else{
+    try{
+        if(robotName.compare("icub") == 0){
+            _robotHand = new icubHand(rf);
+        }
+        else if(robotName.compare("icubSim") == 0){
+            _robotHand = new SimHand(rf);
+        }
+        else{
+            return false;
+        }
+    }catch(std::exception& e){
+        cerr << e.what();
         return false;
     }
+
     _explorationFinger = _robotHand->getIndexFinger();
 
     // Check if in the config file we have a name for the server

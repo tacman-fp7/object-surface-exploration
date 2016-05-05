@@ -3,6 +3,7 @@
 #include <iostream>
 #include <math.h>
 #include <yarp/os/Network.h>
+#include <stdexcept>
 
 namespace objectExploration {
 
@@ -238,7 +239,7 @@ bool Finger::getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerE
 
 
     // Not using the fingerEncoders, it is there to make it compatible with the icubFinger class.
-   return getPosition(position);
+    return getPosition(position);
 
 
 }
@@ -325,10 +326,15 @@ Finger::Finger(t_controllerData ctrlData){
             ctrlData.whichFinger + "/cop:i";
 
 
-    _contactForce_in.open(forcePortName_local);
-    _contactCoP_in.open(copPortName_local);
+    if(!_contactForce_in.open(forcePortName_local) || !Network::connect(forcePortName_remote, forcePortName_local)){
+        throw std::runtime_error("Could not connect to port: " + forcePortName_remote);
+    }
 
-    if(Network::exists(forcePortName_remote)){
+    if(!_contactCoP_in.open(copPortName_local) || !Network::connect(copPortName_remote, copPortName_local)){
+        throw std::runtime_error("Could not connect to port: " + copPortName_remote);
+    }
+
+    /*    if(Network::exists(forcePortName_remote)){
         Network::connect(forcePortName_remote, forcePortName_local);
     }
     else{
@@ -340,7 +346,7 @@ Finger::Finger(t_controllerData ctrlData){
     }
     else{
         cerr << _dbgtag << "Port does not exist: " << copPortName_remote << endl;
-    }
+    }*/
 }
 
 icubFinger::icubFinger(t_controllerData ctrlData):Finger(ctrlData){
@@ -355,8 +361,8 @@ bool Finger::getContactCoP(yarp::sig::Vector &contactCoP){
 
     nPendingReads = _contactCoP_in.getPendingReads();
     for (int i = 0; i < nPendingReads; i++ ){
-       cop = _contactCoP_in.read();
-       cout << cop->toString() << endl;
+        cop = _contactCoP_in.read();
+        cout << cop->toString() << endl;
     }
 
     if(!cop->isNull()){
@@ -366,11 +372,11 @@ bool Finger::getContactCoP(yarp::sig::Vector &contactCoP){
         return true;
     }
     else{
-       contactCoP(0) = 0;
-       contactCoP(1) = 0;
-       contactCoP(2) = 0;
+        contactCoP(0) = 0;
+        contactCoP(1) = 0;
+        contactCoP(2) = 0;
 
-       return false;
+        return false;
     }
 }
 
@@ -490,15 +496,15 @@ bool Finger::setAngles(double proximal, double distal, double speed)
 }
 
 bool Finger::open(){
-   bool ret;
+    bool ret;
 
-   ret = setAngle(_proximalJointIndex, 0, 30);
-   ret = ret && setAngle(_distalJointIndex, 0, 30);
+    ret = setAngle(_proximalJointIndex, 0, 30);
+    ret = ret && setAngle(_distalJointIndex, 0, 30);
 
-   // Wait until the finger is open
-   while (!checkMotionDone()) {
-      ;
-   }
+    // Wait until the finger is open
+    while (!checkMotionDone()) {
+        ;
+    }
 
 }
 
@@ -684,7 +690,7 @@ bool SimIndexFinger::prepare(){
 }
 
 Thumb::Thumb(t_controllerData ctrlData):
-icubFinger(ctrlData){
+    icubFinger(ctrlData){
 
     //Finger::Finger(armEncoder, armJointModeCtrl, armJointPositionCtrl);
 
@@ -723,7 +729,7 @@ bool Thumb::prepare(){
 
 
 SimThumb::SimThumb(t_controllerData ctrlData):
-Finger(ctrlData){
+    Finger(ctrlData){
 
     //Finger::Finger(armEncoder, armJointModeCtrl, armJointPositionCtrl);
 

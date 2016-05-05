@@ -1,7 +1,8 @@
 #include "hand.h"
 #include <iostream>
 #include <yarp/os/Value.h>
-#include <yarp/os/Network.h>
+#include <stdexcept>
+
 
 namespace objectExploration {
 using std::cerr;
@@ -386,7 +387,7 @@ void Hand::configure(yarp::os::ResourceFinder rf){
     _safeWorkspace.disasterX = -0.2; // Beyond this point you will break the hand
 
 
-    _moduleName = rf.check("moduleName", Value("object-exploration-server"),
+    _moduleName = rf.check("moduleName", Value("default-module"),
                            "module name (string)").asString().c_str();
 
 
@@ -402,7 +403,7 @@ void Hand::configure(yarp::os::ResourceFinder rf){
     string controllerName = robotParameters.check("controllerName", Value("Error")).asString();
     int trajectoryTime = robotParameters.check("trajectoryTime", Value(5)).asInt();
 
-    string whichFinger = robotParameters.check("whichFinger", Value("index")).asString();
+    //string whichFinger = robotParameters.check("whichFinger", Value("index")).asString();
     //string moduleName = "object-exploration" ;
 
     cout << "Read the following configuration from the file:" << endl;
@@ -429,13 +430,14 @@ void Hand::configure(yarp::os::ResourceFinder rf){
     {
         cerr << _dbgtag << "Failed to open the device: " << controller << endl;
 
-        //return false;
+       throw std::runtime_error("Failed to open the device: " + controller );
     }
 
     // Open a Cartesian controller
 
     if(!_deviceController.view(_armCartesianCtrl)){
         cerr << _dbgtag << "Failed to get a Cartesian view" << endl;
+        throw std::runtime_error("Failed to get a Cartesian view");
     }
 
     // Remember the contorller context ID, restore when closing the port
@@ -478,32 +480,30 @@ void Hand::configure(yarp::os::ResourceFinder rf){
     if(!_deviceController_joint.open(optionsJnt))
     {
         cerr << _dbgtag << "Failed to open the device: " << "urgh" << endl; //systemParameters.getControllerType() << endl;
-        // Cannot explore
-        //  _exploreObjectValid = false;
-        // return false;
+
+        throw std::runtime_error("Failed to open the device: remote_controlboard");
+
     }
 
     //open an armcontroller_mode view
     if(!_deviceController_joint.view(_armJointModeCtrl))
     {
-        cerr << _dbgtag << "Failed to open control mode view" << endl;
-        // Cannot explore
-        //_exploreObjectValid = false;
-        //return false;
+        cerr << _dbgtag << "Failed to open arm joint mode controller" << endl;
+         throw std::runtime_error("Failed to open arm joint mode controller");
+
     }
 
     // Open an encoder view
     if(!_deviceController_joint.view(_armEncoders))
     {
         cerr << _dbgtag << "Failed to open Encoder view" << endl;
-        // Cannot explore
-        // _exploreObjectValid = false;
-        //return false;
+        throw std::runtime_error("Failed to open arm encoder view");
     }
 
     if(!_deviceController_joint.view(_armJointPositionCtrl))
     {
         cerr << _dbgtag << "Failed to open joint position controller view" << endl;
+        throw std::runtime_error("Failed to open joint position controller view");
         //_exploreObjectValid = false;
         //return false;
     }
@@ -596,7 +596,7 @@ void Hand::waitMotionDone(const double period, const double timeout){
 
 bool SimHand::configure(yarp::os::ResourceFinder& rf){
     // Common configuration
-    Hand::configure(rf);
+    //Hand::configure(rf);
 
 
 
@@ -626,12 +626,13 @@ SimHand::SimHand(yarp::os::ResourceFinder &rf):Hand(rf){
 bool icubHand::configure(yarp::os::ResourceFinder rf){
 
     // Common configuration
-    Hand::configure(rf);
+    //Hand::configure(rf);
 
-    if(_fingerEncoders.open("/" + _moduleName + "/" + _whichHand + "_hand/analog:i"))
-    {
-        yarp::os::Network::connect( "/" + _robotName + "/" + _whichHand + "_hand/analog:o",
-                                    "/" + _moduleName + "/" + _whichHand + "_hand/analog:i");
+    string localPort = "/" + _moduleName + "/" + _whichHand + "_hand/analog:i";
+    string remotePort = "/" + _robotName + "/" + _whichHand + "_hand/analog:o";
+
+    if(!_fingerEncoders.open(localPort) || ! yarp::os::Network::connect(remotePort, localPort)){
+       std::runtime_error("Could not connect to: " + remotePort);
     }
 
 
@@ -647,6 +648,8 @@ bool icubHand::configure(yarp::os::ResourceFinder rf){
 
     _thumb = fingerCreator.createFinger("thumb", "icub", ctrlData);
     _indexFinger = fingerCreator.createFinger("index", "icub", ctrlData);
+
+    return true;
 
 }
 
