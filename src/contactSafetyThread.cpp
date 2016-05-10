@@ -50,7 +50,25 @@ ContactSafetyThread::ContactSafetyThread(int period,  Hand *robotHand)
     _robotHand = robotHand;
     _collisionDetected = false;
 
-    init();
+
+    /// Force torque//////
+
+    string localPortName = "/safeConact/" + _robotHand->getArmName() + "_arm/forceTorque/analog:i";
+    string remotePortName =  "/" + _robotHand->getRobotName() + "/" + _robotHand->getArmName() + "_arm/analog:o";
+
+
+
+    if(!_forceTorque_in.open(localPortName)){
+        cerr << _dbgtag << "could not open local port: " << localPortName << endl;
+        throw std::runtime_error(_dbgtag + "could not open local port: " + localPortName + "\n");
+    }
+
+    if(!yarp::os::Network::connect(remotePortName, localPortName))
+    {
+        throw std::runtime_error(_dbgtag + "could not connect to remote port: " + remotePortName + "\n");
+    }
+
+
 
 
 
@@ -60,14 +78,7 @@ void ContactSafetyThread::init(){
 
     //ResourceFinder rf;
 
-    /// Force torque//////
 
-
-    if(_forceTorque_in.open("/safeConact/" + _robotHand->getArmName() + "_arm/forceTorque/analog:i"))
-    {
-        yarp::os::Network::connect( "/" + _robotHand->getRobotName() + "/" + _robotHand->getArmName() + "_arm/analog:o",
-                                    "/safeConact/" + _robotHand->getArmName() + "_arm/forceTorque/analog:i");
-    }
 
 }
 
@@ -86,6 +97,8 @@ bool ContactSafetyThread::resetBaseline()
         return false;
     }
     _collisionDetected = false;
+
+    return true;
 }
 
 bool ContactSafetyThread::collisionDetected()

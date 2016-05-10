@@ -20,7 +20,7 @@ void GPExplorationThread::run()
     Vector startingPos, endingPos, startingOrient, endingOrient;
     _robotHand->getStartingPose(startingPos, startingOrient);
     _robotHand->getEndPose(endingPos, endingOrient);
-    _contactSafetyThread->start();
+
     initialiseGP(startingPos, startingOrient, endingPos, endingOrient);
 
 
@@ -1106,19 +1106,35 @@ void GPExplorationThread::setWayPoint_GP()
 bool GPExplorationThread::threadInit()
 {
     if(_contactSafetyThread == NULL){
-        _contactSafetyThread = new ContactSafetyThread(5, _robotHand );
-        cout << "Contact safety started" << endl;
+        try{
+            _contactSafetyThread = new ContactSafetyThread(5, _robotHand );
+        }
+        catch(std::exception& e){
+            std::cerr << e.what();
+            std::cerr << "Disable contact safetey if you do not want to use it" << endl;
+            return false;
+        }
+
+        if(!_contactSafetyThread->start())
+        {
+            return false;
+        }
+        else{
+            cout << "Contact safety started" << endl;
+        }
     }
     //_contactSafetyThread->start();
     _skinManagerCommand.open("/object-exploration/skinManager/rpc:o");
     yarp::os::Network::connect("/object-exploration/skinManager/rpc:o", "/skinManager/rpc");
 
+
+    // This to make Max's stuff work
     _tactileData_in.open("/object-exploration/skin/" + _robotHand->getArmName() + "_hand:i");
     yarp::os::Network::connect("/" + _robotHand->getRobotName() + "/skin/" + _robotHand->getArmName() +  "_hand",
                                "/object-exploration/skin/" + _robotHand->getArmName() + "_hand:i");
 
 
-    return TappingExplorationThread::threadInit();
+    return true;
 }
 
 void GPExplorationThread::threadRelease()

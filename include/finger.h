@@ -69,6 +69,7 @@ public:
     virtual bool readEncoders(Vector &encoderValues);
     double getContactForce();
     bool getContactCoP(yarp::sig::Vector& contactCoP);
+    bool hasForceCoP();
 
 protected:
     Finger(t_controllerData);
@@ -95,6 +96,13 @@ protected:
     int _proximalEncoderIndex;
     int _middleEncoderIndex;
     int _distalEncoderIndex;
+
+
+private:
+    bool _isCoPValid;
+    bool _isForceValid;
+    bool _isActiveTaxelValid;
+
 
 };
 

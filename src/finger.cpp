@@ -311,6 +311,9 @@ Finger::Finger(t_controllerData ctrlData){
     _armJointPositionCtrl = ctrlData.armJointPositionCtrl;
     _armCartesianCtrl = ctrlData.armCartesianCtrl;
     _prevContactForce = 0;
+    _isForceValid = false;
+    _isCoPValid = false;
+    _isActiveTaxelValid = false;
     //_fingerEncoders = ctrlData.fingerEncoders;
 
     // /force-cop-estimator/left_index/force:o
@@ -329,19 +332,39 @@ Finger::Finger(t_controllerData ctrlData){
 
 
 
+    if(!_contactForce_in.open(forcePortName_local)){
+        cerr << _dbgtag << "could not open the local force port: " << forcePortName_local << endl;
+        throw std::runtime_error(_dbgtag + "could not open the local force port: " + forcePortName_local + "\n");
+    }
+
+    if(!_contactCoP_in.open(copPortName_local)){
+
+        cerr << _dbgtag << "could not open the local CoP port: " << copPortName_local << endl;
+        throw std::runtime_error(_dbgtag + "could not open the local CoP port: " + copPortName_local + "\n");
+
+    }
+
     if(Network::exists(forcePortName_remote)){
-        Network::connect(forcePortName_remote, forcePortName_local);
+        if(Network::connect(forcePortName_remote, forcePortName_local)){
+            _isForceValid = true;
+        }
     }
     else{
         cerr << _dbgtag << "Port does not exist: " << forcePortName_remote << endl;
     }
 
     if(Network::exists(copPortName_remote)){
-        Network::connect(copPortName_remote, copPortName_local);
+        if(Network::connect(copPortName_remote, copPortName_local)){
+            _isCoPValid = true;
+        }
     }
     else{
         cerr << _dbgtag << "Port does not exist: " << copPortName_remote << endl;
     }
+}
+
+bool Finger::hasForceCoP(){
+    return (_isForceValid && _isCoPValid);
 }
 
 icubFinger::icubFinger(t_controllerData ctrlData):Finger(ctrlData){
@@ -451,8 +474,8 @@ void icubFinger::adjustMinMax(const double currentVal, double &min, double &max)
 }
 
 bool Finger::checkMotionDone(){
-    bool retProximal;
-    bool retDistal;
+    bool retProximal = false;
+    bool retDistal = false;
 
     if(!_armJointPositionCtrl->checkMotionDone(_proximalJointIndex, &retProximal))
     {
@@ -472,9 +495,9 @@ bool Finger::setAngle(int jointIndex, double angle, double speed){
 
     bool ret = true;
 
-    ret = ret && _armJointModeCtrl->setPositionMode(jointIndex);;
-    ret = ret && _armJointPositionCtrl->setRefSpeed(jointIndex, speed);
-    ret = ret && _armJointPositionCtrl->positionMove(jointIndex, angle);
+    ret =  _armJointModeCtrl->setPositionMode(jointIndex);;
+    ret =  _armJointPositionCtrl->setRefSpeed(jointIndex, speed);
+    ret =  _armJointPositionCtrl->positionMove(jointIndex, angle);
 
 
     return ret;
@@ -484,8 +507,8 @@ bool Finger::setAngles(double proximal, double distal, double speed)
 {
     bool ret = true;
 
-    ret = ret && setAngle(_proximalJointIndex, proximal, speed);
-    ret = ret && setAngle(_distalJointIndex, distal, speed);
+    ret = setAngle(_proximalJointIndex, proximal, speed);
+    ret = setAngle(_distalJointIndex, distal, speed);
 
     return ret;
 }
@@ -513,7 +536,7 @@ bool icubFinger::readEncoders(yarp::sig::Vector &encoderValues){
     int pendingReads = _fingerEncoders->getPendingReads();
     Bottle *handEnc = NULL;
 
-    for(int i = 0; i < pendingReads; i++){
+    for(int i = 0; i <= pendingReads; i++){
         handEnc = _fingerEncoders->read();
     }
 
@@ -610,7 +633,7 @@ void IndexFinger::calibrate(){
     // TODO: remove this for the simulation. There is not such data
     // available during simulation
     Bottle *fingerEnc;
-    for(int i = 0; i < _fingerEncoders->getPendingReads(); i++)
+    for(int i = 0; i <= _fingerEncoders->getPendingReads(); i++)
         fingerEnc = _fingerEncoders->read();
 
     if(!fingerEnc->isNull())
@@ -666,8 +689,9 @@ bool IndexFinger::prepare(){
 
     bool ret = true;
 
-    ret = ret && setAngle(_distalJointIndex, 20);
-    ret = ret && setAngle(_proximalJointIndex, 20);
+    setSynchroProximalAngle(20);
+//    ret = ret && setAngle(_distalJointIndex, 20);
+//    ret = ret && setAngle(_proximalJointIndex, 20);
 
     return ret;
 

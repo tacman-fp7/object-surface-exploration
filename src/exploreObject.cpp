@@ -44,11 +44,11 @@ bool ExploreObject::openHand(){
 }
 
 bool ExploreObject::prepHand(){
-    //return _robotHand->prepare();
-    cout << "Force: " << _explorationFinger->getContactForce() << endl;
-    Vector cop;
-    _explorationFinger->getContactCoP(cop);
-    cout << "CoP: " << cop.toString() << endl;
+    return _robotHand->prepare();
+    //cout << "Force: " << _explorationFinger->getContactForce() << endl;
+    //Vector cop;
+    //_explorationFinger->getContactCoP(cop);
+    //cout << "CoP: " << cop.toString() << endl;
 }
 
 bool ExploreObject::calibrateHand(){
@@ -77,6 +77,7 @@ bool ExploreObject::fingerSetAngle(const double angle){
 ExploreObject::ExploreObject(yarp::os::ResourceFinder& rf)
 {
 
+    _dbgtag = "ExploreObject: ";
     // bool failed = false;
     _exploreObjectOnOff = true;
     _exploreObjectValid = true; // Assume it is true, set it to false when something fails
@@ -288,8 +289,8 @@ bool ExploreObject::startExploringGP(const string& objectName)
 
         // Ge the current position of the arm.
         Vector pos, orient;
-        pos.resize(3);
-        orient.resize(4);
+       // pos.resize(3);
+       // orient.resize(4);
         if(!_robotHand->getPose(pos, orient))
         {
             cerr << _dbgtag << "Could not read the arm position, cannot start exploration" << endl;
@@ -309,8 +310,20 @@ bool ExploreObject::startExploringGP(const string& objectName)
                 new GPExplorationThread(_explorationThreadPeriod,
                                         _robotHand, _explorationFinger, objectName, _objectFeaturesThread);
 
-        if(!_exploreObjectGP_thread->start())
+
+        if(!_exploreObjectGP_thread->start()){
             ret = false;
+
+
+
+            cerr << "Exploration could not be started" << endl;
+            if(_exploreObjectGP_thread != NULL){
+                delete(_exploreObjectGP_thread);
+                _exploreObjectGP_thread = NULL;
+            }
+
+            return ret;
+        }
 
         _exploreObjectOnOff = false;
 
@@ -499,6 +512,13 @@ bool ExploreObject::configure(yarp::os::ResourceFinder& rf ){
     }
 
     _explorationFinger = _robotHand->getIndexFinger();
+
+    // Check if exploration finger has force and CoP data
+    // We need these two data to be able to explore a surface
+    if(!_explorationFinger->hasForceCoP()){
+        cerr << _dbgtag << "exploration finger has no force-cop data available to it." << endl;
+        return false;
+    }
 
     // Check if in the config file we have a name for the server
     string moduleName = rf.check("moduleName", Value("object-exploration-server"),

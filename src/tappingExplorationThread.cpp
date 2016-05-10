@@ -377,6 +377,7 @@ void TappingExplorationThread::detectContact(double maxAngle)
         // Get the angles
         _explorationFinger->getAngels(indexFingerAngles);
 
+        //cout << "Finger angles: " << indexFingerAngles.toString() << endl;
         //_robotHand->getIndexFingerAngles(indexFingerAngles);
 
 
@@ -400,7 +401,7 @@ void TappingExplorationThread::detectContact(double maxAngle)
         else if(indexFingerAngles[1] < 3) // Middle angle
         {
             // We have contact without force
-            cout << "No froce but angle exceeded the limit " << endl;
+            cout << "No froce but middle angle exceeded the limit " << endl;
             _contactState = EXCEEDED_ANGLE;//MAINTAIN_CONTACT;
             break;
         }
