@@ -32,6 +32,9 @@ void ContactSafetyThread::run()
         // If the resultant force is greater than the threshold stop the
         // arm movemnet
         if(fabs(resultant - _baseLine) > _forceThreshold){
+            if(!_collisionDetected){
+                cout << _dbgtag << "exceeded contact force" << endl;
+            }
             _robotHand->stopControl();
             _collisionDetected = true;
 

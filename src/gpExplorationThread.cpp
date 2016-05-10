@@ -350,61 +350,18 @@ void GPExplorationThread::maintainContact()
         cout << "No taxel data was available." << endl;
     }
 
-    /*
-    if(_zPoints.size() > _nRepeats)
-    {
-        _zPoints.resize(3, fingertipPosition[2]);
-
-        double median = getMedian(_zPoints);
-        fingertipPosition[2] = median;
-        _surfaceModel->addContactPoint(fingertipPosition);
-
-        _zPoints.clear();
-
-    }*/
-
-
-
-
-
-
     // Maintain contact
-
     TappingExplorationThread::maintainContact();
 
-
     // Wiggle wiggle
-    if(_sampleSurface)
-    {
-
+    if(_sampleSurface){
         _explorationFinger->getPosition(fingertipPosition);
         cout << "Finger position: " << fingertipPosition[2] + 0.15 << endl;
-        if((fabs(fingertipPosition[2]  + 0.15) > 15.0/1000))
-        {
+        if((fabs(fingertipPosition[2]  + 0.15) > 15.0/1000)){
             cout << "wiggle wiggle" << endl;
-
-
-            // Wiggle
-            // _contactSafetyThread->start();
-            // double prevTol;
-
-            // _robotCartesianController->getInTargetTol(&prevTol);
-            // cout << "prevTol: " << prevTol << endl;
-
-            //_robotCartesianController->setInTargetTol(1.0/1000);
-
-
             sampleSurface_wiggleFingers();
-
-            //_robotCartesianController->setInTargetTol(prevTol);
-
-            // _contactSafetyThread->stop();
-
         }
     }
-    //_contactState = MOVE_LOCATION;
-
-
 }
 
 bool GPExplorationThread::confirmWiggleContact(double maxAngle)
