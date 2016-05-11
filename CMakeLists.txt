@@ -31,7 +31,9 @@ include/tappingExplorationThread.h include/surfaceModelGP.h include/gpExploratio
 include/exploreGPSurfaceThread.h include/contactSafetyThread.h
 include/finger.h
 include/hand.h
-include/badControllerException.h)
+include/badControllerException.h
+include/gridExplorationThread.h
+include/objectModelGrid.h)
 
 set(SOURCES src/main.cpp src/robotControl.cpp src/exploreObject.cpp
 src/objectFeaturesThread.cpp
@@ -39,6 +41,8 @@ src/tappingExplorationThread.cpp src/surfaceModelGP.cpp src/exploreGPSurfaceThre
 src/gpExplorationThread.cpp src/contactSafetyThread.cpp
 src/finger.cpp
 src/hand.cpp
+src/gridExplorationThread.cpp
+src/objectModelGrid.cpp
  ${HEADERS})
 
 #set(CONTEXT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/bin/context" CACHE PATH "Path to the context files")

@@ -153,7 +153,7 @@ void GPExplorationThread::setWayPoint_GP_validate()
         _stateMutex.unlock();
     }
 
-    moveArmUp();
+    TappingExplorationThread::moveArmUp();
 
 
     //yarp::os::Time::delay(5);
@@ -210,7 +210,7 @@ void GPExplorationThread::setWayPoint_GP_Refine()
     // Get the position of the hand
     // This cannot be done in parallel with indexFinger2ArmPosition calcuation
 
-    moveArmUp();
+    TappingExplorationThread::moveArmUp();
 
 
     //yarp::os::Time::delay(5);
@@ -885,7 +885,7 @@ double GPExplorationThread::getMedian(std::vector<double> &vec)
 
 }
 
-void GPExplorationThread::moveArmUp()
+/*void GPExplorationThread::moveArmUp()
 {
     Vector startingPos, startingOrient;
     Vector armPos, orient;
@@ -924,7 +924,7 @@ void GPExplorationThread::moveArmUp()
     }
 
     cout << "...done!" << endl;
-}
+}*/
 
 /*void GPExplorationThread::makeSingleContact(Vector pos, Vector orient)
 {
@@ -1081,10 +1081,10 @@ bool GPExplorationThread::threadInit()
         }
     }
     //_contactSafetyThread->start();
-    _skinManagerCommand.open("/object-exploration/skinManager/rpc:o");
+/*    _skinManagerCommand.open("/object-exploration/skinManager/rpc:o");
     yarp::os::Network::connect("/object-exploration/skinManager/rpc:o", "/skinManager/rpc");
 
-
+*/
     // This to make Max's stuff work
     _tactileData_in.open("/object-exploration/skin/" + _robotHand->getArmName() + "_hand:i");
     yarp::os::Network::connect("/" + _robotHand->getRobotName() + "/skin/" + _robotHand->getArmName() +  "_hand",

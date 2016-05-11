@@ -575,8 +575,53 @@ void TappingExplorationThread::moveToNewLocation()
 
 }
 
+void TappingExplorationThread::moveArmUp()
+{
+    Vector startingPos, startingOrient;
+    Vector armPos, orient;
+    moveIndexFinger(10, _curAbduction);
+
+
+    _robotHand->getPose(armPos, orient);
+    _robotHand->getStartingPose(startingPos, startingOrient);
+
+    Vector desiredArmPos;
+    _explorationFinger->toArmPosition(startingPos, desiredArmPos);
+    armPos[2] = desiredArmPos[2]; // Move the fingertip up to avoid collisiont
+    //_objectFeatures->moveArmToPosition(armPos, orient);
+    _robotHand->goToPoseSync(armPos, orient, 10);
+
+    cout << "Waiting for force to return to normal value...";
+    cout.flush();
+    double force = _explorationFinger->getContactForce();
+
+    if(force > 0.25)
+    {
+        yarp::os::Bottle msg;
+        msg.addString("calib");
+
+        yarp::os::Bottle response;
+        _skinManagerCommand.write(msg, response);
+        cout << response.toString();
+
+    }
+    while(force > 0.25)
+    {
+        force = _explorationFinger->getContactForce();
+        for( int i = 0; i < 9; i++)
+            force += _explorationFinger->getContactForce();
+        force = force/10;
+    }
+
+    cout << "...done!" << endl;
+}
+
 bool TappingExplorationThread::threadInit()
 {
+
+
+    _skinManagerCommand.open("/object-exploration/skinManager/rpc:o");
+    yarp::os::Network::connect("/object-exploration/skinManager/rpc:o", "/skinManager/rpc");
 
 
     return true;
@@ -586,6 +631,8 @@ bool TappingExplorationThread::threadInit()
 void TappingExplorationThread::threadRelease()
 {
 
+    _skinManagerCommand.close();
 }
+
 
 } // namespace objectExploration

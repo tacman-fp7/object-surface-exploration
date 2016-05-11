@@ -3,6 +3,7 @@
 #include <signal.h>
 #include <yarp/os/Bottle.h>
 #include <tappingExplorationThread.h>
+#include <gridExplorationThread.h>
 
 
 namespace objectExploration {
@@ -379,12 +380,12 @@ bool ExploreObject::startExploringGrid(const string objectName)
         prepHand();
         if(!this->goToStartingPose())
             ret = false;
-        _robotHand->waitMotionDone(0.1, 20);
+        //_robotHand->waitMotionDone(0.1, 20);
 
         // Ge the current position of the arm.
         Vector pos, orient;
-        pos.resize(3);
-        orient.resize(4);
+        //pos.resize(3);
+        //orient.resize(4);
         if(!_robotHand->getPose(pos, orient))
         {
             cerr << _dbgtag << "Could not read the arm position, cannot start exploration" << endl;
@@ -402,7 +403,7 @@ bool ExploreObject::startExploringGrid(const string objectName)
 
 
         _exploreObjectThread =
-                new TappingExplorationThread(_explorationThreadPeriod ,
+                new GridExplorationThread(_explorationThreadPeriod ,
                                              _robotHand, _explorationFinger, objectName, _objectFeaturesThread);
 
         if(!_exploreObjectThread->start())

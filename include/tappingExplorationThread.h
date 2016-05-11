@@ -51,14 +51,17 @@ protected:
     double _curAbduction; // Used for logging
 
 
+    int _nGrid; // should be moved to grid exploration
+
 private:
     Vector _indexFingerEncoders;
-    int _nGrid;
+
 
 
 protected:
+    void moveArmUp();
     virtual void moveToNewLocation();
-    virtual void calculateNewWaypoint();
+    void calculateNewWaypoint();
     virtual void maintainContact();
 
     void approachObject(); 
@@ -73,6 +76,7 @@ protected:
 private:
     void moveArmToWayPoint(Vector pos, Vector orient);
     void detectContact(double maxAngle);
+    yarp::os::RpcClient _skinManagerCommand;
 
 
 };

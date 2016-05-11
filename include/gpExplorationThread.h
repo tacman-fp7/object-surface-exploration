@@ -54,7 +54,7 @@ protected:
     virtual void setWayPoint_GP();
     virtual void maintainContact();
     void moveToNewLocation();
-    void moveArmUp();
+    //void moveArmUp();
     void sampleSurface_wiggleFingers();
     void setWayPoint_GP_Refine();
     void setWayPoint_GP_validate();
@@ -82,7 +82,7 @@ protected:
 private:
     std::vector<double> _minZPoints;
     std::vector<double> _zPoints;
-    yarp::os::RpcClient _skinManagerCommand;
+    //yarp::os::RpcClient _skinManagerCommand;
     yarp::os::BufferedPort<Bottle> _tactileData_in;
 
 };
