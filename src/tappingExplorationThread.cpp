@@ -340,6 +340,13 @@ void TappingExplorationThread::approachObject()
         _contactState = MOVE_LOCATION;
     }
 
+    // Debugging
+   //  moveIndexFingerBlocking(30, _curAbduction, 40);
+
+   // _contactState = MAINTAIN_CONTACT;
+   // return;
+    ///////
+
     if(_contactState == APPROACH_OBJECT)
     {
         // Tell the finger controller to approach the object

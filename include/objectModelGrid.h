@@ -9,32 +9,22 @@ using yarp::sig::Vector;
 class ObjectModelGrid{
 
 public:
-    ObjectModelGrid(const std::string objectName):_objectName(objectName){}
-
-
-    /*(Vector startingPos, Vector endingPos, double stepSize, double width){
-        _startingPos = startingPos;
-        _endingPos = endingPos;
-        _stepSize = stepSize;
-        _width = width;
-
-    }*/
+    ObjectModelGrid(const std::string objectName);
     ~ObjectModelGrid(){}
 
-    void setBoundingBox(const double xMin, const double xMax, const double yMin, const double yMax);
+    //void setBoundingBox(const double xMin, const double xMax, const double yMin, const double yMax, const double stepSize);
     void addContactPoint(const yarp::sig::Vector fingertipPosition);
     void saveContactPoints();
-    bool getNextSamplingPos(yarp::sig::Vector);
+    bool getNextSamplingPos(yarp::sig::Vector &nextSamplingPoint);
+    void init(yarp::sig::Vector startingPos, yarp::sig::Vector endingPos);
 
 private:
    std::string _objectName;
 
    std::vector< yarp::sig::Vector > _contactPoints;
 
-
-   yarp::sig::Vector _startingPos;
-   yarp::sig::Vector _endingPos;
-
+   yarp::sig::Vector _nextSamplingPoint;
+   double _searchSpaceWidth;
    double _stepSize;
    double _xMin;
    double _xMax;

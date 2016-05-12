@@ -38,6 +38,10 @@ Hand::Hand(ResourceFinder rf){
 
 }
 
+bool Hand::setWayPoint(yarp::sig::Vector pos){
+    return setWayPoint(pos, _desiredStartingOrientation);
+}
+
 bool Hand::prepare(){
 
     bool ret = true;

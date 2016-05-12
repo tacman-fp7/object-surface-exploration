@@ -1052,7 +1052,7 @@ void GPExplorationThread::setWayPoint_GP()
     // Get the position of the hand
     // This cannot be done in parallel with indexFinger2ArmPosition calcuation
 
-    moveArmUp();
+    TappingExplorationThread::moveArmUp();
 
     if(ret)
         _contactState = APPROACH_OBJECT;

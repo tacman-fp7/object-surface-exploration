@@ -92,88 +92,27 @@ void GridExplorationThread::run()
 void GridExplorationThread::moveToNewLocation()
 {
 
-#if DEBUG_LEVEL>=2
-    cout << "Moving to a new location" << endl;
-#endif
 
-    Vector starting_pos, starting_orient;
-    Vector end_pos, end_orient;
-    Vector wayPoint_pos, wayPoint_orient;
+    _curProximal = 10;
+    _curAbduction = 0;
+    moveIndexFingerBlocking(_curProximal, _curAbduction, 40);
 
-    starting_pos.resize(3);
-    starting_orient.resize(4);
+    // Get the next point
+    Vector wayPoint;
+    Vector startingPos, startingOrient;
+    _robotHand->getStartingPose(startingPos, startingOrient);
 
-    end_pos.resize(3);
-    end_orient.resize(4);
-
-    wayPoint_pos.resize(3);
-    wayPoint_orient.resize(4);
-
-    if(!_robotHand->getStartingPose(starting_pos, starting_orient))
-    {
-        cerr  << "Cannot set a new location. Starting point is invalid" << endl;
-        return;
-    }
-
-    if(!_robotHand->getEndPose(end_pos, end_orient))
-    {
-        cerr << "Cannot set a new location. Desired end-point is invalid" << endl;
-        return;
-    }
-
-
-    // Get the current wayPoint
-    if(_robotHand->getWayPoint(wayPoint_pos, wayPoint_orient, false))
-    {
-        cerr << "The current waypoint is invalid" << endl;
-    }
-
-    if(wayPoint_pos[0] == 0)
-    {
-        cerr << "Cannot set new location, previous waypoint is invalid" << endl;
-    }
-
-
-    ////////////////////////////////////////////////////////////////////////////////
-    //////////////// Calculating a new waypoint for the travaersal /////////////////
-    ////////////////////////////////////////////////////////////////////////////////
-
-    double factor = 0.2;
-    wayPoint_pos[1] += ((end_pos[1] - starting_pos[1]) * factor);
-    wayPoint_pos[2] = starting_pos[2];
-
-    _robotHand->setWayPoint(wayPoint_pos, wayPoint_orient);
-
-
-    //cout << "WayPoint: " << fabs(wayPoint_pos[1] - end_pos[1]) << " " << "EndPos: " << fabs(end_pos[1] - starting_pos[1]) * factor << endl;
-    if((fabs(wayPoint_pos[1] - starting_pos[1]) <= fabs(end_pos[1] - starting_pos[1]) ))
+    if(_objectModel->getNextSamplingPos(wayPoint)){
+        wayPoint[2] = startingPos[2]; // Set the z position to starting point+
+        _robotHand->setWayPoint(wayPoint);
         _contactState = APPROACH_OBJECT;
-    else
-    {
-        // I have to go to the next step of the grip
-
-        if (_nGrid < 8)
-        {
-            cout << "Next grid" << endl;
-            starting_pos[0] -= 0.01;
-            end_pos[0] -= 0.01;
-
-            _robotHand->setStartingPose(starting_pos, starting_orient);
-            _robotHand->setEndPose(end_pos, end_orient);
-            _nGrid++;
-            _robotHand->setWayPoint(starting_pos, starting_orient);
-            _contactState = APPROACH_OBJECT;
-        }
-        else
-        {
-
-#if DEBUG_LEVEL>=2
-            cout << "State set to finished" << endl;
-#endif
-            _contactState = FINISHED;
-        }
+    }
+    else{
+        _contactState = FINISHED;
     }
 
+    // Move the finger up
+    TappingExplorationThread::moveArmUp();
 
 }
 
@@ -183,7 +122,8 @@ void GridExplorationThread::maintainContact()
 
     Vector fingertipPosition;
     _explorationFinger->getPosition(fingertipPosition);
-
+    _objectModel->addContactPoint(fingertipPosition);
+    _objectModel->saveContactPoints();
 
     TappingExplorationThread::maintainContact();
 }
@@ -193,7 +133,7 @@ bool GridExplorationThread::threadInit()
 
     if(_contactSafetyThread == NULL){
         try{
-            _contactSafetyThread = new ContactSafetyThread(5, _robotHand );
+            _contactSafetyThread = new ContactSafetyThread(5, _robotHand ); //TODO: config file
         }
         catch(std::exception& e){
             std::cerr << e.what();
@@ -208,6 +148,16 @@ bool GridExplorationThread::threadInit()
         else{
             cout << "Contact safety started" << endl;
         }
+    }
+
+    if(_objectModel != NULL){
+        Vector startingPos, startingOrient;
+        Vector endingPos, endingOrient;
+        _robotHand->getStartingPose(startingPos, startingOrient);
+        _robotHand->getEndPose(endingPos, endingOrient);
+
+        _objectModel->init(startingPos, endingPos);
+
     }
 
 
@@ -225,6 +175,10 @@ void GridExplorationThread::threadRelease()
         _contactSafetyThread = NULL;
     }
 
+    if(_objectModel != NULL){
+        delete _objectModel;
+        _objectModel = NULL;
+    }
 }
 
 

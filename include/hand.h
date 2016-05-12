@@ -43,6 +43,7 @@ public:
     void setStartingPose(Vector& pos, Vector& orient);
     bool getStartingPose(Vector& pos, Vector& orient);
     bool getEndPose(Vector& pos, Vector& orient);
+    bool setWayPoint(Vector pos);
     bool setWayPoint(Vector pos, Vector orient);
     bool setWayPointGP(Vector pos, Vector orient);
     bool getWayPoint(Vector& pos, Vector& orient, bool invalidateWayPoint = true);
