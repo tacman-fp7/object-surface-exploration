@@ -16,12 +16,21 @@
 		<node>localhost</node>
 	</module>
 	<connection>
-		<from>/force-reconstruction/left_index/force-CoP</from>
+		<from>/force-cop-estimator/left_index/force:o</from>
 		<to>/data/force_estimate</to>
 		<protocol>tcp</protocol>
 	</connection>
 
-
+	<module>
+		<name>yarpdatadumper</name>
+		<parameters>--name /data/cop_estimate</parameters>
+		<node>localhost</node>
+	</module>
+	<connection>
+		<from>/force-cop-estimator/left_index/cop:o</from>
+		<to>/data/cop_estimate</to>
+		<protocol>tcp</protocol>
+	</connection>
 
 	<module>
 		<name>yarpdatadumper</name>
@@ -59,16 +68,7 @@
 	</connection>
 
 
-	<module>
-		<name>yarpdatadumper</name>
-		<parameters>--name /data/contact_control</parameters>
-		<node>localhost</node>
-	</module>
-	<connection>
-		<from>/plantIdentification/control</from>
-		<to>/data/contact_control</to>
-		<protocol>tcp</protocol>
-	</connection>
+
 
 
 	
@@ -107,26 +107,25 @@
 	</connection>
 
 
-
 	<module>
 		<name>yarpdatadumper</name>
-		<parameters>--name /data/plantID_log</parameters>
+		<parameters>--name /data/left_index_control</parameters>
 		<node>localhost</node>
 	</module>
 	<connection>
-		<from>/plantIdentification/log:o</from>
-		<to>/data/plantID_log</to>
+		<from>/object-exploration/left_hand/index/control:o</from>
+		<to>/data/left_index_control</to>
 		<protocol>tcp</protocol>
 	</connection>
 
 	<module>
 		<name>yarpdatadumper</name>
-		<parameters>--name /data/fingertip_control</parameters>
+		<parameters>--name /data/left_abduction_control</parameters>
 		<node>localhost</node>
 	</module>
 	<connection>
-		<from>/object-exploration/fingertip/control:o</from>
-		<to>/data/fingertip_control</to>
+		<from>/object-exploration/left_hand/abduction/control:o</from>
+		<to>/data/left_abduction_control</to>
 		<protocol>tcp</protocol>
 	</connection>
 

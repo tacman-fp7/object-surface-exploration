@@ -117,6 +117,7 @@ TappingExplorationThread::TappingExplorationThread(int period, Hand* robotHand, 
     yarp::os::Network::connect("/object-exploration/skinManager/rpc:o", "/skinManager/rpc");
 
 
+
     //_indexFingerEncoders.resize(3);
     //_indexFingerEncoders.zero();
 }

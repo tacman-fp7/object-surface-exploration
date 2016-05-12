@@ -77,6 +77,7 @@ private:
     void moveArmToWayPoint(Vector pos, Vector orient);
     void detectContact(double maxAngle);
     yarp::os::RpcClient _skinManagerCommand;
+     BufferedPort<Bottle> _contactStatePort_out;
 
 
 };

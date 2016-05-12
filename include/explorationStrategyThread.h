@@ -18,6 +18,7 @@ protected:
     Hand* _robotHand;
     Finger* _explorationFinger;  
     SurfaceModel* _surfaceModel;
+
 };
 
 } // namespace objectExploration

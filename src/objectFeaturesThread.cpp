@@ -32,7 +32,7 @@ void ObjectFeaturesThread::run()
     Vector fingertipPosition;
 
     //getIndexFingertipPosition(fingertipPosition);
-    publishFingertipPosition(fingertipPosition);
+    //publishFingertipPosition(fingertipPosition);
 
     publishContactState(_contactState);
 }

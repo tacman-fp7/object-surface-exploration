@@ -546,6 +546,8 @@ bool ExploreObject::configure(yarp::os::ResourceFinder& rf ){
 
 
 
+    _objectFeaturesThread->start();
+
     return ret;
 }
 

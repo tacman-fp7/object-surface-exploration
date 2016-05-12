@@ -8,6 +8,9 @@
 #include <yarp/dev/CartesianControl.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/IPositionControl.h>
+#include <yarp/os/BufferedPort.h>
+#include <yarp/os/Bottle.h>
+
 //#include "contactSafetyThread.h"
 
 namespace objectExploration {
@@ -27,7 +30,7 @@ using yarp::os::ResourceFinder;
 class Hand{
 public:
     Hand( ResourceFinder rf);
-
+   ~Hand();
     bool prepare();
     bool open();
     bool setAbduction(double angle, double speed = 20);
@@ -105,7 +108,7 @@ private:
     Vector _wayPointPos;
     Vector _wayPointOrient;
 
-
+   BufferedPort<Bottle> _abuductionPort_out;
 
 private:
 

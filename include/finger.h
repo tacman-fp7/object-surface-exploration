@@ -91,13 +91,18 @@ protected:
     BufferedPort<Bottle> _contactForce_in;
     BufferedPort<Bottle> _contactCoP_in;
 
+    BufferedPort<Bottle> _fingerControlPort_out;
+
     int _proximalJointIndex;
     int _distalJointIndex;
     int _proximalEncoderIndex;
     int _middleEncoderIndex;
     int _distalEncoderIndex;
 
+    double _curProximalAngle;
+    double _curDistalAngle;
 
+    string _whichFinger;
 private:
     bool _isCoPValid;
     bool _isForceValid;

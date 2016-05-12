@@ -13,10 +13,12 @@ using std::cout;
 using yarp::os::Network;
 
 bool Finger::setProximalAngle(double angle, double speed){
+    _curProximalAngle = angle;
     return setAngle(_proximalJointIndex, angle, speed);
 }
 
 bool Finger::setDistalAngle(double angle, double speed){
+    _curDistalAngle = angle;
     return setAngle(_distalJointIndex, angle, speed);
 }
 
@@ -314,6 +316,7 @@ Finger::Finger(t_controllerData ctrlData){
     _isForceValid = false;
     _isCoPValid = false;
     _isActiveTaxelValid = false;
+    _whichFinger = ctrlData.whichFinger;
     //_fingerEncoders = ctrlData.fingerEncoders;
 
     // /force-cop-estimator/left_index/force:o
@@ -361,6 +364,8 @@ Finger::Finger(t_controllerData ctrlData){
     else{
         cerr << _dbgtag << "Port does not exist: " << copPortName_remote << endl;
     }
+
+    _fingerControlPort_out.open("/object-exploration/" + ctrlData.whichHand + "_hand/" + _whichFinger + "/control:o");
 }
 
 bool Finger::hasForceCoP(){
@@ -495,6 +500,12 @@ bool Finger::setAngle(int jointIndex, double angle, double speed){
 
     bool ret = true;
 
+    Bottle& msg = _fingerControlPort_out.prepare();
+    msg.clear();
+    msg.addDouble(_curProximalAngle);
+    msg.addDouble(_curDistalAngle);
+    _fingerControlPort_out.writeStrict();
+
     ret =  _armJointModeCtrl->setPositionMode(jointIndex);;
     ret =  _armJointPositionCtrl->setRefSpeed(jointIndex, speed);
     ret =  _armJointPositionCtrl->positionMove(jointIndex, angle);
@@ -506,6 +517,8 @@ bool Finger::setAngle(int jointIndex, double angle, double speed){
 bool Finger::setAngles(double proximal, double distal, double speed)
 {
     bool ret = true;
+    _curProximalAngle = proximal;
+    _curDistalAngle = distal;
 
     ret = setAngle(_proximalJointIndex, proximal, speed);
     ret = setAngle(_distalJointIndex, distal, speed);
@@ -516,8 +529,10 @@ bool Finger::setAngles(double proximal, double distal, double speed)
 bool Finger::open(){
     bool ret;
 
-    ret = setAngle(_proximalJointIndex, 0, 30);
-    ret = ret && setAngle(_distalJointIndex, 0, 30);
+    _curProximalAngle = 0;
+    _curDistalAngle = 0;
+    ret = setAngle(_proximalJointIndex, _curProximalAngle, 30);
+    ret = ret && setAngle(_distalJointIndex, _curDistalAngle, 30);
 
     // Wait until the finger is open
     while (!checkMotionDone()) {
@@ -701,8 +716,11 @@ bool SimIndexFinger::prepare(){
 
     bool ret = true;
 
-    ret = ret && setAngle(_distalJointIndex, 90);
-    ret = ret && setAngle(_proximalJointIndex, 0);
+    _curProximalAngle = 0;
+    _curDistalAngle = 90;
+
+    ret = ret && setAngle(_proximalJointIndex, _curProximalAngle);
+    ret = ret && setAngle(_distalJointIndex, _curDistalAngle);
 
     return ret;
 
@@ -739,8 +757,10 @@ Thumb::Thumb(t_controllerData ctrlData):
 bool Thumb::prepare(){
     bool ret = true;
 
-    ret = ret && Finger::setAngle(_proximalJointIndex, 0);
-    ret = ret && Finger::setAngle(_distalJointIndex, 65);
+    _curProximalAngle = 0;
+    _curDistalAngle = 65;
+    ret = ret && Finger::setAngle(_proximalJointIndex, _curProximalAngle);
+    ret = ret && Finger::setAngle(_distalJointIndex, _curDistalAngle);
 
     return ret;
 }
@@ -771,8 +791,10 @@ SimThumb::SimThumb(t_controllerData ctrlData):
 bool SimThumb::prepare(){
     bool ret = true;
 
-    ret = ret && Finger::setAngle(_proximalJointIndex, 0);
-    ret = ret && Finger::setAngle(_distalJointIndex, 65);
+    _curProximalAngle = 0;
+    _curDistalAngle = 65;
+    ret = ret && Finger::setAngle(_proximalJointIndex, _curProximalAngle);
+    ret = ret && Finger::setAngle(_distalJointIndex, _curDistalAngle);
 
     return ret;
 }

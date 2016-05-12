@@ -89,6 +89,11 @@ bool Hand::checkMotionDone(bool *motionDone){
 
 bool Hand::setAbduction(double angle, double speed){
 
+    Bottle& msg = _abuductionPort_out.prepare();
+    msg.clear();
+    msg.addDouble(angle);
+    _abuductionPort_out.writeStrict();
+
     _armJointPositionCtrl->setRefSpeed(ABDUCTION, speed);
     if(!_armJointPositionCtrl->positionMove(ABDUCTION, angle))
     {
@@ -588,10 +593,14 @@ void Hand::configure(yarp::os::ResourceFinder rf){
     }
 
 
+    _abuductionPort_out.open("/object-exploration/" + _whichHand + "_hand/abduction/control:o");
 
 
 
+}
 
+Hand::~Hand(){
+    _abuductionPort_out.close();
 }
 
 void Hand::waitMotionDone(const double period, const double timeout){
