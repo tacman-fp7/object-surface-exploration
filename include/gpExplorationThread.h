@@ -7,7 +7,7 @@
 #include <yarp/os/Mutex.h>
 #include <vector>
 
-#define FORCE_TH 1.6
+//#define FORCE_TH 1.6
 
 namespace objectExploration
 {

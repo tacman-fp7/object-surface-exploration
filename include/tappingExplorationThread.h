@@ -6,7 +6,7 @@
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Bottle.h>
 
-#define FORCE_TH 1.6
+#define FORCE_TH 0.8
 
 namespace objectExploration
 {

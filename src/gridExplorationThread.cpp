@@ -17,7 +17,7 @@ void GridExplorationThread::run()
 
 
 
-    _contactState = APPROACH_OBJECT;
+    _contactState = MOVE_LOCATION;
     _repeats = 0;
     _nRepeats = 0;
     _forceThreshold = FORCE_TH;
@@ -98,13 +98,14 @@ void GridExplorationThread::moveToNewLocation()
     moveIndexFingerBlocking(_curProximal, _curAbduction, 40);
 
     // Get the next point
-    Vector wayPoint;
+    Vector wayPoint, desiredArmPos;
     Vector startingPos, startingOrient;
     _robotHand->getStartingPose(startingPos, startingOrient);
 
     if(_objectModel->getNextSamplingPos(wayPoint)){
         wayPoint[2] = startingPos[2]; // Set the z position to starting point+
-        _robotHand->setWayPoint(wayPoint);
+        _explorationFinger->toArmPosition(wayPoint, desiredArmPos);
+        _robotHand->setWayPoint(desiredArmPos);
         _contactState = APPROACH_OBJECT;
     }
     else{

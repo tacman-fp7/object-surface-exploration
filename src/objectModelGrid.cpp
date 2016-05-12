@@ -22,8 +22,8 @@ void ObjectModelGrid::addContactPoint(const yarp::sig::Vector fingertipPosition)
 
 void ObjectModelGrid::saveContactPoints(){
 
-    string inputFileName = _objectName + "_training_input_Grid";
-    string outputFilename = _objectName + "_training_target_Grid";
+    string inputFileName = _objectName + "_training_input_GP.csv";
+    string outputFilename = _objectName + "_training_target_GP.csv";
 
     std::ofstream inputFile;
     std::ofstream outputFile;

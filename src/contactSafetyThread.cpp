@@ -50,7 +50,7 @@ void ContactSafetyThread::run()
 ContactSafetyThread::ContactSafetyThread(int period,  Hand *robotHand)
     :RateThread(period){
 
-    _forceThreshold = 2.5;
+    _forceThreshold = 5;
     //_objectFeatures = objectFeatures;
     _dbgtag = "Contact safety: ";
     _robotHand = robotHand;

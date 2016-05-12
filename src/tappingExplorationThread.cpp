@@ -7,7 +7,7 @@
 #include <yarp/os/Value.h>
 
 #define DEBUG_LEVEL 1
-#define FORCE_TH 1.6
+#define FORCE_TH 0.8
 namespace objectExploration
 {
 
@@ -112,6 +112,11 @@ TappingExplorationThread::TappingExplorationThread(int period, Hand* robotHand, 
     _curAbduction = -10;
     _curAbduction = -10;
     _nRepeats = 0;
+
+    _skinManagerCommand.open("/object-exploration/skinManager/rpc:o");
+    yarp::os::Network::connect("/object-exploration/skinManager/rpc:o", "/skinManager/rpc");
+
+
     //_indexFingerEncoders.resize(3);
     //_indexFingerEncoders.zero();
 }
@@ -604,12 +609,11 @@ void TappingExplorationThread::moveArmUp()
 
     if(force > 0.25)
     {
-        yarp::os::Bottle msg;
+        yarp::os::Bottle msg, response;
+        msg.clear();
         msg.addString("calib");
-
-        yarp::os::Bottle response;
         _skinManagerCommand.write(msg, response);
-        cout << response.toString();
+        cout << response.toString() << endl;
 
     }
     while(force > 0.25)
@@ -621,17 +625,16 @@ void TappingExplorationThread::moveArmUp()
     }
 
     cout << "...done!" << endl;
+
+    // move to the next location
 }
 
 bool TappingExplorationThread::threadInit()
 {
 
 
-    _skinManagerCommand.open("/object-exploration/skinManager/rpc:o");
-    yarp::os::Network::connect("/object-exploration/skinManager/rpc:o", "/skinManager/rpc");
 
-
-    return true;
+    //return true;
 }
 
 

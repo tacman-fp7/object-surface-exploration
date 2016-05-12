@@ -46,7 +46,7 @@ bool Hand::prepare(){
 
     bool ret = true;
 
-    setAbduction(20);
+    setAbduction(0);
     _indexFinger->prepare();
     _thumb->prepare();
 
@@ -102,8 +102,8 @@ void Hand::updateSafeWorkspace()
     {
         _safeWorkspace.minX = _desiredStartingPosition[0] - 0.30; //Maximum width 13 cm + 2 cm leeway
         _safeWorkspace.maxX = _desiredStartingPosition[0] + 0.10;
-        _safeWorkspace.minZ = _desiredStartingPosition[2] - 0.05;
-        _safeWorkspace.maxZ = _desiredStartingPosition[2] + 0.05;
+        _safeWorkspace.minZ = _desiredStartingPosition[2] - 0.05; //TODO: set it to fixed value in the config file
+        _safeWorkspace.maxZ = _desiredStartingPosition[2] + 0.15; //TODO: set them to fixed values in the config files
 
     }
 
@@ -312,7 +312,7 @@ bool Hand::setWayPoint( Vector pos, Vector orient ){
     if(pos[2] < _safeWorkspace.minZ)
     {
 
-        cerr << _dbgtag << "Exceeded the z-axis limit ( " << _safeWorkspace.minZ << " ): " << pos[2] << endl;
+        cerr << _dbgtag << "Exceeded the min z-axis limit ( " << _safeWorkspace.minZ << " ): " << pos[2] << endl;
         pos[2] = _safeWorkspace.minZ;
 
         if(_wayPointPos[2] == _safeWorkspace.minZ)
@@ -321,7 +321,7 @@ bool Hand::setWayPoint( Vector pos, Vector orient ){
 
     if(pos[2] > _safeWorkspace.maxZ)
     {
-        cerr << _dbgtag << "Exceeded the z-axis limit ( " << _safeWorkspace.maxZ << " ): " << pos[2] << endl;
+        cerr << _dbgtag << "Exceeded the max z-axis limit ( " << _safeWorkspace.maxZ << " ): " << pos[2] << endl;
         pos[2] = _safeWorkspace.maxZ;
 
         if(_wayPointPos[2] == _safeWorkspace.maxZ)

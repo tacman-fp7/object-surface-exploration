@@ -689,7 +689,7 @@ bool IndexFinger::prepare(){
 
     bool ret = true;
 
-    setSynchroProximalAngle(20);
+    setSynchroProximalAngle(0);
 //    ret = ret && setAngle(_distalJointIndex, 20);
 //    ret = ret && setAngle(_proximalJointIndex, 20);
 
@@ -701,8 +701,8 @@ bool SimIndexFinger::prepare(){
 
     bool ret = true;
 
-    ret = ret && setAngle(_distalJointIndex, 20);
-    ret = ret && setAngle(_proximalJointIndex, 20);
+    ret = ret && setAngle(_distalJointIndex, 90);
+    ret = ret && setAngle(_proximalJointIndex, 0);
 
     return ret;
 

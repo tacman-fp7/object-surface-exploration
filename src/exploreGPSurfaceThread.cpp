@@ -2,7 +2,7 @@
 
 #include <yarp/os/Time.h>
 
-#define FORCE_TH 1.6
+//#define FORCE_TH 1.6
 
 
 namespace objectExploration
