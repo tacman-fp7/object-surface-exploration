@@ -317,6 +317,8 @@ Finger::Finger(t_controllerData ctrlData){
     _isCoPValid = false;
     _isActiveTaxelValid = false;
     _whichFinger = ctrlData.whichFinger;
+    _rawTactileData_in = ctrlData.rawTactileData_in;
+
     //_fingerEncoders = ctrlData.fingerEncoders;
 
     // /force-cop-estimator/left_index/force:o
@@ -330,6 +332,8 @@ Finger::Finger(t_controllerData ctrlData){
             ctrlData.whichFinger + "/force:i";
     string copPortName_local = "/object-exploration/" + ctrlData.whichHand + "_" +
             ctrlData.whichFinger + "/cop:i";
+
+
 
 
 
@@ -376,6 +380,7 @@ icubFinger::icubFinger(t_controllerData ctrlData):Finger(ctrlData){
     _fingerEncoders = ctrlData.fingerEncoders;
 
 }
+
 
 bool Finger::getContactCoP(yarp::sig::Vector &contactCoP){
     int nPendingReads;
@@ -574,6 +579,25 @@ bool icubFinger::readEncoders(yarp::sig::Vector &encoderValues){
 
 void icubFinger::calibrate(){
 
+}
+
+void IndexFinger::getRawTactileData(yarp::sig::Vector& rawTactileData){
+
+    // Read from the port
+    rawTactileData.resize(12);
+    rawTactileData.zero();
+
+    Bottle* tactileData;
+    tactileData = _rawTactileData_in->read();
+
+    //cout << tactileData->toString() << endl;
+    int startIndex = 0;
+    if(tactileData != NULL){
+           for (int i = startIndex; i < 12; i++)
+           {
+               rawTactileData[i - startIndex] = tactileData->get(i).asDouble();
+           }
+    }
 }
 
 IndexFinger::IndexFinger(t_controllerData ctrlData):

@@ -14,6 +14,9 @@ public:
 
     //void setBoundingBox(const double xMin, const double xMax, const double yMin, const double yMax, const double stepSize);
     void addContactPoint(const yarp::sig::Vector fingertipPosition);
+    void addContactCoP(const yarp::sig::Vector cop);
+    void addContactForce(yarp::sig::Vector force);
+
     void saveContactPoints();
     bool getNextSamplingPos(yarp::sig::Vector &nextSamplingPoint);
     void init(yarp::sig::Vector startingPos, yarp::sig::Vector endingPos);
@@ -22,6 +25,8 @@ private:
    std::string _objectName;
 
    std::vector< yarp::sig::Vector > _contactPoints;
+   std::vector< yarp::sig::Vector > _copPoints;
+   std::vector< yarp::sig::Vector > _contactForce;
 
    yarp::sig::Vector _nextSamplingPoint;
    double _searchSpaceWidth;

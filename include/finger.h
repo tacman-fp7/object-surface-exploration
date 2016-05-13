@@ -6,6 +6,7 @@
 #include <yarp/os/Bottle.h>
 #include <yarp/os/ResourceFinder.h>
 #include <yarp/dev/CartesianControl.h>
+#include <yarp/os/BufferedPort.h>
 
 namespace objectExploration {
 
@@ -38,6 +39,8 @@ struct fingerControllerData{
     yarp::dev::IPositionControl *armJointPositionCtrl;
     yarp::dev::ICartesianControl* armCartesianCtrl;
     yarp::os::BufferedPort<yarp::os::Bottle>* fingerEncoders;
+    yarp::os::BufferedPort<yarp::os::Bottle>* rawTactileData_in;
+
 
 };
 typedef struct fingerControllerData t_controllerData;
@@ -70,6 +73,7 @@ public:
     double getContactForce();
     bool getContactCoP(yarp::sig::Vector& contactCoP);
     bool hasForceCoP();
+    virtual void getRawTactileData(Vector& rawTactileData){rawTactileData.resize(12); rawTactileData.zero();}
 
 protected:
     Finger(t_controllerData);
@@ -92,6 +96,7 @@ protected:
     BufferedPort<Bottle> _contactCoP_in;
 
     BufferedPort<Bottle> _fingerControlPort_out;
+    BufferedPort<Bottle>* _rawTactileData_in;
 
     int _proximalJointIndex;
     int _distalJointIndex;
@@ -152,6 +157,7 @@ public:
     void calibrate(){}
     bool prepare();
     bool setSynchroProximalAngle(double proximal);
+    void getRawTactileData(Vector rawTactileData);
 };
 
 class SimThumb: public Finger{
@@ -167,6 +173,7 @@ public:
     void calibrate();
     bool prepare();
     bool setSynchroProximalAngle(double proximal);
+    void getRawTactileData(Vector& rawTactileData);
 };
 
 

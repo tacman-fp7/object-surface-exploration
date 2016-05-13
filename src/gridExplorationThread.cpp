@@ -122,8 +122,19 @@ void GridExplorationThread::maintainContact()
     // Log the data
 
     Vector fingertipPosition;
+    Vector contactCoP;
+    Vector contactForce;
+
     _explorationFinger->getPosition(fingertipPosition);
-    _objectModel->addContactPoint(fingertipPosition);
+    _explorationFinger->getContactCoP(contactCoP);
+    _explorationFinger->getRawTactileData(contactForce);
+
+    //cout << contactForce.toString() << endl;
+     _objectModel->addContactPoint(fingertipPosition);
+    _objectModel->addContactCoP(contactCoP);
+    _objectModel->addContactForce(contactForce);
+
+    // Saves both  cop and contact points
     _objectModel->saveContactPoints();
 
     TappingExplorationThread::maintainContact();

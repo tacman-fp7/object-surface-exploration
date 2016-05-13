@@ -109,6 +109,8 @@ private:
     Vector _wayPointOrient;
 
    BufferedPort<Bottle> _abuductionPort_out;
+protected:
+   BufferedPort<Bottle> _rawTactileData_in;
 
 private:
 
