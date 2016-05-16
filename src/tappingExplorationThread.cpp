@@ -627,6 +627,7 @@ void TappingExplorationThread::moveArmUp()
 
     cout << "...done!" << endl;
 
+
     // move to the next location
 }
 

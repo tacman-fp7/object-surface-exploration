@@ -114,6 +114,7 @@ void GridExplorationThread::moveToNewLocation()
 
     // Move the finger up
     TappingExplorationThread::moveArmUp();
+    _contactSafetyThread->resetBaseline();
 
 }
 

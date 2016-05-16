@@ -144,7 +144,7 @@ ObjectModelGrid::ObjectModelGrid(const std::string objectName):_objectName(objec
     _nextSamplingPoint.resize(3);
     _nextSamplingPoint.zero();
 
-    _stepSize = 5.0/1000.0; //TODO put it in a config file
-    _searchSpaceWidth = 75.0/1000.0; //TODO put it in a config file
+    _stepSize = 2.50/1000.0; //TODO put it in a config file
+    _searchSpaceWidth = 55.0/1000.0; //TODO put it in a config file
 }
 }
