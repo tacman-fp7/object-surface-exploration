@@ -12,58 +12,58 @@
 		
 	<module>
 		<name>yarpdatadumper</name>
-		<parameters>--name /data/force_estimate</parameters>
+		<parameters>--name /force_estimate</parameters>
 		<node>localhost</node>
 	</module>
 	<connection>
 		<from>/force-cop-estimator/left_index/force:o</from>
-		<to>/data/force_estimate</to>
+		<to>/force_estimate</to>
 		<protocol>tcp</protocol>
 	</connection>
 
 	<module>
 		<name>yarpdatadumper</name>
-		<parameters>--name /data/cop_estimate</parameters>
+		<parameters>--name /cop_estimate</parameters>
 		<node>localhost</node>
 	</module>
 	<connection>
 		<from>/force-cop-estimator/left_index/cop:o</from>
-		<to>/data/cop_estimate</to>
+		<to>/cop_estimate</to>
 		<protocol>tcp</protocol>
 	</connection>
 
 	<module>
 		<name>yarpdatadumper</name>
-		<parameters>--name /data/tactile_raw</parameters>
+		<parameters>--name /tactile_raw</parameters>
 		<node>localhost</node>
 	</module>
 	<connection>
 		<from>/icub/skin/left_hand</from>
-		<to>/data/tactile_raw</to>
+		<to>/tactile_raw</to>
 		<protocol>tcp</protocol>
 	</connection>
 
 
 	<module>
 		<name>yarpdatadumper</name>
-		<parameters>--name /data/tactile_cmp</parameters>
+		<parameters>--name /tactile_cmp</parameters>
 		<node>localhost</node>
 	</module>
 	<connection>
 		<from>/icub/skin/left_hand_comp</from>
-		<to>/data/tactile_cmp</to>
+		<to>/tactile_cmp</to>
 		<protocol>tcp</protocol>
 	</connection>
 
 
 	<module>
 		<name>yarpdatadumper</name>
-		<parameters>--name /data/hand_encoders</parameters>
+		<parameters>--name /hand_encoders</parameters>
 		<node>localhost</node>
 	</module>
 	<connection>
 		<from>/icub/left_hand/analog:o</from>
-		<to>/data/hand_encoders</to>
+		<to>/hand_encoders</to>
 		<protocol>tcp</protocol>
 	</connection>
 
@@ -74,58 +74,58 @@
 	
 	<module>
 		<name>yarpdatadumper</name>
-		<parameters>--name /data/fingertip_position</parameters>
+		<parameters>--name /fingertip_position</parameters>
 		<node>localhost</node>
 	</module>
 	<connection>
 		<from>/object-exploration/fingertip/position:o</from>
-		<to>/data/fingertip_position</to>
+		<to>/fingertip_position</to>
 		<protocol>tcp</protocol>
 	</connection>
 
 	<module>
 		<name>yarpdatadumper</name>
-		<parameters>--name /data/contact_state</parameters>
+		<parameters>--name /contact_state</parameters>
 		<node>localhost</node>
 	</module>
 	<connection>
 		<from>/object-exploration/contact/state:o</from>
-		<to>/data/contact_state</to>
+		<to>/contact_state</to>
 		<protocol>tcp</protocol>
 	</connection>
 
 	
 	<module>
 		<name>yarpdatadumper</name>
-		<parameters>--name /data/robot_position</parameters>
+		<parameters>--name /robot_position</parameters>
 		<node>localhost</node>
 	</module>
 	<connection>
 		<from>/icub/cartesianController/left_arm/state:o</from>
-		<to>/data/robot_position</to>
+		<to>/robot_position</to>
 		<protocol>tcp</protocol>
 	</connection>
 
 
 	<module>
 		<name>yarpdatadumper</name>
-		<parameters>--name /data/left_index_control</parameters>
+		<parameters>--name /left_index_control</parameters>
 		<node>localhost</node>
 	</module>
 	<connection>
 		<from>/object-exploration/left_hand/index/control:o</from>
-		<to>/data/left_index_control</to>
+		<to>/left_index_control</to>
 		<protocol>tcp</protocol>
 	</connection>
 
 	<module>
 		<name>yarpdatadumper</name>
-		<parameters>--name /data/left_abduction_control</parameters>
+		<parameters>--name /left_abduction_control</parameters>
 		<node>localhost</node>
 	</module>
 	<connection>
 		<from>/object-exploration/left_hand/abduction/control:o</from>
-		<to>/data/left_abduction_control</to>
+		<to>/left_abduction_control</to>
 		<protocol>tcp</protocol>
 	</connection>
 
