@@ -21,6 +21,7 @@
 		<protocol>tcp</protocol>
 	</connection>
 
+	<!--
 	<module>
 		<name>yarpdatadumper</name>
 		<parameters>--name /cop_estimate</parameters>
@@ -30,7 +31,7 @@
 		<from>/force-cop-estimator/left_index/cop:o</from>
 		<to>/cop_estimate</to>
 		<protocol>tcp</protocol>
-	</connection>
+	</connection> -->
 
 	<module>
 		<name>yarpdatadumper</name>
@@ -71,7 +72,7 @@
 
 
 
-	
+	<!--
 	<module>
 		<name>yarpdatadumper</name>
 		<parameters>--name /fingertip_position</parameters>
@@ -81,7 +82,7 @@
 		<from>/object-exploration/fingertip/position:o</from>
 		<to>/fingertip_position</to>
 		<protocol>tcp</protocol>
-	</connection>
+	</connection> -->
 
 	<module>
 		<name>yarpdatadumper</name>
@@ -94,7 +95,7 @@
 		<protocol>tcp</protocol>
 	</connection>
 
-	
+	<!--
 	<module>
 		<name>yarpdatadumper</name>
 		<parameters>--name /robot_position</parameters>
@@ -104,7 +105,7 @@
 		<from>/icub/cartesianController/left_arm/state:o</from>
 		<to>/robot_position</to>
 		<protocol>tcp</protocol>
-	</connection>
+	</connection> -->
 
 
 	<module>
