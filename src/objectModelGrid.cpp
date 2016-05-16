@@ -58,7 +58,7 @@ void ObjectModelGrid::saveContactPoints(){
 
     for (std::vector< yarp::sig::Vector>::iterator contactPoint = _contactPoints.begin(); contactPoint != _contactPoints.end(); contactPoint++){
         inputFile  << (*contactPoint)[0] << ", " << (*contactPoint)[1] << endl;
-        outputFile << (*contactPoint)[2] << ", " << endl;
+        outputFile << (*contactPoint)[2] << endl;
     }
 
     for (std::vector< yarp::sig::Vector >::iterator copIter = _copPoints.begin(); copIter != _copPoints.end(); copIter++ ){
