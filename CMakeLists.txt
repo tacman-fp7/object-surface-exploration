@@ -31,7 +31,6 @@ include/tappingExplorationThread.h include/surfaceModelGP.h include/gpExploratio
 include/exploreGPSurfaceThread.h include/contactSafetyThread.h
 include/finger.h
 include/hand.h
-include/badControllerException.h
 include/gridExplorationThread.h
 include/objectModelGrid.h)
 
