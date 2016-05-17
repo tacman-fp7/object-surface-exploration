@@ -194,6 +194,23 @@ bool Hand::getStartingPose ( Vector& pos, Vector& orient )
 
 }
 
+bool Hand::setHeight(double height){
+
+    if(height < _safeWorkspace.minZ){
+        cerr << _dbgtag << "Exceeded the min z-axis limit ( " << _safeWorkspace.minZ << " ): " << height << endl;
+        height = _safeWorkspace.minZ;
+    }
+
+    if(height > _safeWorkspace.maxZ){
+        cerr << _dbgtag << "Exceeded the max z-axis limit ( " << _safeWorkspace.maxZ << " ): " << height << endl;
+        height = _safeWorkspace.maxZ;
+    }
+    _desiredStartingPosition[2] = height;
+    _desiredEndPosition[2] = height;
+
+    return true;
+}
+
 bool Hand::goToStartingPose(){
 
     Vector desiredFingerPos;

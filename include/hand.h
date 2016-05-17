@@ -52,6 +52,7 @@ public:
     bool getWayPoint(Vector& pos, Vector& orient, bool invalidateWayPoint = true);
     bool goToStartingPose();
     bool goToEndPose();
+    bool setHeight(double height);
 
 
 

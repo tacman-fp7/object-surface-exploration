@@ -17,6 +17,7 @@ service robotControl {
         bool nRepeatsSet(1: i32 nRepeats);
         bool validatePositionsEnable();
         bool validatePositionsDisable();
+        bool setHeight(1: double height);
 	bool quit();
 	
 }

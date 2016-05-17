@@ -146,6 +146,15 @@ public:
   virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
+class robotControl_setHeight : public yarp::os::Portable {
+public:
+  double height;
+  bool _return;
+  void init(const double height);
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
+};
+
 class robotControl_quit : public yarp::os::Portable {
 public:
   bool _return;
@@ -519,6 +528,29 @@ void robotControl_validatePositionsDisable::init() {
   _return = false;
 }
 
+bool robotControl_setHeight::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(2)) return false;
+  if (!writer.writeTag("setHeight",1,1)) return false;
+  if (!writer.writeDouble(height)) return false;
+  return true;
+}
+
+bool robotControl_setHeight::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void robotControl_setHeight::init(const double height) {
+  _return = false;
+  this->height = height;
+}
+
 bool robotControl_quit::write(yarp::os::ConnectionWriter& connection) {
   yarp::os::idl::WireWriter writer(connection);
   if (!writer.writeListHeader(1)) return false;
@@ -709,6 +741,16 @@ bool robotControl::validatePositionsDisable() {
   helper.init();
   if (!yarp().canWrite()) {
     yError("Missing server method '%s'?","bool robotControl::validatePositionsDisable()");
+  }
+  bool ok = yarp().write(helper,helper);
+  return ok?helper._return:_return;
+}
+bool robotControl::setHeight(const double height) {
+  bool _return = false;
+  robotControl_setHeight helper;
+  helper.init(height);
+  if (!yarp().canWrite()) {
+    yError("Missing server method '%s'?","bool robotControl::setHeight(const double height)");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
@@ -940,6 +982,22 @@ bool robotControl::read(yarp::os::ConnectionReader& connection) {
       reader.accept();
       return true;
     }
+    if (tag == "setHeight") {
+      double height;
+      if (!reader.readDouble(height)) {
+        reader.fail();
+        return false;
+      }
+      bool _return;
+      _return = setHeight(height);
+      yarp::os::idl::WireWriter writer(reader);
+      if (!writer.isNull()) {
+        if (!writer.writeListHeader(1)) return false;
+        if (!writer.writeBool(_return)) return false;
+      }
+      reader.accept();
+      return true;
+    }
     if (tag == "quit") {
       bool _return;
       _return = quit();
@@ -1002,6 +1060,7 @@ std::vector<std::string> robotControl::help(const std::string& functionName) {
     helpString.push_back("nRepeatsSet");
     helpString.push_back("validatePositionsEnable");
     helpString.push_back("validatePositionsDisable");
+    helpString.push_back("setHeight");
     helpString.push_back("quit");
     helpString.push_back("help");
   }
@@ -1056,6 +1115,9 @@ std::vector<std::string> robotControl::help(const std::string& functionName) {
     }
     if (functionName=="validatePositionsDisable") {
       helpString.push_back("bool validatePositionsDisable() ");
+    }
+    if (functionName=="setHeight") {
+      helpString.push_back("bool setHeight(const double height) ");
     }
     if (functionName=="quit") {
       helpString.push_back("bool quit() ");

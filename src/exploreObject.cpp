@@ -169,8 +169,13 @@ bool ExploreObject::setStartingPose()
     orient.resize(4); // x,y,z,w prientation
     //_armCartesianController->getPose(pos, orient);
     _robotHand->getPose(pos, orient);
+    _explorationFinger->getPosition(pos);
     _robotHand->setStartingPose(pos, orient);
     return true;
+}
+
+bool ExploreObject::setHeight(double height){
+    return _robotHand->setHeight(height);
 }
 
 /*bool ExploreObject::setHomePose()

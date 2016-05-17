@@ -52,6 +52,7 @@ public: // Methods related to the robot control
     bool validatePositionsEnable();
     bool validatePositionsDisable();
     bool nRepeatsSet(const int32_t nRepeats);
+    bool setHeight(double height);
     bool quit();
     
 public: // Methods related to the RF module
