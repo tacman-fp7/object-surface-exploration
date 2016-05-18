@@ -472,7 +472,7 @@ void Hand::configure(yarp::os::ResourceFinder rf){
     // Set the trajectory time
     //cout << "Trajectory time: " << trajectoryTime << endl;
     _armCartesianCtrl->setTrajTime(trajectoryTime);
-
+    _armCartesianCtrl->setInTargetTol(2.5/2000); // half of
 
     // Enable the torso movement
 
