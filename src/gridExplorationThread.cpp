@@ -103,7 +103,12 @@ void GridExplorationThread::moveToNewLocation()
     _robotHand->getStartingPose(startingPos, startingOrient);
 
     if(_objectModel->getNextSamplingPos(wayPoint)){
-        wayPoint[2] = startingPos[2]; // Set the z position to starting point+
+        if(wayPoint[1] == startingPos[1]){
+            wayPoint[2] = -0.10; // Hack
+        }
+        else{
+            wayPoint[2] = startingPos[2]; // Set the z position to starting point+
+        }
         _explorationFinger->toArmPosition(wayPoint, desiredArmPos);
         _robotHand->setWayPoint(desiredArmPos);
         _contactState = APPROACH_OBJECT;
@@ -131,7 +136,7 @@ void GridExplorationThread::maintainContact()
     _explorationFinger->getRawTactileData(contactForce);
 
     //cout << contactForce.toString() << endl;
-     _objectModel->addContactPoint(fingertipPosition);
+    _objectModel->addContactPoint(fingertipPosition);
     _objectModel->addContactCoP(contactCoP);
     _objectModel->addContactForce(contactForce);
 
