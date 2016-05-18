@@ -134,6 +134,7 @@ void ObjectModelGrid::init(yarp::sig::Vector startingPos, yarp::sig::Vector endi
     //std::cout  << _xMin << ", " << _xMax << ", " << _yMin << ", " << _yMax << std::endl;
     _nextSamplingPoint[0] = _xMax;
     _nextSamplingPoint[1] = _yMin - _stepSize;
+    _nextSamplingPoint[2] = startingPos[2];
 
 }
 

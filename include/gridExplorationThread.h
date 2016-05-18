@@ -21,7 +21,7 @@ public:
         _objectModel = new ObjectModelGrid(objectName);
 
         if(_objectModel == NULL){
-            throw std::runtime_error(_dbgtag + "xould not cleate object model.");
+            throw std::runtime_error(_dbgtag + "could not create object model.");
         }
     }
 

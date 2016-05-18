@@ -103,12 +103,14 @@ void GridExplorationThread::moveToNewLocation()
     _robotHand->getStartingPose(startingPos, startingOrient);
 
     if(_objectModel->getNextSamplingPos(wayPoint)){
+        // If we are going back to the beginning use a safe height
         if(wayPoint[1] == startingPos[1]){
-            wayPoint[2] = -0.10; // Hack
+            wayPoint[2] = -0.10; // DODO: gotta fix this
         }
-        else{
+       else{
             wayPoint[2] = startingPos[2]; // Set the z position to starting point+
         }
+
         _explorationFinger->toArmPosition(wayPoint, desiredArmPos);
         _robotHand->setWayPoint(desiredArmPos);
         _contactState = APPROACH_OBJECT;

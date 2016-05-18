@@ -590,16 +590,19 @@ void TappingExplorationThread::moveToNewLocation()
 
 void TappingExplorationThread::moveArmUp()
 {
-    Vector startingPos, startingOrient;
+    Vector wayPointPos, wayPointOrient;
     Vector armPos, orient;
     moveIndexFinger(10, _curAbduction);
 
-   _robotHand->relaxTolerence();
+   //_robotHand->relaxTolerence();
     _robotHand->getPose(armPos, orient);
-    _robotHand->getStartingPose(startingPos, startingOrient);
+    //_robotHand->getStartingPose(startingPos, startingOrient);
+
+    // TODO: rename vairables as needed.
+    _robotHand->getWayPoint(wayPointPos, wayPointOrient, false);
 
     Vector desiredArmPos;
-    _explorationFinger->toArmPosition(startingPos, desiredArmPos);
+    _explorationFinger->toArmPosition(wayPointPos, desiredArmPos);
     armPos[2] = desiredArmPos[2]; // Move the fingertip up to avoid collisiont
     //_objectFeatures->moveArmToPosition(armPos, orient);
     _robotHand->goToPoseSync(armPos, orient, 10);
@@ -627,7 +630,7 @@ void TappingExplorationThread::moveArmUp()
 
     cout << "...done!" << endl;
 
-    _robotHand->strictTolerence();
+    //_robotHand->strictTolerence();
     // move to the next location
 }
 
