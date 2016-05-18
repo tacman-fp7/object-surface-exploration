@@ -53,7 +53,8 @@ public:
     bool goToStartingPose();
     bool goToEndPose();
     bool setHeight(double height);
-
+    void relaxTolerence();
+    void strictTolerence();
 
 
     Finger* getIndexFinger(){return _indexFinger;}

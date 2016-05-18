@@ -594,7 +594,7 @@ void TappingExplorationThread::moveArmUp()
     Vector armPos, orient;
     moveIndexFinger(10, _curAbduction);
 
-
+   _robotHand->relaxTolerence();
     _robotHand->getPose(armPos, orient);
     _robotHand->getStartingPose(startingPos, startingOrient);
 
@@ -627,7 +627,7 @@ void TappingExplorationThread::moveArmUp()
 
     cout << "...done!" << endl;
 
-
+    _robotHand->strictTolerence();
     // move to the next location
 }
 

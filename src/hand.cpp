@@ -472,7 +472,7 @@ void Hand::configure(yarp::os::ResourceFinder rf){
     // Set the trajectory time
     //cout << "Trajectory time: " << trajectoryTime << endl;
     _armCartesianCtrl->setTrajTime(trajectoryTime);
-    _armCartesianCtrl->setInTargetTol(2.5/2000); // half of
+    _armCartesianCtrl->setInTargetTol(2.5/1000); // half of
 
     // Enable the torso movement
 
@@ -625,6 +625,14 @@ Hand::~Hand(){
 
 void Hand::waitMotionDone(const double period, const double timeout){
     _armCartesianCtrl->waitMotionDone(period, timeout);
+}
+
+void Hand::relaxTolerence(){
+    _armCartesianCtrl->setInTargetTol(5/100);
+}
+
+void Hand::strictTolerence(){
+    _armCartesianCtrl->setInTargetTol(2.5/100);
 }
 
 bool SimHand::configure(yarp::os::ResourceFinder& rf){
