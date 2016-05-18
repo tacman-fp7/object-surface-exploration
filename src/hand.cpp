@@ -628,7 +628,7 @@ void Hand::waitMotionDone(const double period, const double timeout){
 }
 
 void Hand::relaxTolerence(){
-    _armCartesianCtrl->setInTargetTol(5/100);
+    _armCartesianCtrl->setInTargetTol(10/100);
 }
 
 void Hand::strictTolerence(){
