@@ -601,9 +601,9 @@ void TappingExplorationThread::moveArmUp()
     // TODO: rename vairables as needed.
     _robotHand->getWayPoint(wayPointPos, wayPointOrient, false);
 
-    Vector desiredArmPos;
-    _explorationFinger->toArmPosition(wayPointPos, desiredArmPos);
-    armPos[2] = desiredArmPos[2]; // Move the fingertip up to avoid collisiont
+    //Vector desiredArmPos;
+    //_explorationFinger->toArmPosition(wayPointPos, desiredArmPos);
+    armPos[2] = wayPointPos[2]; // Move the fingertip up to avoid collisiont
     //_objectFeatures->moveArmToPosition(armPos, orient);
     _robotHand->goToPoseSync(armPos, orient, 10);
 
