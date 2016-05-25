@@ -28,6 +28,9 @@ surfaceModel.initialise(objectSurface);
 
 
 %%
+while(true)
 cl = objectSurface.sampleObject(surfaceModel.getNextSamplingPoint());
 surfaceModel.addContactLocation(cl);
 
+pause(0.1)
+end
