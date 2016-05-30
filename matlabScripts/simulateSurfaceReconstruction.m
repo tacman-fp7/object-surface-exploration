@@ -1,6 +1,6 @@
 %% Surface reconstruction using the saved data.
 clear
-close all
+%close all
 
 nSet = 1;
 objectName = {'circPrism', 'triangPrism', 'fish', 'fishSQ', 'hut', 'hutWave'};
@@ -20,17 +20,20 @@ contactPoints = dlmread('contactPoints.csv');
 
 objectSurface = myObject;
 objectSurface.initialise(objectName{objectIndex}, contactPoints);
-%objectSurface.plotMesh();
+%objectSurface.plotMesh(true, objectIndex);
 
+%%
 surfaceModel = surfaceModelGP;
-surfaceModel.initialise(objectSurface);
-%surfaceModel.plotMesh();
+surfaceModel.initialiseLimitted(objectSurface);
+
+%surfaceModel.plotMesh(true, 2);
+
 
 
 %%
 while(true)
 cl = objectSurface.sampleObject(surfaceModel.getNextSamplingPoint());
 surfaceModel.addContactLocation(cl);
-
-pause(0.1)
+%surfaceModel.plotMesh(true, 2);
+pause(0.01);
 end
