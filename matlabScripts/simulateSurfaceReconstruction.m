@@ -17,14 +17,18 @@ cd(sprintf('%s/data/%s/set%02d/trial%02d/processedData', expDir, objectType, nSe
 % load the data
 
 contactPoints = dlmread('contactPoints.csv');
+contactPoints = contactPoints(:,1:3);
 
 objectSurface = myObject;
 objectSurface.initialise(objectName{objectIndex}, contactPoints);
-%objectSurface.plotMesh(true, objectIndex);
+objectSurface.plotMesh(true, objectIndex);
 
 %%
-surfaceModel = surfaceModelGP;
+%surfaceModel = surfaceModelGP;
+surfaceModel = activeSurfaceModelGP;
 surfaceModel.initialiseLimitted(objectSurface);
+
+
 
 %surfaceModel.plotMesh(true, 2);
 
