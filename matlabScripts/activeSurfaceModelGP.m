@@ -154,7 +154,7 @@ gpModel.hoproportion = 0.1;
 
 jobID = 1;
 gurls(this.contactLocations( : , 1:2),...
-      quantizeContacts(this.contactLocations(:, 3)), gpModel, jobID);
+      this.contactLocations(:, 3), gpModel, jobID);
   
 
 gurls(this.inputTesting, this.outputTesting , gpModel, 2);
