@@ -9,7 +9,7 @@ classdef activeSurfaceModelGP < handle
         inputTesting;
         outputTesting;
         nBins = 1;
-        firstBinThreshold = 20;
+        firstBinThreshold = 10;
     end
     
     methods
@@ -19,8 +19,14 @@ classdef activeSurfaceModelGP < handle
         
         function addContactLocation(this, contactLocation)
             this.contactLocations = [this.contactLocations; contactLocation];
-            if(length(this.contactLocations) > (this.firstBinThreshold + (this.nPoints * 4 - 2)))
-                this.nBins = 10;
+            if(length(this.contactLocations) > (this.firstBinThreshold * 4 + (this.nPoints * 4 - 2)))
+                this.nBins = 8;
+            elseif(length(this.contactLocations) > (this.firstBinThreshold * 3 + (this.nPoints * 4 - 2)))
+                this.nBins = 6;
+            elseif(length(this.contactLocations) > (this.firstBinThreshold * 2 + (this.nPoints * 4 - 2)))
+                this.nBins = 4;
+            elseif(length(this.contactLocations) > (this.firstBinThreshold + (this.nPoints * 4 - 2)))
+                this.nBins = 2;
             end
             updateModel(this);
         end
@@ -100,6 +106,13 @@ function updateModel(this)
 % Classification
 surfaceModel = runGURLS(this);
 surfUncertainty = abs(surfaceModel);
+
+
+
+nElements = hist(this.contactLocations((this.nPoints * 4 - 4):end,3), this.nBins);
+
+[~, minElements] = min(nElements);
+
 for bin = 1: this.nBins
     surfUncertainty(:, bin) = 1 - ((surfUncertainty(:, bin) - min(surfUncertainty(:, bin))) ./...
         (max(surfUncertainty(:, bin)) - min(surfUncertainty(:, bin))));
@@ -109,9 +122,10 @@ end
 
 
 
-gpUncertainty = zeros(length(surfUncertainty),1); % Disable the regression part
+%gpUncertainty = zeros(length(surfUncertainty),1); % Disable the regression part
 
-alphaE = 0;
+gpUncertainty = maxProb(this, surfaceModel);
+alphaE = 0.25;
 
 complexUncertainty = zeros(length(surfUncertainty), 1);
 for bin = 1:this.nBins
@@ -119,6 +133,8 @@ for bin = 1:this.nBins
 end
 
 complexUncertainty = complexUncertainty/this.nBins;
+
+%complexUncertainty = surfUncertainty(:, minElements);
 
 [~, next_idx] = max(complexUncertainty);
 
@@ -133,7 +149,9 @@ plotMesh(this, this.contactLocations, true, figNum, this.nPoints, 'Contact Locat
 figNum = figNum + 1;
 plotNextLocation(this, max(this.contactLocations(:,3)), figNum -1);
 
-
+% % figure(figNum)
+% % plot(surfaceModel);
+% % figNum = figNum + 1;
 
 
 % % for bin = 1:this.nBins
@@ -154,12 +172,41 @@ plotMesh(this, [this.inputTesting superimposeSurface(this, surfaceModel)], false
 figNum = figNum + 1;
 plotNextLocation(this, max(superimposeSurface(this, surfaceModel)), figNum -1);
 
+plotMesh(this, [this.inputTesting maxProbSurface(this, surfaceModel)], false, figNum, this.nPoints, 'Max prob surface');
+figNum = figNum + 1;
+plotNextLocation(this, max(maxProbSurface(this, surfaceModel)), figNum -1);
+
+plotMesh(this, [this.inputTesting maxProb(this, surfaceModel)], false, figNum, this.nPoints, 'Max prob ');
+figNum = figNum + 1;
+plotNextLocation(this, max(maxProb(this, surfaceModel)), figNum -1);
+
 plotMesh(this, [this.inputTesting, complexUncertainty ], false, figNum, this.nPoints, 'GP Vars');
 figNum = figNum + 1;
 plotNextLocation(this, max(complexUncertainty), figNum -1);
 
 figure(figNum);
-hist(this.contactLocations((this.nPoints * 4 - 2):end,3), this.nBins);
+hist(this.contactLocations((this.nPoints * 4 - 4):end,3), this.nBins);
+
+end
+
+function surf = maxProb(this, surface)
+surf = zeros(length(surface), 1);
+for i = 1:length(surface)
+   [prob, ~] = max(surface(i,:));
+   surf(i) = prob;
+end
+
+% convert to uncertainty
+surf = 1 - ((surf - min(surf))/ (max(surf) - min(surf)));
+
+end
+
+function surf = maxProbSurface(this, surface)
+surf = zeros(length(surface), 1);
+for i = 1:length(surface)
+   [~, max_idx] = max(surface(i,:));
+   surf(i) = max_idx;
+end
 
 end
 

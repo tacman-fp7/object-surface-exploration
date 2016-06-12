@@ -8,7 +8,7 @@ explorationType = 'Grid';
 trial = 1;
 whichHand = 'left';
 whichFinger = 'index';
-objectIndex = 1;
+objectIndex = 4;
 objectType = objectName{objectIndex};
 
 expDir = '/home/nawidj/tacman/gridSurfaceExplorationData';
