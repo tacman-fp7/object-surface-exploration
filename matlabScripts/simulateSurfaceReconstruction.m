@@ -26,7 +26,7 @@ objectSurface.plotMesh(true, objectIndex);
 %%
 %surfaceModel = surfaceModelGP;
 surfaceModel = activeSurfaceModelGP;
-surfaceModel.initialiseLimitted(objectSurface);
+surfaceModel.initialise(objectSurface);
 
 
 

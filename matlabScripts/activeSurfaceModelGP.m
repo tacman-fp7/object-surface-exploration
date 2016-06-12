@@ -3,11 +3,13 @@ classdef activeSurfaceModelGP < handle
     properties
         contactLocations;
         gpModel;
-        nPoints = 20;
+        nPoints = 60;
         objectName;
         nextSamplingLocation = zeros(1,2);
         inputTesting;
         outputTesting;
+        nBins = 1;
+        firstBinThreshold = 20;
     end
     
     methods
@@ -17,6 +19,9 @@ classdef activeSurfaceModelGP < handle
         
         function addContactLocation(this, contactLocation)
             this.contactLocations = [this.contactLocations; contactLocation];
+            if(length(this.contactLocations) > (this.firstBinThreshold + (this.nPoints * 4 - 2)))
+                this.nBins = 10;
+            end
             updateModel(this);
         end
         
@@ -27,7 +32,7 @@ classdef activeSurfaceModelGP < handle
                 objectSurface.xMax objectSurface.yMin objectSurface.zMin;...
                 objectSurface.xMax objectSurface.yMax objectSurface.zMin];
             this.objectName = objectSurface.objectName;
-            createGPModel(this);
+            %createGPModel(this);
             updateModel(this);
         end
         function initialise(this, objectSurface)
@@ -59,9 +64,11 @@ function createGPModel(this)
 name = this.objectName;
 this.gpModel = gurls_defopt(name);
 this.gpModel.seq = {'split:ho', 'paramsel:siglamho', 'kernel:rbf',...
-    'rls:dual', 'predkernel:traintest', 'pred:dual'};
-this.gpModel.process{1} = [2,2,2,2,1,1];
-this.gpModel.process{2} = [3,3,3,3,2,2];
+    'rls:dual', 'predkernel:traintest', 'pred:dual',...
+    'perf:macroavg', 'perf:precrec', 'conf:boltzman'};
+
+this.gpModel.process{1} = [2,2,2,2,0,0,0,0,0];
+this.gpModel.process{2} = [3,3,3,3,2,2,2,2,2];
 this.gpModel.epochs = 100;
 this.gpModel.hoperf = @perf_abserr;
 this.gpModel.save = -1;
@@ -93,13 +100,25 @@ function updateModel(this)
 % Classification
 surfaceModel = runGURLS(this);
 surfUncertainty = abs(surfaceModel);
-surfUncertainty = 1 - ((surfUncertainty - min(surfUncertainty)) ./ (max(surfUncertainty) - min(surfUncertainty)));
-
+for bin = 1: this.nBins
+    surfUncertainty(:, bin) = 1 - ((surfUncertainty(:, bin) - min(surfUncertainty(:, bin))) ./...
+        (max(surfUncertainty(:, bin)) - min(surfUncertainty(:, bin))));
+end
 % Regression
-gpUncertainty = runGURLSRegression(this);
+% %gpUncertainty = runGURLSRegression(this);
 
-complexUncertainty = (gpUncertainty * 0.25 + surfUncertainty * 0.75);
 
+
+gpUncertainty = zeros(length(surfUncertainty),1); % Disable the regression part
+
+alphaE = 0;
+
+complexUncertainty = zeros(length(surfUncertainty), 1);
+for bin = 1:this.nBins
+    complexUncertainty = complexUncertainty + (gpUncertainty * alphaE + surfUncertainty(:,bin) * (1 - alphaE));
+end
+
+complexUncertainty = complexUncertainty/this.nBins;
 
 [~, next_idx] = max(complexUncertainty);
 
@@ -107,34 +126,69 @@ complexUncertainty = (gpUncertainty * 0.25 + surfUncertainty * 0.75);
 this.nextSamplingLocation = [this.inputTesting(next_idx, 1), this.inputTesting(next_idx, 2)];
 
 
-% % Display 
-figNum = 1;
+
+% % Display
+figNum = 2;
 plotMesh(this, this.contactLocations, true, figNum, this.nPoints, 'Contact Locations');
 figNum = figNum + 1;
 plotNextLocation(this, max(this.contactLocations(:,3)), figNum -1);
 
-% % plotMesh(this, [this.contactLocations(:,1) this.contactLocations(:,2) quantizeContacts(this.contactLocations(:,3))],...
-% %     true, figNum, this.nPoints, 'Quantized');
-% % figNum = figNum + 1;
 
 
 
-plotMesh(this, [this.inputTesting surfUncertainty], false, figNum, this.nPoints, 'Surface uncertainty');
+% % for bin = 1:this.nBins
+% %     
+% %     plotMesh(this, [this.inputTesting surfUncertainty(:,bin)], false, figNum, this.nPoints, sprintf('Surface uncertainty: bin %02d', bin));
+% %     figNum = figNum + 1;
+% %     plotNextLocation(this, max(abs(surfUncertainty(:, bin))), figNum -1);
+% %     
+% % end
+
+% % for bin = 1:this.nBins
+% %     plotMesh(this, [this.inputTesting surfaceModel(:, bin)./abs(surfaceModel(:, bin))], false, figNum, this.nPoints, sprintf('Predicted Surface: %02d', bin));
+% %     figNum = figNum + 1;
+% %     
+% % end
+
+plotMesh(this, [this.inputTesting superimposeSurface(this, surfaceModel)], false, figNum, this.nPoints, 'Superimposed Surface');
 figNum = figNum + 1;
-plotNextLocation(this, max(abs(surfUncertainty)), figNum -1);
-
-
-plotMesh(this, [this.inputTesting surfaceModel./abs(surfaceModel)], false, figNum, this.nPoints, 'Predicted Surface');
-figNum = figNum + 1;
-
-
+plotNextLocation(this, max(superimposeSurface(this, surfaceModel)), figNum -1);
 
 plotMesh(this, [this.inputTesting, complexUncertainty ], false, figNum, this.nPoints, 'GP Vars');
 figNum = figNum + 1;
 plotNextLocation(this, max(complexUncertainty), figNum -1);
 
+figure(figNum);
+hist(this.contactLocations((this.nPoints * 4 - 2):end,3), this.nBins);
+
 end
 
+function surf = superimposeSurface(this, surface)
+
+for bin = 1:this.nBins;
+    
+    surface(:, bin) = surface(:, bin)./abs(surface(:, bin));
+    
+end;
+
+if (this.nBins == 1)
+    surf = surface;
+    surf(surf == -1) = 0;
+    return;
+end
+
+surf = zeros(length(surface), 1);
+
+for i = 1:length(surf)
+    for bin = this.nBins:-1:1
+        if(surface(i,bin) == 1)
+            surf(i) = bin;
+            break;
+        end
+    end
+end
+
+end
 function gpUncertainty = runGURLSRegression(this, nBins)
 
 % quick test
@@ -154,8 +208,8 @@ gpModel.hoproportion = 0.1;
 
 jobID = 1;
 gurls(this.contactLocations( : , 1:2),...
-      this.contactLocations(:, 3), gpModel, jobID);
-  
+    this.contactLocations(:, 3), gpModel, jobID);
+
 
 gurls(this.inputTesting, this.outputTesting , gpModel, 2);
 
@@ -176,7 +230,7 @@ hold off;
 end
 
 function contacts = quantizeContacts(contacts)
- 
+
 contacts = sign(contacts - (max(contacts) + min(contacts))/2);
 %contacts = sign(contacts - median(contacts));
 end
@@ -197,7 +251,9 @@ gradSurface = abs(gradient( f(this.inputTesting(:,1), this.inputTesting(:,2))));
 end
 
 
-function contactBins = bin(this, nBins)
+function contactBins = binContacts(this)
+
+nBins = this.nBins;
 
 binSize = (max(this.contactLocations(:, 3)) - min(this.contactLocations(:, 3))) / (nBins + 1);
 contactBins = zeros(length(this.contactLocations(:,3)), nBins) - 1;
@@ -206,26 +262,43 @@ for i = 1:length(this.contactLocations(:, 3))
     height = this.contactLocations(i, 3) - min(this.contactLocations(:, 3));
     
     for j = 1:nBins
-       if(height < binSize * j)
-           contactBins(i, j) = 1;
-           break;
-       end
+        if(height < binSize * j)
+            contactBins(i, j) = 1;
+            break;
+        end
     end
+end
+
+% Check that each bin has at least one positive and one negative value
+% GURLS fails if there is none. They also have to be mutually exclusive
+
+for j = 1:nBins
+    
+    if(sum(ismember(contactBins(:, j), 1)) == 0)
+        contactBins(j,j) = 1; % Changing diagonally to make sure they are mutually exclusive
+        
+    end
+end
+
+if(nBins == 1)
+    contactBins = contactBins * -1; % for asthetics
 end
 
 end
 
 function surfaceModel = runGURLS(this)
 
-nBins = 2;
+
 createGPModel(this);
 jobID = 1;
+target = binContacts(this);
+
 gurls(this.contactLocations( : , 1:2),...
-      quantizeContacts(this.contactLocations(:, 3)), this.gpModel, jobID); % <-----------
+    target, this.gpModel, jobID); % <-----------
 
 %%% Testing
 
-gurls(this.inputTesting, this.outputTesting , this.gpModel, 2);
+gurls(this.inputTesting, repmat(this.outputTesting, 1, this.nBins) , this.gpModel, 2);
 surfaceModel = this.gpModel.pred;
 
 end
@@ -265,9 +338,9 @@ title(plotTitle, 'fontsize', 24);
 if(plotPC)
     hold on
     scatter3(...
-        contactLocations(:, 1),...
-        contactLocations(:, 2),...
-        contactLocations(:, 3),...
+        contactLocations((this.nPoints * 4 - 2):end, 1),...
+        contactLocations((this.nPoints * 4 - 2):end, 2),...
+        contactLocations((this.nPoints * 4 - 2):end, 3),...
         'fill', 'markerFaceColor', 'blue', 'sizeData', [90]);
     hold off
 end
