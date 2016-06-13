@@ -10,6 +10,8 @@ classdef activeSurfaceModelGP < handle
         outputTesting;
         nBins = 1;
         firstBinThreshold = 10;
+        referenceSurface;
+        surfaceError;
     end
     
     methods
@@ -18,6 +20,7 @@ classdef activeSurfaceModelGP < handle
         end
         
         function addContactLocation(this, contactLocation)
+            naiveEvaluation(this);
             this.contactLocations = [this.contactLocations; contactLocation];
             if(length(this.contactLocations) > (this.firstBinThreshold * 4 + (this.nPoints * 4 - 2)))
                 this.nBins = 8;
@@ -60,6 +63,10 @@ classdef activeSurfaceModelGP < handle
         function plotMesh(this, plotPC, figNum)
             %plotMesh(this, plotPC, figNum);
             plotMesh(this, this.contactLocations, plotPC, figNum, this.nPoints, 'Contact Locations');
+        end
+        
+        function setReferenceSurface(this, referenceSurface)
+            this.referenceSurface = referenceSurface;
         end
     end
 end
@@ -176,11 +183,11 @@ plotMesh(this, [this.inputTesting maxProbSurface(this, surfaceModel)], false, fi
 figNum = figNum + 1;
 plotNextLocation(this, max(maxProbSurface(this, surfaceModel)), figNum -1);
 
-plotMesh(this, [this.inputTesting maxProb(this, surfaceModel)], false, figNum, this.nPoints, 'Max prob ');
+plotMesh(this, [this.inputTesting maxProb(this, surfaceModel)], false, figNum, this.nPoints, 'Classification Uncertainty');
 figNum = figNum + 1;
 plotNextLocation(this, max(maxProb(this, surfaceModel)), figNum -1);
 
-plotMesh(this, [this.inputTesting, complexUncertainty ], false, figNum, this.nPoints, 'GP Vars');
+plotMesh(this, [this.inputTesting, complexUncertainty ], false, figNum, this.nPoints, 'Combined Uncertainty');
 figNum = figNum + 1;
 plotNextLocation(this, max(complexUncertainty), figNum -1);
 
@@ -190,10 +197,15 @@ hist(this.contactLocations((this.nPoints * 4 - 4):end,3), this.nBins);
 end
 
 function surf = maxProb(this, surface)
+
+if(size(surface, 2) > 1)
 surf = zeros(length(surface), 1);
 for i = 1:length(surface)
    [prob, ~] = max(surface(i,:));
-   surf(i) = prob;
+   surf(i) = prob/sum(surface(i,:));
+end
+else
+    surf = surface;
 end
 
 % convert to uncertainty
@@ -202,6 +214,11 @@ surf = 1 - ((surf - min(surf))/ (max(surf) - min(surf)));
 end
 
 function surf = maxProbSurface(this, surface)
+if(size(surface, 2) == 1)
+    surf = surface./abs(surface);
+    surf(surf == -1) = 0;
+    return;
+end
 surf = zeros(length(surface), 1);
 for i = 1:length(surface)
    [~, max_idx] = max(surface(i,:));
@@ -355,7 +372,28 @@ end
 
 
 
+function naiveEvaluation(this)
 
+% 
+x = this.referenceSurface(:, 1);
+y = this.referenceSurface(:, 2);
+
+
+xlin = linspace(min(x),max(x), this.nPoints);
+ylin = linspace(min(y),max(y), this.nPoints);
+fReference = scatteredInterpolant(x, y, this.referenceSurface(:, 3), 'natural');
+fEstimated = scatteredInterpolant(this.contactLocations(:,1), this.contactLocations(:,2), this.contactLocations(:,3), 'natural');
+
+[XT,YT] = meshgrid(xlin,ylin);
+referenceSurfaceMesh = fReference(XT, YT);
+estimatedSurfaceMesh = fEstimated(XT, YT);
+
+
+% %this.surfaceError = [this.surfaceError; mse(referenceSurfaceMesh, estimatedSurfaceMesh)];
+this.surfaceError = [this.surfaceError; sum(sum((referenceSurfaceMesh - estimatedSurfaceMesh).^2))];
+figure(10)
+plot(this.surfaceError);
+end
 
 
 
@@ -391,6 +429,10 @@ if(plotPC)
         'fill', 'markerFaceColor', 'blue', 'sizeData', [90]);
     hold off
 end
+
+% % kdNSearcher = createns([xlin; ylin], 'NSMethod', 'kdtree', 'distance', 'euclidean');
+% % [contactIndex, ~] = knnsearch(kdNSearcher, this.nextSamplingLocation, 'K', 1);
+% % plotNextLocation(this, f(xlin(contactIndex), ylin(contactIndex)), figNum);
 
 view([az, el]);
 end

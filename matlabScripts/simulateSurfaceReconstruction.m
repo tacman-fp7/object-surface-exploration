@@ -8,7 +8,7 @@ explorationType = 'Grid';
 trial = 1;
 whichHand = 'left';
 whichFinger = 'index';
-objectIndex = 4;
+objectIndex = 1;
 objectType = objectName{objectIndex};
 
 expDir = '/home/nawidj/tacman/gridSurfaceExplorationData';
@@ -17,17 +17,17 @@ cd(sprintf('%s/data/%s/set%02d/trial%02d/processedData', expDir, objectType, nSe
 % load the data
 
 contactPoints = dlmread('contactPoints.csv');
-contactPoints = contactPoints(:,1:3);
+
 
 objectSurface = myObject;
-objectSurface.initialise(objectName{objectIndex}, contactPoints);
+objectSurface.initialise(objectName{objectIndex}, downsample(contactPoints,3));
 objectSurface.plotMesh(true, objectIndex);
 
 %%
 %surfaceModel = surfaceModelGP;
 surfaceModel = activeSurfaceModelGP;
 surfaceModel.initialise(objectSurface);
-
+surfaceModel.setReferenceSurface(downsample(contactPoints(:, 1:3), 3));
 
 
 %surfaceModel.plotMesh(true, 2);
