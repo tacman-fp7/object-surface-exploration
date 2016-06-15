@@ -21,13 +21,14 @@ classdef activeSurfaceModelGP < handle
         
         function addContactLocation(this, contactLocation)
             naiveEvaluation(this);
+            
             this.contactLocations = [this.contactLocations; contactLocation];
             if(length(this.contactLocations) > (this.firstBinThreshold * 4 + (this.nPoints * 4 - 2)))
-                this.nBins = 8;
+                this.nBins = 2;
             elseif(length(this.contactLocations) > (this.firstBinThreshold * 3 + (this.nPoints * 4 - 2)))
-                this.nBins = 6;
+                this.nBins = 2;
             elseif(length(this.contactLocations) > (this.firstBinThreshold * 2 + (this.nPoints * 4 - 2)))
-                this.nBins = 4;
+                this.nBins = 2;
             elseif(length(this.contactLocations) > (this.firstBinThreshold + (this.nPoints * 4 - 2)))
                 this.nBins = 2;
             end
@@ -387,6 +388,7 @@ fEstimated = scatteredInterpolant(this.contactLocations(:,1), this.contactLocati
 [XT,YT] = meshgrid(xlin,ylin);
 referenceSurfaceMesh = fReference(XT, YT);
 estimatedSurfaceMesh = fEstimated(XT, YT);
+
 
 
 % %this.surfaceError = [this.surfaceError; mse(referenceSurfaceMesh, estimatedSurfaceMesh)];
