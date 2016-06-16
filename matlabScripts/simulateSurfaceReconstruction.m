@@ -17,18 +17,19 @@ cd(sprintf('%s/data/%s/set%02d/trial%02d/processedData', expDir, objectType, nSe
 % load the data
 
 contactPoints = dlmread('contactPoints.csv');
+%contactPoints = downsample(contactPoints, 3);
 referenceSurface = dlmread(sprintf('%s/data/%s/objectModel.csv', expDir, objectType)); 
 referenceSurface = [referenceSurface(:,3), referenceSurface(:,2), abs(referenceSurface(:,1))]; 
 referenceSurface = referenceSurface(referenceSurface(:,3) ~= 0, :);
 objectSurface = myObject;
-objectSurface.initialise(objectName{objectIndex}, downsample(contactPoints,3));
+objectSurface.initialise(objectName{objectIndex}, contactPoints);
 objectSurface.plotMesh(true, objectIndex);
 
 %%
 %surfaceModel = surfaceModelGP;
 surfaceModel = activeSurfaceModelGP;
 surfaceModel.initialise(objectSurface);
-surfaceModel.setReferenceSurface(referenceSurface);
+surfaceModel.setReferenceSurface(referenceSurface, contactPoints);
 
 
 %surfaceModel.plotMesh(true, 2);

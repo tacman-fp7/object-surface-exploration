@@ -10,8 +10,15 @@ classdef activeSurfaceModelGP < handle
         outputTesting;
         nBins = 1;
         firstBinThreshold = 10;
-        referenceSurface;
+        objectModel_CAD; % object model from cad design
+        objectModel_exp; % object model from exploration data
+        exp_additionalContacts;
+        %referenceSurface;
+        Ricp; % ICP rotation
+        Ticp; % ICP translation
         surfaceError;
+        surfaceError_exp;
+        nPadding = 0;
     end
     
     methods
@@ -20,15 +27,20 @@ classdef activeSurfaceModelGP < handle
         end
         
         function addContactLocation(this, contactLocation)
-            naiveEvaluation(this);
+           
             
             this.contactLocations = [this.contactLocations; contactLocation];
-            if(length(this.contactLocations) > (this.firstBinThreshold * 4 + (this.nPoints * 4 - 2)))
-                this.nBins = 2;
+            
+             evaluate_objectModelExp(this);
+             evaluate_objectModelCAD(this);
+            if(length(this.contactLocations) > (this.firstBinThreshold * 5 + (this.nPoints * 4 - 2)))
+                this.nBins = 12;
+            elseif(length(this.contactLocations) > (this.firstBinThreshold * 4 + (this.nPoints * 4 - 2)))
+                this.nBins = 10;
             elseif(length(this.contactLocations) > (this.firstBinThreshold * 3 + (this.nPoints * 4 - 2)))
-                this.nBins = 2;
+                this.nBins = 8;
             elseif(length(this.contactLocations) > (this.firstBinThreshold * 2 + (this.nPoints * 4 - 2)))
-                this.nBins = 2;
+                this.nBins = 4;
             elseif(length(this.contactLocations) > (this.firstBinThreshold + (this.nPoints * 4 - 2)))
                 this.nBins = 2;
             end
@@ -42,6 +54,7 @@ classdef activeSurfaceModelGP < handle
                 objectSurface.xMax objectSurface.yMin objectSurface.zMin;...
                 objectSurface.xMax objectSurface.yMax objectSurface.zMin];
             this.objectName = objectSurface.objectName;
+            this.nPadding = length(this.contactLoctions(:,3));
             %createGPModel(this);
             updateModel(this);
         end
@@ -57,6 +70,27 @@ classdef activeSurfaceModelGP < handle
                 ];
             
             this.objectName = objectSurface.objectName;
+            this.nPadding = length(this.contactLocations(:,3));
+            
+            % Add four corner points for mesh creation
+            
+            kdNSearcher = createns(objectSurface.objectSurface(:,1:2), 'NSMethod', 'exhaustive', 'distance', 'euclidean');
+            [contactIndex, ~] = knnsearch(kdNSearcher,[objectSurface.xMin objectSurface.yMin], 'K', 1);
+            this.exp_additionalContacts = [this.exp_additionalContacts;...
+                [objectSurface.xMin objectSurface.yMin objectSurface.objectSurface(contactIndex, 3)]];
+            
+            [contactIndex, ~] = knnsearch(kdNSearcher,[objectSurface.xMin objectSurface.yMax], 'K', 1);
+            this.exp_additionalContacts = [this.exp_additionalContacts;...
+                [objectSurface.xMin objectSurface.yMax objectSurface.objectSurface(contactIndex, 3)]];
+            
+            [contactIndex, ~] = knnsearch(kdNSearcher,[objectSurface.xMax objectSurface.yMin], 'K', 1);
+            this.exp_additionalContacts = [this.exp_additionalContacts;...
+                [objectSurface.xMax objectSurface.yMin objectSurface.objectSurface(contactIndex, 3)]];
+            
+            [contactIndex, ~] = knnsearch(kdNSearcher,[objectSurface.xMax objectSurface.yMax], 'K', 1);
+            this.exp_additionalContacts = [this.exp_additionalContacts;...
+                [objectSurface.xMax objectSurface.yMax objectSurface.objectSurface(contactIndex, 3)]];
+            
             updateModel(this);
             
         end
@@ -66,13 +100,55 @@ classdef activeSurfaceModelGP < handle
             plotMesh(this, this.contactLocations, plotPC, figNum, this.nPoints, 'Contact Locations');
         end
         
-        function setReferenceSurface(this, referenceSurface)
-            this.referenceSurface = referenceSurface;
+        function setReferenceSurface(this, referenceSurface, objectSurface)
+            setReferenceSurface(this, referenceSurface, objectSurface);
         end
     end
 end
 
+function setReferenceSurface(this, referenceSurface, objectSurface)
 
+this.objectModel_CAD = referenceSurface;
+this.objectModel_exp = objectSurface;
+
+xlin = linspace(min(referenceSurface(:,1)), max(referenceSurface(:,1)), 60);
+ylin = linspace(min(referenceSurface(:,2)), max(referenceSurface(:,2)), 60);
+fRef = scatteredInterpolant(referenceSurface(:, 1), referenceSurface(:, 2), referenceSurface(:, 3), 'natural');
+
+[XRef, YRef] = meshgrid(xlin, ylin);
+ZRef = fRef(XRef, YRef);
+
+xlin = linspace(min(objectSurface(:,1)), max(objectSurface(:,1)), 60);
+ylin = linspace(min(objectSurface(:,2)), max(objectSurface(:,2)), 60);
+fEst = scatteredInterpolant(objectSurface(:,1), objectSurface(:,2), objectSurface(:,3), 'natural');
+
+[XEst, YEst] = meshgrid(xlin, ylin);
+ZEst = fEst(XEst, YEst);
+
+objectRef = [reshape(XRef, numel(XRef), 1),...
+    reshape(YRef, numel(YRef), 1),...
+    reshape(ZRef, numel(ZRef), 1)];
+
+objectEst = [reshape(XEst, numel(XEst), 1), ...
+    reshape(YEst, numel(YEst), 1), reshape(ZEst, numel(ZEst), 1)];
+
+
+itr = 200;
+
+[Ricp Ticp] = icp(objectRef', objectEst', itr, 'Matching', 'kDtree', 'Extrapolation', true);
+
+
+objectEst = transpose(Ricp * objectEst' + repmat(Ticp, 1, length(objectEst)));
+
+scatter3(objectRef(:,1), objectRef(:,2), objectRef(:,3));
+hold on
+scatter3(objectEst(:,1), objectEst(:,2), objectEst(:,3));
+hold off;
+
+this.Ricp = Ricp;
+this.Ticp = Ticp;
+
+end
 function createGPModel(this)
 
 name = this.objectName;
@@ -370,31 +446,103 @@ end
 
 
 
+function evaluate_objectModelCAD(this)
+
+objectSurface =  transpose(this.Ricp * this.contactLocations'  + repmat(this.Ticp, 1, size(this.contactLocations',2))); 
+referenceSurface = this.objectModel_CAD;
+
+referenceSurface = [referenceSurface; [min(objectSurface(:,1)) min(objectSurface(:,2)) 0]];
+referenceSurface = [referenceSurface; [min(objectSurface(:,1)) max(objectSurface(:,2)) 0]];
+referenceSurface = [referenceSurface; [max(objectSurface(:,1)) min(objectSurface(:,2)) 0]];
+referenceSurface = [referenceSurface; [max(objectSurface(:,1)) max(objectSurface(:,2)) 0]];
+
+fReference = scatteredInterpolant(referenceSurface(:, 1), referenceSurface(:, 2), referenceSurface(:, 3), 'natural');
+fEstimated = scatteredInterpolant(objectSurface(:,1), objectSurface(:,2), objectSurface(:,3), 'natural');
+
+xlin = linspace(min(objectSurface(:,1)), max(objectSurface(:,1)), this.nPoints);
+ylin = linspace(min(objectSurface(:,2)), max(objectSurface(:,2)), this.nPoints);
+[XT, YT] = meshgrid(xlin, ylin);
 
 
+referenceSurfaceMesh = fReference(XT, YT);
+estimatedSurfaceMesh = fEstimated(XT, YT);
 
-function naiveEvaluation(this)
+refSurface = [reshape(XT, numel(XT), 1),...
+    reshape(YT, numel(YT), 1),...
+    reshape(referenceSurfaceMesh, numel(referenceSurfaceMesh), 1)];
+
+estimatedSurface = [reshape(XT, numel(XT), 1), ...
+    reshape(YT, numel(YT), 1), reshape(estimatedSurfaceMesh, numel(estimatedSurfaceMesh), 1)];
+
+
+%figure(9)
+%mesh(referenceSurfaceMesh);
+
+% figure(10)
+% mesh(referenceSurfaceMesh);
+% hold on;
+% mesh(estimatedSurfaceMesh)
+% hold off;
+
+% % figure (10)
+% % scatter3(refSurface(:,1), refSurface(:,2), refSurface(:,3));
+% % hold on
+% % %scatter3(referenceSurface(:, 1), referenceSurface(:, 2), referenceSurface(:, 3));
+% % scatter3(estimatedSurface(:,1), estimatedSurface(:,2), estimatedSurface(:,3)); 
+% % hold off
+% % title('Reference')
+% % 
+% % figure(11)
+% % %mesh(estimatedSurfaceMesh);
+% % scatter3(estimatedSurface(:,1), estimatedSurface(:,2), estimatedSurface(:,3)); 
+% % title('Estimated') 
+
+this.surfaceError = [this.surfaceError; sqrt( sum( power(refSurface(:,3) - estimatedSurface(:,3), 2) ) / numel( refSurface(:,3) ))];
+figure(11)
+plot([this.surfaceError_exp this.surfaceError]);
+legend('EXp', 'CAD');
+
+end
+
+
+function evaluate_objectModelExp(this)
 
 % 
-x = this.referenceSurface(:, 1);
-y = this.referenceSurface(:, 2);
+x = this.objectModel_exp(:, 1);
+y = this.objectModel_exp(:, 2);
 
 
 xlin = linspace(min(x),max(x), this.nPoints);
 ylin = linspace(min(y),max(y), this.nPoints);
-fReference = scatteredInterpolant(x, y, this.referenceSurface(:, 3), 'natural');
-fEstimated = scatteredInterpolant(this.contactLocations(:,1), this.contactLocations(:,2), this.contactLocations(:,3), 'natural');
+fReference = scatteredInterpolant(x, y, this.objectModel_exp(:, 3), 'natural');
+fEstimated = scatteredInterpolant([this.contactLocations(this.nPadding:end,1); this.exp_additionalContacts(:,1)],...
+    [this.contactLocations(this.nPadding:end,2); this.exp_additionalContacts(:,2)],...
+    [this.contactLocations(this.nPadding:end,3); this.exp_additionalContacts(:,3)], 'natural');
 
 [XT,YT] = meshgrid(xlin,ylin);
 referenceSurfaceMesh = fReference(XT, YT);
 estimatedSurfaceMesh = fEstimated(XT, YT);
 
+refSurface = [reshape(XT, numel(XT), 1),...
+    reshape(YT, numel(YT), 1),...
+    reshape(referenceSurfaceMesh, numel(referenceSurfaceMesh), 1)];
 
+estimatedSurface = [reshape(XT, numel(XT), 1), ...
+    reshape(YT, numel(YT), 1), reshape(estimatedSurfaceMesh, numel(estimatedSurfaceMesh), 1)];
+
+
+
+figure (10)
+scatter3(refSurface(:,1), refSurface(:,2), refSurface(:,3));
+hold on
+scatter3(estimatedSurface(:,1), estimatedSurface(:,2), estimatedSurface(:,3)); 
+hold off
 
 % %this.surfaceError = [this.surfaceError; mse(referenceSurfaceMesh, estimatedSurfaceMesh)];
-this.surfaceError = [this.surfaceError; sum(sum((referenceSurfaceMesh - estimatedSurfaceMesh).^2))];
-figure(10)
-plot(this.surfaceError);
+this.surfaceError_exp = [this.surfaceError_exp; sqrt( sum( power(refSurface(:,3) - estimatedSurface(:,3), 2) ) / numel( refSurface(:,3) ))];
+% figure(12)
+% plot(this.surfaceError_exp);
+
 end
 
 
