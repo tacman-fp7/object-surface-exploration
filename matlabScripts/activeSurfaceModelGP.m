@@ -34,15 +34,15 @@ classdef activeSurfaceModelGP < handle
              evaluate_objectModelExp(this);
              evaluate_objectModelCAD(this);
             if(length(this.contactLocations) > (this.firstBinThreshold * 5 + (this.nPoints * 4 - 2)))
-                this.nBins = 12;
-            elseif(length(this.contactLocations) > (this.firstBinThreshold * 4 + (this.nPoints * 4 - 2)))
-                this.nBins = 10;
-            elseif(length(this.contactLocations) > (this.firstBinThreshold * 3 + (this.nPoints * 4 - 2)))
                 this.nBins = 8;
-            elseif(length(this.contactLocations) > (this.firstBinThreshold * 2 + (this.nPoints * 4 - 2)))
+            elseif(length(this.contactLocations) > (this.firstBinThreshold * 4 + (this.nPoints * 4 - 2)))
+                this.nBins = 6;
+            elseif(length(this.contactLocations) > (this.firstBinThreshold * 3 + (this.nPoints * 4 - 2)))
                 this.nBins = 4;
-            elseif(length(this.contactLocations) > (this.firstBinThreshold + (this.nPoints * 4 - 2)))
+            elseif(length(this.contactLocations) > (this.firstBinThreshold * 2 + (this.nPoints * 4 - 2)))
                 this.nBins = 2;
+            elseif(length(this.contactLocations) > (this.firstBinThreshold + (this.nPoints * 4 - 2)))
+                this.nBins = 1;
             end
             updateModel(this);
         end
@@ -209,7 +209,7 @@ end
 %gpUncertainty = zeros(length(surfUncertainty),1); % Disable the regression part
 
 gpUncertainty = maxProb(this, surfaceModel);
-alphaE = 0.25;
+alphaE = 0.10;
 
 complexUncertainty = zeros(length(surfUncertainty), 1);
 for bin = 1:this.nBins
