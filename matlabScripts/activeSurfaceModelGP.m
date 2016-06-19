@@ -1,7 +1,7 @@
 classdef activeSurfaceModelGP < handle
     
     properties
-        contactLocations;
+        contactLocations; % Contact locations so far
         gpModel;
         nPoints = 60;
         objectName;
@@ -10,15 +10,11 @@ classdef activeSurfaceModelGP < handle
         outputTesting;
         nBins = 1;
         firstBinThreshold = 10;
-        objectModel_CAD; % object model from cad design
-        objectModel_exp; % object model from exploration data
         exp_additionalContacts;
-        %referenceSurface;
-        Ricp; % ICP rotation
-        Ticp; % ICP translation
-        surfaceError;
-        surfaceError_exp;
+        referenceSurface;
+        surfaceRMSE;
         nPadding = 0;
+        spatialUncertaintyMap;% = zeros(nPoints, nPoints) + 1;
     end
     
     methods
@@ -27,26 +23,30 @@ classdef activeSurfaceModelGP < handle
         end
         
         function addContactLocation(this, contactLocation)
-           
+            
             
             this.contactLocations = [this.contactLocations; contactLocation];
             
-             evaluate_objectModelExp(this);
-             evaluate_objectModelCAD(this);
+            evaluate_objectModelExp(this);
             if(length(this.contactLocations) > (this.firstBinThreshold * 5 + (this.nPoints * 4 - 2)))
-                this.nBins = 8;
+                this.nBins = 12;
             elseif(length(this.contactLocations) > (this.firstBinThreshold * 4 + (this.nPoints * 4 - 2)))
-                this.nBins = 6;
+                this.nBins = 9;
             elseif(length(this.contactLocations) > (this.firstBinThreshold * 3 + (this.nPoints * 4 - 2)))
-                this.nBins = 4;
+                this.nBins = 6;
             elseif(length(this.contactLocations) > (this.firstBinThreshold * 2 + (this.nPoints * 4 - 2)))
-                this.nBins = 2;
+                this.nBins = 3;
             elseif(length(this.contactLocations) > (this.firstBinThreshold + (this.nPoints * 4 - 2)))
                 this.nBins = 1;
             end
             updateModel(this);
         end
         
+        function addContactLocationGP(this, contactLocation)
+            this.contactLocations = [this.contactLocations; contactLocation];
+            evaluate_objectModelExp(this);
+            updateModelRegression(this);
+        end
         function initialiseLimitted(this, objectSurface)
             this.contactLocations = [...
                 objectSurface.xMin objectSurface.yMin objectSurface.zMin;...
@@ -54,8 +54,8 @@ classdef activeSurfaceModelGP < handle
                 objectSurface.xMax objectSurface.yMin objectSurface.zMin;...
                 objectSurface.xMax objectSurface.yMax objectSurface.zMin];
             this.objectName = objectSurface.objectName;
-            this.nPadding = length(this.contactLoctions(:,3));
-            %createGPModel(this);
+            this.nPadding = length(this.contactLoctions(:,3)) + 1;
+            
             updateModel(this);
         end
         function initialise(this, objectSurface)
@@ -70,7 +70,7 @@ classdef activeSurfaceModelGP < handle
                 ];
             
             this.objectName = objectSurface.objectName;
-            this.nPadding = length(this.contactLocations(:,3));
+            this.nPadding = length(this.contactLocations(:,3)) + 1;
             
             % Add four corner points for mesh creation
             
@@ -100,55 +100,123 @@ classdef activeSurfaceModelGP < handle
             plotMesh(this, this.contactLocations, plotPC, figNum, this.nPoints, 'Contact Locations');
         end
         
-        function setReferenceSurface(this, referenceSurface, objectSurface)
-            setReferenceSurface(this, referenceSurface, objectSurface);
+        function setReferenceSurface(this, referenceSurface)
+            this.referenceSurface = referenceSurface;
+        end
+        
+        function plotDecay(this)
+            spatialCoverageUncertainty(this);
         end
     end
 end
 
-function setReferenceSurface(this, referenceSurface, objectSurface)
+function dist = spatialCoverageUncertainty(this)
 
-this.objectModel_CAD = referenceSurface;
-this.objectModel_exp = objectSurface;
-
-xlin = linspace(min(referenceSurface(:,1)), max(referenceSurface(:,1)), 60);
-ylin = linspace(min(referenceSurface(:,2)), max(referenceSurface(:,2)), 60);
-fRef = scatteredInterpolant(referenceSurface(:, 1), referenceSurface(:, 2), referenceSurface(:, 3), 'natural');
-
-[XRef, YRef] = meshgrid(xlin, ylin);
-ZRef = fRef(XRef, YRef);
-
-xlin = linspace(min(objectSurface(:,1)), max(objectSurface(:,1)), 60);
-ylin = linspace(min(objectSurface(:,2)), max(objectSurface(:,2)), 60);
-fEst = scatteredInterpolant(objectSurface(:,1), objectSurface(:,2), objectSurface(:,3), 'natural');
-
-[XEst, YEst] = meshgrid(xlin, ylin);
-ZEst = fEst(XEst, YEst);
-
-objectRef = [reshape(XRef, numel(XRef), 1),...
-    reshape(YRef, numel(YRef), 1),...
-    reshape(ZRef, numel(ZRef), 1)];
-
-objectEst = [reshape(XEst, numel(XEst), 1), ...
-    reshape(YEst, numel(YEst), 1), reshape(ZEst, numel(ZEst), 1)];
+tau = -900;
+%f @(X) = (1 - exp(tau * X));
 
 
-itr = 200;
 
-[Ricp Ticp] = icp(objectRef', objectEst', itr, 'Matching', 'kDtree', 'Extrapolation', true);
+% input testing has the testing values
+dist = zeros(length(this.inputTesting), 1)+1;
 
+for i = 1:this.nPadding -1
+    dist = dist .* (1 - exp(tau * getDistance(this.inputTesting, this.contactLocations(i,1:2))));
+end
 
-objectEst = transpose(Ricp * objectEst' + repmat(Ticp, 1, length(objectEst)));
+tau = -500;
+for i = this.nPadding: length(this.contactLocations)
+    
+    %Calculate the distance from the location
+    dist = dist .* (1 - exp(tau * getDistance(this.inputTesting, this.contactLocations(i,1:2))));
+end
 
-scatter3(objectRef(:,1), objectRef(:,2), objectRef(:,3));
-hold on
-scatter3(objectEst(:,1), objectEst(:,2), objectEst(:,3));
-hold off;
-
-this.Ricp = Ricp;
-this.Ticp = Ticp;
+dist = (dist - min(dist))/ (max(dist) - min(dist));
+%dist = dist/(length(this.contactLocations));
+%max(dist)
+plotMesh(this, [this.inputTesting, dist ], false, 2, this.nPoints, 'Distance');
 
 end
+
+function distance = getDistance(X, Y)
+distance = sqrt((X(:,1) - Y(:,1)).^2 + (X(:,2) - Y(:,2)).^2);
+end
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% hack until I divide them into clases
+
+function createGPRegressionModel(this)
+
+name = this.objectName;
+this.gpModel = gurls_defopt(name);
+this.gpModel.seq = {'split:ho', 'paramsel:siglamhogpregr', 'kernel:rbf',...
+    'rls:gpregr', 'predkernel:traintest', 'pred:gpregr'};
+this.gpModel.process{1} = [2,2,2,2,1,1];
+this.gpModel.process{2} = [3,3,3,3,2,2];
+this.gpModel.epochs = 100;
+this.gpModel.hoperf = @perf_abserr;
+this.gpModel.save = -1;
+
+this.gpModel.nholdouts = 1;
+this.gpModel.hoproportion = 0.1;
+
+
+xlin = linspace(min(this.contactLocations( : , 1)), max(this.contactLocations( : , 1)), this.nPoints);
+ylin = linspace(min(this.contactLocations( : , 2)), max(this.contactLocations( : , 2)), this.nPoints);
+
+this.inputTesting = [];
+for i = 1:length(xlin)
+    this.inputTesting =  [this.inputTesting; repmat(xlin(i), length(ylin), 1) ylin'];
+end
+
+this.outputTesting = zeros(size(this.inputTesting, 1),1); % dummy to help me evalate
+
+end
+
+function updateModelRegression(this)
+
+[surfaceUncertainty, surfaceModel] = runGURLSRegression2(this);
+
+surfaceUncertainty = normalise2(surfaceUncertainty);
+
+[~, b] = max(surfaceUncertainty);
+
+this.nextSamplingLocation = [this.inputTesting(b,1), this.inputTesting(b,2)];
+
+figNum = 2;
+plotMesh(this, this.contactLocations, true, figNum, this.nPoints, 'Contact Locations');
+figNum = figNum + 1;
+plotNextLocation(this, max(this.contactLocations(:,3)), figNum -1);
+
+
+plotMesh(this, [this.inputTesting, surfaceUncertainty ], false, figNum, this.nPoints, 'Uncertainty');
+figNum = figNum + 1;
+plotNextLocation(this, max(surfaceUncertainty), figNum -1);
+
+end
+
+function normalised = normalise2(data)
+normalised = (data(:, end) - min(data(:,end)))/...
+    (max(data(:,end)) - min(data(:, end)));
+end
+
+function [surfaceUncertainty, surfaceModel] = runGURLSRegression2(this)
+
+createGPRegressionModel(this);
+jobID = 1;
+gurls(this.contactLocations( : , 1:2),...
+      this.contactLocations( : , 3), this.gpModel, jobID);
+
+%%% Testing
+
+gurls(this.inputTesting, this.outputTesting , this.gpModel, 2);
+surfaceUncertainty = this.gpModel.pred.vars;
+surfaceModel = this.gpModel.pred.means;
+
+end
+
+
+%%%%%%%%%%%%%%%%%%%%%% end of hack
 function createGPModel(this)
 
 name = this.objectName;
@@ -193,7 +261,7 @@ surfUncertainty = abs(surfaceModel);
 
 
 
-nElements = hist(this.contactLocations((this.nPoints * 4 - 4):end,3), this.nBins);
+nElements = hist(this.contactLocations(this.nPadding:end,3), this.nBins);
 
 [~, minElements] = min(nElements);
 
@@ -201,22 +269,19 @@ for bin = 1: this.nBins
     surfUncertainty(:, bin) = 1 - ((surfUncertainty(:, bin) - min(surfUncertainty(:, bin))) ./...
         (max(surfUncertainty(:, bin)) - min(surfUncertainty(:, bin))));
 end
-% Regression
-% %gpUncertainty = runGURLSRegression(this);
 
 
-
-%gpUncertainty = zeros(length(surfUncertainty),1); % Disable the regression part
-
-gpUncertainty = maxProb(this, surfaceModel);
-alphaE = 0.10;
+gpUncertainty = spatialCoverageUncertainty(this); %maxProb(this, surfaceModel);
+alphaE = 0.5;
 
 complexUncertainty = zeros(length(surfUncertainty), 1);
 for bin = 1:this.nBins
-    complexUncertainty = complexUncertainty + (gpUncertainty * alphaE + surfUncertainty(:,bin) * (1 - alphaE));
+    complexUncertainty = complexUncertainty +  surfUncertainty(:,bin);
 end
 
 complexUncertainty = complexUncertainty/this.nBins;
+
+complexUncertainty = complexUncertainty .* gpUncertainty;
 
 %complexUncertainty = surfUncertainty(:, minElements);
 
@@ -239,30 +304,34 @@ plotNextLocation(this, max(this.contactLocations(:,3)), figNum -1);
 
 
 % % for bin = 1:this.nBins
-% %     
+% %
 % %     plotMesh(this, [this.inputTesting surfUncertainty(:,bin)], false, figNum, this.nPoints, sprintf('Surface uncertainty: bin %02d', bin));
 % %     figNum = figNum + 1;
 % %     plotNextLocation(this, max(abs(surfUncertainty(:, bin))), figNum -1);
-% %     
+% %
 % % end
 
 % % for bin = 1:this.nBins
 % %     plotMesh(this, [this.inputTesting surfaceModel(:, bin)./abs(surfaceModel(:, bin))], false, figNum, this.nPoints, sprintf('Predicted Surface: %02d', bin));
 % %     figNum = figNum + 1;
-% %     
+% %
 % % end
 
-plotMesh(this, [this.inputTesting superimposeSurface(this, surfaceModel)], false, figNum, this.nPoints, 'Superimposed Surface');
+% plotMesh(this, [this.inputTesting superimposeSurface(this, surfaceModel)], false, figNum, this.nPoints, 'Superimposed Surface');
+% figNum = figNum + 1;
+% plotNextLocation(this, max(superimposeSurface(this, surfaceModel)), figNum -1);
+
+plotMesh(this, [this.inputTesting gpUncertainty], false, figNum, this.nPoints, 'Spatial Uncertainty');
 figNum = figNum + 1;
-plotNextLocation(this, max(superimposeSurface(this, surfaceModel)), figNum -1);
+plotNextLocation(this, max(gpUncertainty), figNum -1);
 
 plotMesh(this, [this.inputTesting maxProbSurface(this, surfaceModel)], false, figNum, this.nPoints, 'Max prob surface');
 figNum = figNum + 1;
 plotNextLocation(this, max(maxProbSurface(this, surfaceModel)), figNum -1);
 
-plotMesh(this, [this.inputTesting maxProb(this, surfaceModel)], false, figNum, this.nPoints, 'Classification Uncertainty');
-figNum = figNum + 1;
-plotNextLocation(this, max(maxProb(this, surfaceModel)), figNum -1);
+% plotMesh(this, [this.inputTesting maxProb(this, surfaceModel)], false, figNum, this.nPoints, 'Classification Uncertainty');
+% figNum = figNum + 1;
+% plotNextLocation(this, max(maxProb(this, surfaceModel)), figNum -1);
 
 plotMesh(this, [this.inputTesting, complexUncertainty ], false, figNum, this.nPoints, 'Combined Uncertainty');
 figNum = figNum + 1;
@@ -276,11 +345,11 @@ end
 function surf = maxProb(this, surface)
 
 if(size(surface, 2) > 1)
-surf = zeros(length(surface), 1);
-for i = 1:length(surface)
-   [prob, ~] = max(surface(i,:));
-   surf(i) = prob/sum(surface(i,:));
-end
+    surf = zeros(length(surface), 1);
+    for i = 1:length(surface)
+        [prob, ~] = max(surface(i,:));
+        surf(i) = prob/sum(surface(i,:));
+    end
 else
     surf = surface;
 end
@@ -298,8 +367,8 @@ if(size(surface, 2) == 1)
 end
 surf = zeros(length(surface), 1);
 for i = 1:length(surface)
-   [~, max_idx] = max(surface(i,:));
-   surf(i) = max_idx;
+    [~, max_idx] = max(surface(i,:));
+    surf(i) = max_idx;
 end
 
 end
@@ -448,7 +517,7 @@ end
 
 function evaluate_objectModelCAD(this)
 
-objectSurface =  transpose(this.Ricp * this.contactLocations'  + repmat(this.Ticp, 1, size(this.contactLocations',2))); 
+objectSurface =  transpose(this.Ricp * this.contactLocations'  + repmat(this.Ticp, 1, size(this.contactLocations',2)));
 referenceSurface = this.objectModel_CAD;
 
 referenceSurface = [referenceSurface; [min(objectSurface(:,1)) min(objectSurface(:,2)) 0]];
@@ -488,14 +557,14 @@ estimatedSurface = [reshape(XT, numel(XT), 1), ...
 % % scatter3(refSurface(:,1), refSurface(:,2), refSurface(:,3));
 % % hold on
 % % %scatter3(referenceSurface(:, 1), referenceSurface(:, 2), referenceSurface(:, 3));
-% % scatter3(estimatedSurface(:,1), estimatedSurface(:,2), estimatedSurface(:,3)); 
+% % scatter3(estimatedSurface(:,1), estimatedSurface(:,2), estimatedSurface(:,3));
 % % hold off
 % % title('Reference')
-% % 
+% %
 % % figure(11)
 % % %mesh(estimatedSurfaceMesh);
-% % scatter3(estimatedSurface(:,1), estimatedSurface(:,2), estimatedSurface(:,3)); 
-% % title('Estimated') 
+% % scatter3(estimatedSurface(:,1), estimatedSurface(:,2), estimatedSurface(:,3));
+% % title('Estimated')
 
 this.surfaceError = [this.surfaceError; sqrt( sum( power(refSurface(:,3) - estimatedSurface(:,3), 2) ) / numel( refSurface(:,3) ))];
 figure(11)
@@ -507,14 +576,14 @@ end
 
 function evaluate_objectModelExp(this)
 
-% 
-x = this.objectModel_exp(:, 1);
-y = this.objectModel_exp(:, 2);
+%
+x = this.referenceSurface(:, 1);
+y = this.referenceSurface(:, 2);
 
 
 xlin = linspace(min(x),max(x), this.nPoints);
 ylin = linspace(min(y),max(y), this.nPoints);
-fReference = scatteredInterpolant(x, y, this.objectModel_exp(:, 3), 'natural');
+fReference = scatteredInterpolant(x, y, this.referenceSurface(:, 3), 'natural');
 fEstimated = scatteredInterpolant([this.contactLocations(this.nPadding:end,1); this.exp_additionalContacts(:,1)],...
     [this.contactLocations(this.nPadding:end,2); this.exp_additionalContacts(:,2)],...
     [this.contactLocations(this.nPadding:end,3); this.exp_additionalContacts(:,3)], 'natural');
@@ -532,14 +601,17 @@ estimatedSurface = [reshape(XT, numel(XT), 1), ...
 
 
 
-figure (10)
-scatter3(refSurface(:,1), refSurface(:,2), refSurface(:,3));
-hold on
-scatter3(estimatedSurface(:,1), estimatedSurface(:,2), estimatedSurface(:,3)); 
-hold off
+% % figure (10)
+% % scatter3(refSurface(:,1), refSurface(:,2), refSurface(:,3));
+% % hold on
+% % scatter3(estimatedSurface(:,1), estimatedSurface(:,2), estimatedSurface(:,3));
+% % hold off
 
 % %this.surfaceError = [this.surfaceError; mse(referenceSurfaceMesh, estimatedSurfaceMesh)];
-this.surfaceError_exp = [this.surfaceError_exp; sqrt( sum( power(refSurface(:,3) - estimatedSurface(:,3), 2) ) / numel( refSurface(:,3) ))];
+this.surfaceRMSE = [this.surfaceRMSE; sqrt( sum( power(refSurface(:,3) - estimatedSurface(:,3), 2) ) / numel( refSurface(:,3) ))];
+figure(11)
+plot(this.surfaceRMSE);
+legend('RMSE');
 % figure(12)
 % plot(this.surfaceError_exp);
 
