@@ -26,7 +26,7 @@ classdef activeSurfaceModelGP < handle
             
             
             this.contactLocations = [this.contactLocations; contactLocation];
-            
+        
             evaluate_objectModelExp(this);
             if(length(this.contactLocations) > (this.firstBinThreshold * 5 + (this.nPoints * 4 - 2)))
                 this.nBins = 12;
