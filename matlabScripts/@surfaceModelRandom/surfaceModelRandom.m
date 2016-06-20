@@ -10,6 +10,7 @@ classdef surfaceModelRandom < handle
         nPadding;
         cornerPoints; 
         plotDebug = false;
+        maxSamplePoints = 200;
     end
     
     methods (Access = public)
@@ -23,13 +24,22 @@ classdef surfaceModelRandom < handle
         function nextSamplingLocation = getNextSamplingLocation(this)
             nextSamplingLocation = this.nextSamplingLocation;
         end
-        function addContactLocation(this, contactLocation)
+        function isDone = addContactLocation(this, contactLocation)
             this.contactLocations = [this.contactLocations; contactLocation];
             evaluateRMSE(this);
             updateModel(this);
+            if((length(this.contactLocations) - this.nPadding) >= this.maxSamplePoints)
+                isDone = true;
+            else
+                isDone = false;
+            end
         end
         function enableDebugPlot(this, flag)
             this.plotDebug = flag;
+        end
+        
+        function setMaxSamplePoints(this, maxSamplePoints)
+           this.maxSamplePoints = maxSamplePoints; 
         end
         
         figNum = plotResults(this)

@@ -18,7 +18,7 @@ end
 
 dist = (dist - min(dist))/ (max(dist) - min(dist));
 
-plotMesh(this, [this.inputTesting, dist ], false, 2, this.nPoints, 'Distance');
+%plotMesh(this, [this.inputTesting, dist ], false, 2, this.nPoints, 'Distance');
 
 end
 

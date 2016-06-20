@@ -1,5 +1,5 @@
 function updateModel(this)
-fprintf('Called Ramdom update\n');
+%fprintf('Called Ramdom update\n');
 maxX = max(this.contactLocations(:,1));
 minX = min(this.contactLocations(:,1));
 maxY = max(this.contactLocations(:,2));

@@ -1,5 +1,5 @@
 function updateModel(this)
-fprintf('Called Passive GP update \n');
+%fprintf('Called Passive GP update \n');
 surfaceUncertainty = runGURLS(this);
 surfaceUncertainty = normalise(surfaceUncertainty);
 [~, maxUncertainty_idx] = max(surfaceUncertainty);
@@ -37,7 +37,7 @@ gpModel.hoperf = @perf_abserr;
 gpModel.save = -1;
 gpModel.nholdouts = 1;
 gpModel.hoproportion = 0.1;
-
+gpModel.verbose = 0;
 end
 
 function surfaceUncertainty = runGURLS(this)

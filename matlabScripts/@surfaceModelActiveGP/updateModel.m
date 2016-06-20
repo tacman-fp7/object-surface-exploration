@@ -10,7 +10,7 @@ surfaceProb = runGURLS(this);
 surfaceUncertainty = getSurfaceUncertainty(this, surfaceProb);
 
 % Get the spatial uncertainty
-spatialUncertainty = getSpatialUncertainty(this); 
+spatialUncertainty = getSpatialUncertainty(this);
 
 
 % combine uncertainty from all bins
@@ -34,25 +34,28 @@ this.nextSamplingLocation = [this.inputTesting(next_idx, 1), this.inputTesting(n
 
 
 %%%%% Display for debugging only
-figNum = 4;
-
-
-plotMesh(this, [this.inputTesting spatialUncertainty], false, figNum, this.nPoints, 'Spatial Uncertainty');
-figNum = figNum + 1;
-plotNextLocation(this, max(spatialUncertainty), figNum -1);
-
-plotMesh(this, [this.inputTesting maxProbSurface(this, surfaceProb)], false, figNum, this.nPoints, 'Max prob surface');
-figNum = figNum + 1;
-plotNextLocation(this, max(maxProbSurface(this, surfaceProb)), figNum -1);
-
-
-
-plotMesh(this, [this.inputTesting, combinedUncertainty ], false, figNum, this.nPoints, 'Combined Uncertainty');
-figNum = figNum + 1;
-plotNextLocation(this, max(combinedUncertainty), figNum -1);
-
-figure(figNum);
-hist(this.contactLocations((this.nPoints * 4 - 4):end,3), this.nBins);
+if(this.plotDebug)
+    figNum = 4;
+    
+    
+    plotMesh(this, [this.inputTesting spatialUncertainty], false, figNum, this.nPoints, 'Spatial Uncertainty');
+    figNum = figNum + 1;
+    plotNextLocation(this, max(spatialUncertainty), figNum -1);
+    
+    plotMesh(this, [this.inputTesting maxProbSurface(this, surfaceProb)], false, figNum, this.nPoints, 'Max prob surface');
+    figNum = figNum + 1;
+    plotNextLocation(this, max(maxProbSurface(this, surfaceProb)), figNum -1);
+    
+    
+    
+    plotMesh(this, [this.inputTesting, combinedUncertainty ], false, figNum, this.nPoints, 'Combined Uncertainty');
+    figNum = figNum + 1;
+    plotNextLocation(this, max(combinedUncertainty), figNum -1);
+    
+    figure(figNum);
+    hist(this.contactLocations((this.nPoints * 4 - 4):end,3), this.nBins);
+    
+end;
 
 end
 
@@ -102,7 +105,7 @@ gpModel.hoperf = @perf_abserr;
 gpModel.save = -1;
 gpModel.nholdouts = 1;
 gpModel.hoproportion = 0.1;
-
+gpModel.verbose = 0;
 end
 
 
