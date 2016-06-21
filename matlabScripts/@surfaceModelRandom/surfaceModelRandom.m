@@ -43,6 +43,7 @@ classdef surfaceModelRandom < handle
         end
         
         figNum = plotResults(this)
+        meshData = getMesh(this, nConctacts)
     end
     
     methods (Access = protected)
