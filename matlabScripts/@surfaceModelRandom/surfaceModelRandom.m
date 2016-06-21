@@ -43,7 +43,10 @@ classdef surfaceModelRandom < handle
         end
         
         figNum = plotResults(this)
-        meshData = getMesh(this, nConctacts)
+        getMesh(this, nConctacts, plotTitle, viewPars)
+        function plotReferenceSurace(this, plotTitle, viewPars)
+           plotMeshAll(this, this.referenceSurface, plotTitle, viewPars); 
+        end
     end
     
     methods (Access = protected)

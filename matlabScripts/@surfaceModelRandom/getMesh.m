@@ -1,35 +1,36 @@
-function meshData = getMesh(this, nContacts)
+function getMesh(this, nContacts, plotTitle, viewPars)
 
-if nargin < 6; plotTitle = ''; end;
-if nargin < 5; nPoints = this.nPoints; end;
-if nargin < 4; figure; else figure(figNum); end;
-if nargin < 3; plotPC = false; end;
-
-[az, el] = view();
-x = contactLocations(1:this.nPadding + nContacts, 1);
-y = contactLocations(1:this.nPadding + nContacts, 2);
-surface = contactLocations(1:this.nPadding + nContacts, 3);
+if nargin < 3; plotTitle = ''; end;
 
 
-xlin = linspace(min(x),max(x), nPoints);
-ylin = linspace(min(y),max(y), nPoints);
+
+
+
+x = this.contactLocations(1:this.nPadding + nContacts, 1);
+y = this.contactLocations(1:this.nPadding + nContacts, 2);
+surface = this.contactLocations(1:this.nPadding + nContacts, 3);
+
+
+xlin = linspace(min(x),max(x), this.nPoints);
+ylin = linspace(min(y),max(y), this.nPoints);
 [XT,YT] = meshgrid(xlin,ylin);
 
 f = scatteredInterpolant(x,y,surface, 'natural');
 ZT = f(XT,YT);
 
 mesh(XT, YT, ZT);
-title(plotTitle, 'fontsize', 24);
+set(gca, 'fontname', 'Bitstream Charter','fontsize', 15);
+title(plotTitle, 'fontsize', 20, 'interpreter', 'tex');
 
-if(plotPC)
     hold on
     scatter3(...
-        contactLocations(this.nPadding + 1:this.nPadding + nContacts, 1),...
-        contactLocations(this.nPadding + 1:this.nPadding + nContacts, 2),...
-        contactLocations(this.nPadding + 1:this.nPadding + nContacts, 3),...
+        this.contactLocations(this.nPadding + 1:this.nPadding + nContacts, 1),...
+        this.contactLocations(this.nPadding + 1:this.nPadding + nContacts, 2),...
+        this.contactLocations(this.nPadding + 1:this.nPadding + nContacts, 3),...
         'fill', 'markerFaceColor', 'blue', 'sizeData', [90]);
     hold off
-end
 
-view([az, el]);
+    zlim([min(this.contactLocations(:,3)) max(this.contactLocations(:,3))]);
+axis('equal');
+view(viewPars);
 end
