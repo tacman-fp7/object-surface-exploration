@@ -2,7 +2,7 @@ classdef surfaceModelRandom < handle
     
     properties
         contactLocations; % Contact locations sampled so far
-        nPoints = 25;
+        nPoints = 20;
         objectName;
         nextSamplingLocation;
         referenceSurface;
