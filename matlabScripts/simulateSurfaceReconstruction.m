@@ -1,8 +1,51 @@
 %% Surface reconstruction using the saved data.
 %clear
 %close all
+
+%% Test runs
+nSet = 1;
+objectName = {'circPrism', 'triangPrism', 'fish', 'fishSQ', 'hut', 'hutWave'};
+explorationType = 'Grid';
+trial = 1;
+whichHand = 'left';
+whichFinger = 'index';
+objectIndex = 6
+
+fprintf('Object: %s, ', objectName{objectIndex});
+objectType = objectName{objectIndex};
+
+expDir = '/home/nawidj/tacman/gridSurfaceExplorationData';
+cd(sprintf('%s/data/%s/set%02d/trial%02d/processedData', expDir, objectType, nSet, trial));
+
+% load the data
+
+contactPoints = dlmread('contactPoints.csv');
+contactPoints = contactPoints(:,1:3);
+
+
+objectModel = myObject;
+objectModel.initialise(objectName{objectIndex}, contactPoints);
+
+
+clear surfaceModel;
+surfaceModel = surfaceModelPassiveGP(objectModel, contactPoints);
+surfaceModel.setMaxSamplePoints(20);
+surfaceModel.enableDebugPlot(true);
+
+%%%
+isDone = false;
+while(~isDone)
+    cl = objectModel.sampleObject(surfaceModel.getNextSamplingLocation());
+    surfaceModel.plotResults();
+    isDone = surfaceModel.addContactLocation(cl);
+end
+
+surfaceModel.plotResults();
+
+%% batch run
 warning('off', 'all');
-for testRun = 6:15
+maxContacts = 100;
+for testRun = 15
     fprintf('Run: %02d\n', testRun);
     nSet = 1;
     objectName = {'circPrism', 'triangPrism', 'fish', 'fishSQ', 'hut', 'hutWave'};
@@ -37,7 +80,7 @@ for testRun = 6:15
         fprintf('Random...');
         clear surfaceModel;
         surfaceModel = surfaceModelRandom(objectModel, contactPoints);
-        surfaceModel.setMaxSamplePoints(150);
+        surfaceModel.setMaxSamplePoints(maxContacts);
         %surfaceModel.plotResults()
         %%%
         isDone = false;
@@ -53,7 +96,7 @@ for testRun = 6:15
         fprintf('PassiveGP...');
         clear surfaceModel;
         surfaceModel = surfaceModelPassiveGP(objectModel, contactPoints);
-        surfaceModel.setMaxSamplePoints(150);
+        surfaceModel.setMaxSamplePoints(maxContacts);
         %surfaceModel.plotResults()
         %%%
         isDone = false;
@@ -69,7 +112,7 @@ for testRun = 6:15
         fprintf('ActiveGP\n');
         clear surfaceModel;
         surfaceModel = surfaceModelActiveGP(objectModel, contactPoints);
-        surfaceModel.setMaxSamplePoints(150);
+        surfaceModel.setMaxSamplePoints(maxContacts);
         %surfaceModel.plotResults()
         %%%
         isDone = false;
@@ -149,12 +192,12 @@ for objectType =1:6
     nFrame = 1;
     figH = figure(1);
     set(figH, 'color', 'white');
-  
-%     ax = gca;
-%     set(gca, 'Units', 'pixels');
-%     pos = get(gca, 'Position');
-%     ti = get(gca, 'LooseInset');
-%     rect = [-ti(1), -ti(2), pos(3)+ti(1)+ti(3), pos(4)+ti(2)+ti(4)];
+    
+    %     ax = gca;
+    %     set(gca, 'Units', 'pixels');
+    %     pos = get(gca, 'Position');
+    %     ti = get(gca, 'LooseInset');
+    %     rect = [-ti(1), -ti(2), pos(3)+ti(1)+ti(3), pos(4)+ti(2)+ti(4)];
     rect = [180, 30, 1600, 920];
     
     for nRun = 1
@@ -166,7 +209,7 @@ for objectType =1:6
         load(sprintf('%s_random_%02d.mat',objectName{objectType}, nRun));
         randomS = surfaceModel;
         
-        maxContacts = 100;
+        maxContacts = 30;
         
         for nContacts = 1:maxContacts
             viewPars =[50 42];
@@ -190,10 +233,10 @@ for objectType =1:6
             plot([activeGP.surfaceRMSE(1:nContacts), passiveGP.surfaceRMSE(1:nContacts), randomS.surfaceRMSE(1:nContacts)]);
             set(gca, 'fontname', 'Bitstream Charter','fontsize', 15);
             xlim([1, maxContacts]);
-%             ylim([min(min([activeGP.surfaceRMSE, passiveGP.surfaceRMSE, randomS.surfaceRMSE])),...
-%                 max(max([activeGP.surfaceRMSE, passiveGP.surfaceRMSE, randomS.surfaceRMSE]))]);
+            %             ylim([min(min([activeGP.surfaceRMSE, passiveGP.surfaceRMSE, randomS.surfaceRMSE])),...
+            %                 max(max([activeGP.surfaceRMSE, passiveGP.surfaceRMSE, randomS.surfaceRMSE]))]);
             title({'RMSE between the Grid surface and', 'the sampled surface'}, 'fontsize', 20, 'interpreter', 'tex');
-
+            
             xlabel('Number of locations sampled');
             ylabel('RMSE [m]');
             legend('Active GP', 'Passive GP', 'Random');
@@ -213,7 +256,7 @@ for objectType =1:6
         
         
         for i = 50:410
-             subplot(2,3,1);
+            subplot(2,3,1);
             view([i, 42]);
             subplot(2,3,2);
             view([i, 42]);
@@ -239,7 +282,7 @@ for objectType =1:6
             view([50, i]);
             subplot(2,3,5);
             view([50, i]);
-           
+            
             drawnow;
             
             movieFrames(nFrame) = getframe(figH, rect);
@@ -248,12 +291,12 @@ for objectType =1:6
             
         end
     end
-   
     
-  for i = 1:nFrame -1;
-      writeVideo(myVideoObj, movieFrames(i));
-  end
-close(myVideoObj);
+    
+    for i = 1:nFrame -1;
+        writeVideo(myVideoObj, movieFrames(i));
+    end
+    close(myVideoObj);
     
 end
 

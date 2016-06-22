@@ -8,9 +8,7 @@ this.nextSamplingLocation = [this.inputTesting(maxUncertainty_idx,1), this.input
 %%% debugging display
 if(this.plotDebug)
 figNum = 4;
-
-
-plotMesh(this, [this.inputTesting surfaceUncertainty], false, figNum, this.nPoints, 'Ssurface Uncertainty');
+plotMesh(this, [this.inputTesting surfaceUncertainty], false, figNum, this.nPoints, 'Surface Uncertainty');
 figNum = figNum + 1;
 plotNextLocation(this, max(surfaceUncertainty), figNum -1);
 
