@@ -1,6 +1,6 @@
 function simSurfExp(objectIndex)
 warning('off', 'all');
-maxContacts = 100;
+maxContacts = 60;
 for testRun = 15
     fprintf('Run: %02d\n', testRun);
     nSet = 1;

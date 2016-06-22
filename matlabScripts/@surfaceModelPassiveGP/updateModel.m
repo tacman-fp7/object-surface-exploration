@@ -30,10 +30,10 @@ gpModel.seq = {'split:ho', 'paramsel:siglamhogpregr', 'kernel:rbf',...
     'rls:gpregr', 'predkernel:traintest', 'pred:gpregr'};
 gpModel.process{1} = [2,2,2,2,1,1];
 gpModel.process{2} = [3,3,3,3,2,2];
-gpModel.epochs = 1000;
+gpModel.epochs = 100;
 gpModel.hoperf = @perf_abserr;
 gpModel.save = -1;
-gpModel.nholdouts = 2;
+gpModel.nholdouts = 1;
 gpModel.hoproportion = 0.1;
 gpModel.verbose = 0;
 end
