@@ -44,8 +44,8 @@ surfaceModel.plotResults();
 
 %% batch run
 warning('off', 'all');
-maxContacts = 100;
-for testRun = 16
+maxContacts = 60;
+for testRun = 17
     fprintf('Run: %02d\n', testRun);
     nSet = 1;
     objectName = {'circPrism', 'triangPrism', 'fish', 'fishSQ', 'hut', 'hutWave'};
@@ -138,7 +138,7 @@ for objectType =1:6
     surfRMSE_passive = [];
     surfRMSE_random = [];
     
-    for nRun = 1:11
+    for nRun = 16
         
         load(sprintf('%s_activeGP_%02d.mat', objectName{objectType}, nRun));
         surfRMSE_active = [surfRMSE_active, surfaceModel.surfaceRMSE(1:101,:)];
@@ -188,7 +188,7 @@ for objectType =1:6
     
     
     
-    for nRun = 15
+    for nRun = 17
         
         load(sprintf('%s_activeGP_%02d.mat', objectName{objectType}, nRun));
         activeGP = surfaceModel;
@@ -197,7 +197,7 @@ for objectType =1:6
         load(sprintf('%s_random_%02d.mat',objectName{objectType}, nRun));
         randomS = surfaceModel;
         
-        maxContacts = 100;
+        maxContacts = 60;
         
         for nContacts = 1:maxContacts
             viewPars =[50 42];
@@ -228,8 +228,8 @@ for objectType =1:6
             xlabel('Number of locations sampled');
             ylabel('RMSE [m]');
             legend('Active GP', 'Passive GP', 'Random');
-            pause(0.1);
-            
+            %pause(0.1);
+            drawnow;
             %break;
            
         end
@@ -246,7 +246,7 @@ for objectType =1:6
             view([i, 42]);
             subplot(2,3,5);
             view([i, 42]);
-            
+            drawnow;
             
         end
         
@@ -260,7 +260,7 @@ for objectType =1:6
             view([50, i]);
             subplot(2,3,5);
             view([50, i]);
-            
+            drawnow;
             
             
         end
