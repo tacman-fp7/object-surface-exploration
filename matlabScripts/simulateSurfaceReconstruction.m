@@ -2,7 +2,7 @@
 %clear
 %close all
 warning('off', 'all');
-for testRun = 1:10
+for testRun = 6:15
     fprintf('Run: %02d\n', testRun);
     nSet = 1;
     objectName = {'circPrism', 'triangPrism', 'fish', 'fishSQ', 'hut', 'hutWave'};
@@ -37,7 +37,7 @@ for testRun = 1:10
         fprintf('Random...');
         clear surfaceModel;
         surfaceModel = surfaceModelRandom(objectModel, contactPoints);
-        surfaceModel.setMaxSamplePoints(100);
+        surfaceModel.setMaxSamplePoints(150);
         %surfaceModel.plotResults()
         %%%
         isDone = false;
@@ -53,7 +53,7 @@ for testRun = 1:10
         fprintf('PassiveGP...');
         clear surfaceModel;
         surfaceModel = surfaceModelPassiveGP(objectModel, contactPoints);
-        surfaceModel.setMaxSamplePoints(100);
+        surfaceModel.setMaxSamplePoints(150);
         %surfaceModel.plotResults()
         %%%
         isDone = false;
@@ -69,7 +69,7 @@ for testRun = 1:10
         fprintf('ActiveGP\n');
         clear surfaceModel;
         surfaceModel = surfaceModelActiveGP(objectModel, contactPoints);
-        surfaceModel.setMaxSamplePoints(100);
+        surfaceModel.setMaxSamplePoints(150);
         %surfaceModel.plotResults()
         %%%
         isDone = false;
@@ -95,14 +95,14 @@ for objectType =1:6
     surfRMSE_passive = [];
     surfRMSE_random = [];
     
-    for nRun = 1:5
+    for nRun = 1:11
         
         load(sprintf('%s_activeGP_%02d.mat', objectName{objectType}, nRun));
-        surfRMSE_active = [surfRMSE_active, surfaceModel.surfaceRMSE];
+        surfRMSE_active = [surfRMSE_active, surfaceModel.surfaceRMSE(1:101,:)];
         load(sprintf('%s_passiveGP_%02d.mat', objectName{objectType}, nRun));
-        surfRMSE_passive = [surfRMSE_passive, surfaceModel.surfaceRMSE];
+        surfRMSE_passive = [surfRMSE_passive, surfaceModel.surfaceRMSE(1:101,:)];
         load(sprintf('%s_random_%02d.mat',objectName{objectType}, nRun));
-        surfRMSE_random = [surfRMSE_random, surfaceModel.surfaceRMSE];
+        surfRMSE_random = [surfRMSE_random, surfaceModel.surfaceRMSE(1:101,:)];
         
         
         % %         plot(surfRMSE);
@@ -112,7 +112,7 @@ for objectType =1:6
     
     plot([mean(surfRMSE_active, 2), mean(surfRMSE_passive,2), mean(surfRMSE_random,2)]);
     hold on;
-    x = 1:101;
+    x = 1:length(surfRMSE_active);
     y = transpose(mean(surfRMSE_random, 2));
     err = std(surfRMSE_active');
     patch([x fliplr(x)],[y+err fliplr(y-err)], 'red', 'FaceAlpha', 0.3, 'LineStyle', 'none');
@@ -139,7 +139,7 @@ objectName = {'circPrism', 'triangPrism', 'fish', 'fishSQ', 'hut', 'hutWave'};
 
 
 
-for objectType =1
+for objectType =1:6
     myVideoObj = VideoWriter(sprintf('%s.avi', objectName{objectType}));
     myVideoObj.FrameRate = 8;
     open(myVideoObj);
@@ -166,7 +166,7 @@ for objectType =1
         load(sprintf('%s_random_%02d.mat',objectName{objectType}, nRun));
         randomS = surfaceModel;
         
-        maxContacts = 3;
+        maxContacts = 100;
         
         for nContacts = 1:maxContacts
             viewPars =[50 42];
