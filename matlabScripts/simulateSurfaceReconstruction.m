@@ -28,7 +28,7 @@ objectModel.initialise(objectName{objectIndex}, contactPoints);
 
 
 clear surfaceModel;
-surfaceModel = surfaceModelPassiveGP(objectModel, contactPoints);
+surfaceModel = surfaceModelActiveGP(objectModel, contactPoints);
 surfaceModel.setMaxSamplePoints(20);
 surfaceModel.enableDebugPlot(true);
 

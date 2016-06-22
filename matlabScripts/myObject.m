@@ -1,7 +1,7 @@
 classdef  myObject < handle
     
     properties
-        kdNSearcher;
+        %kdNSearcher;
         xMin;
         xMax;
         yMin;
@@ -16,7 +16,7 @@ classdef  myObject < handle
         function initialise(this, objectName, surfacePoints)
             this.objectName = objectName;
             this.objectSurface = surfacePoints;
-            this.kdNSearcher = createns(surfacePoints(:,1:2), 'NSMethod', 'exhaustive', 'distance', 'euclidean');
+            %this.kdNSearcher = createns(surfacePoints(:,1:2), 'NSMethod', 'exhaustive', 'distance', 'euclidean');
             this.xMin = min(surfacePoints(:, 1));
             this.xMax = max(surfacePoints(:, 1));
             this.yMin = min(surfacePoints(:, 2));
@@ -26,7 +26,8 @@ classdef  myObject < handle
         end
         
         function contactPoint = sampleObject(this, location)
-            [contactIndex, ~] = knnsearch(this.kdNSearcher, location, 'K', 1);
+            %[contactIndex, ~] = knnsearch(this.kdNSearcher, location, 'K', 1);
+            contactIndex = nearestneighbour(location', this.objectSurface(:,1:2)'); 
             contactPoint = this.objectSurface(contactIndex,:);
         end
         
