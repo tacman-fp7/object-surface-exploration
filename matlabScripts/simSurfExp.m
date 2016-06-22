@@ -1,7 +1,7 @@
 function simSurfExp(objectIndex)
 warning('off', 'all');
 maxContacts = 60;
-for testRun = 15
+for testRun = 16:20
     fprintf('Run: %02d\n', testRun);
     nSet = 1;
     objectName = {'circPrism', 'triangPrism', 'fish', 'fishSQ', 'hut', 'hutWave'};
