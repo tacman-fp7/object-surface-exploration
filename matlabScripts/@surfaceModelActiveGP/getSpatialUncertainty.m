@@ -9,7 +9,7 @@ for i = 1:this.nPadding -1
     dist = dist .* (1 - exp(tau * getDistance(this.inputTesting, this.contactLocations(i,1:2))));
 end
 
-tau = -500;
+tau = -1800;
 for i = this.nPadding: length(this.contactLocations)
     
     %Calculate the distance from the location

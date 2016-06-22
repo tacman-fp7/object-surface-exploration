@@ -82,7 +82,7 @@ elseif(length(this.contactLocations) > (this.firstBinThreshold * 3 + (this.nPoin
 elseif(length(this.contactLocations) > (this.firstBinThreshold * 2 + (this.nPoints * 4 - 2)))
     this.nBins = 3;
 elseif(length(this.contactLocations) > (this.firstBinThreshold + (this.nPoints * 4 - 2)))
-    this.nBins = 1;
+    this.nBins = 2;
 end
 
 end
@@ -100,10 +100,10 @@ gpModel.seq = {'split:ho', 'paramsel:siglamho', 'kernel:rbf',...
 
 gpModel.process{1} = [2,2,2,2,0,0,0,0,0];
 gpModel.process{2} = [3,3,3,3,2,2,2,2,2];
-gpModel.epochs = 100;
+gpModel.epochs = 1000;
 gpModel.hoperf = @perf_abserr;
 gpModel.save = -1;
-gpModel.nholdouts = 1;
+gpModel.nholdouts = 2;
 gpModel.hoproportion = 0.1;
 gpModel.verbose = 0;
 end
