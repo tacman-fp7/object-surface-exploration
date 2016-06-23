@@ -1,0 +1,3 @@
+function getGPUncertainty(this)
+
+end

@@ -56,6 +56,9 @@ classdef surfaceModelRandom < handle
         function plotReferenceSurace(this, plotTitle, viewPars)
            plotMeshAll(this, this.referenceSurface, plotTitle, viewPars); 
         end
+        function reEvalRMSE(this)
+            reEvaluateRMSE(this);
+        end
     end
     
     methods (Access = protected)

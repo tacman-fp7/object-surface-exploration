@@ -11,7 +11,7 @@ for objectType =1:6
     
     
     
-    for nRun = 16
+    for nRun = 20
         
         
         load(sprintf('%s_%02d_activeGP_%02d.mat', objectName{objectType}, nRun, nRun));
@@ -105,7 +105,7 @@ for objectType =1:6
     surfRMSE_passive = [];
     surfRMSE_random = [];
     
-    for nRun = 16
+    for nRun = 19:21
         
         load(sprintf('%s_%02d_activeGP_%02d.mat', objectName{objectType}, nRun, nRun));
         surfRMSE_active = [surfRMSE_active, surfaceModel.surfaceRMSE(1:maxContacts,:)];

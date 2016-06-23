@@ -133,6 +133,7 @@ fprintf('\n\nDone!\n\n');
 cd('/home/nawidj/tacman/gridSurfaceExplorationData/results');
 objectName = {'circPrism', 'triangPrism', 'fish', 'fishSQ', 'hut', 'hutWave'};
 
+maxContacts = 100;
 for objectType =1:6
     surfRMSE_active = [];
     surfRMSE_passive = [];
@@ -141,18 +142,22 @@ for objectType =1:6
     for nRun = 1:5
         
         load(sprintf('%s_activeGP_%02d.mat', objectName{objectType}, nRun));
-        surfRMSE_active = [surfRMSE_active, surfaceModel.surfaceRMSE(1:101,:)];
+        surfaceModel.reEvaluateRMSE();
+        surfRMSE_active = [surfRMSE_active, surfaceModel.surfaceRMSE(1:maxContacts,:)];
         load(sprintf('%s_passiveGP_%02d.mat', objectName{objectType}, nRun));
-        surfRMSE_passive = [surfRMSE_passive, surfaceModel.surfaceRMSE(1:101,:)];
+        surfaceModel.reEvaluateRMSE();
+        surfRMSE_passive = [surfRMSE_passive, surfaceModel.surfaceRMSE(1:maxContacts,:)];
         load(sprintf('%s_random_%02d.mat',objectName{objectType}, nRun));
-        surfRMSE_random = [surfRMSE_random, surfaceModel.surfaceRMSE(1:101,:)];
+        surfaceModel.reEvaluateRMSE();
+        surfRMSE_random = [surfRMSE_random, surfaceModel.surfaceRMSE(1:maxContacts,:)];
         
         
         % %         plot(surfRMSE);
         % %         legend('Active', 'Passive', 'Random');
         % %         pause;
     end
-    
+    fprintf('Done!\n');
+   
     plot([mean(surfRMSE_active, 2), mean(surfRMSE_passive,2), mean(surfRMSE_random,2)]);
     hold on;
     x = 1:length(surfRMSE_active);

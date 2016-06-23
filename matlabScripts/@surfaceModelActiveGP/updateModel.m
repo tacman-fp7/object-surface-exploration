@@ -132,14 +132,6 @@ end
 
 
 
-
-
-
-
-
-
-
-
 function surfaceProb = runGURLS(this)
 
 gpModel = getGPModel(this);
