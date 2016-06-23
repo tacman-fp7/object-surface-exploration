@@ -5,12 +5,13 @@ tau = -900;
 % input testing has the testing values
 dist = zeros(length(this.inputTesting), 1)+1;
 
-for i = 1:this.nPadding -1
+for i = 1:this.nPadding
     dist = dist .* (1 - exp(tau * getDistance(this.inputTesting, this.contactLocations(i,1:2))));
 end
 
-tau = -1800;
-for i = this.nPadding: length(this.contactLocations)
+tau = -40 * (length(this.contactLocations) - this.nPadding);
+%tau = max(tau, -600);
+for i = this.nPadding + 1: length(this.contactLocations)
     
     %Calculate the distance from the location
     dist = dist .* (1 - exp(tau * getDistance(this.inputTesting, this.contactLocations(i,1:2))));

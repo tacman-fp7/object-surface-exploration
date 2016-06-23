@@ -9,7 +9,7 @@ explorationType = 'Grid';
 trial = 1;
 whichHand = 'left';
 whichFinger = 'index';
-objectIndex = 6
+objectIndex = 1
 
 fprintf('Object: %s, ', objectName{objectIndex});
 objectType = objectName{objectIndex};
@@ -29,7 +29,7 @@ objectModel.initialise(objectName{objectIndex}, contactPoints);
 
 clear surfaceModel;
 surfaceModel = surfaceModelActiveGP(objectModel, contactPoints);
-surfaceModel.setMaxSamplePoints(20);
+surfaceModel.setMaxSamplePoints(60);
 surfaceModel.enableDebugPlot(true);
 
 %%%
@@ -130,7 +130,7 @@ end
 fprintf('\n\nDone!\n\n');
 %%
 
-cd('/home/nawidj/tacman/gridSurfaceExplorationData/data/results');
+cd('/home/nawidj/tacman/gridSurfaceExplorationData/results');
 objectName = {'circPrism', 'triangPrism', 'fish', 'fishSQ', 'hut', 'hutWave'};
 
 for objectType =1:6
@@ -138,7 +138,7 @@ for objectType =1:6
     surfRMSE_passive = [];
     surfRMSE_random = [];
     
-    for nRun = 16
+    for nRun = 1:5
         
         load(sprintf('%s_activeGP_%02d.mat', objectName{objectType}, nRun));
         surfRMSE_active = [surfRMSE_active, surfaceModel.surfaceRMSE(1:101,:)];
@@ -176,7 +176,7 @@ for objectType =1:6
 end
 
 %% Simulate the object sampling NO movie
-cd('/home/nawidj/tacman/gridSurfaceExplorationData/data/results');
+cd('/home/nawidj/tacman/gridSurfaceExplorationData/results');
 objectName = {'circPrism', 'triangPrism', 'fish', 'fishSQ', 'hut', 'hutWave'};
 
 
@@ -275,7 +275,7 @@ end
 
 
 %% Simulate the object sampling movie
-cd('/home/nawidj/tacman/gridSurfaceExplorationData/data/results');
+cd('/home/nawidj/tacman/gridSurfaceExplorationData/results');
 objectName = {'circPrism', 'triangPrism', 'fish', 'fishSQ', 'hut', 'hutWave'};
 
 
@@ -298,7 +298,7 @@ for objectType =1:6
     %     rect = [-ti(1), -ti(2), pos(3)+ti(1)+ti(3), pos(4)+ti(2)+ti(4)];
     rect = [180, 30, 1600, 920];
     
-    for nRun = 15
+    for nRun = 3
         
         load(sprintf('%s_activeGP_%02d.mat', objectName{objectType}, nRun));
         activeGP = surfaceModel;
