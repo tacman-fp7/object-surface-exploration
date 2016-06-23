@@ -11,8 +11,8 @@ classdef surfaceModelRandom < handle
         cornerPoints; 
         plotDebug = false;
         maxSamplePoints = 100;
-        epochs = 100;
-        nholdouts = 1;
+        epochs = 10000;
+        nholdouts = 2;
     end
     
     methods (Access = public)

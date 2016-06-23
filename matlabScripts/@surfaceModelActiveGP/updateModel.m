@@ -10,7 +10,9 @@ surfaceProb = runGURLS(this);
 surfaceUncertainty = getSurfaceUncertainty(this, surfaceProb);
 
 % Get the spatial uncertainty
-spatialUncertainty = getSpatialUncertainty(this);
+%spatialUncertainty = getSpatialUncertainty(this);
+
+spatialUncertainty = getSurfaceUncertaintyGP(this);
 
 
 % combine uncertainty from all bins
@@ -21,8 +23,9 @@ end
 combinedUncertainty = combinedUncertainty/this.nBins;
 
 
+
 % Weigh it again spatial uncertainty
-combinedUncertainty = combinedUncertainty .* spatialUncertainty;
+combinedUncertainty = combinedUncertainty * (1 - this.lRate) + spatialUncertainty * this.lRate;
 
 % Pick the next sampling location
 
@@ -64,7 +67,7 @@ function surfaceUncertainty = getSurfaceUncertainty(this, surfaceProb)
 surfaceUncertainty = abs(surfaceProb);
 
 
-% Combine the surface uncertainty from all bins.
+
 for bin = 1: this.nBins
     surfaceUncertainty(:, bin) = 1 - ((surfaceUncertainty(:, bin) - min(surfaceUncertainty(:, bin))) ./...
         (max(surfaceUncertainty(:, bin)) - min(surfaceUncertainty(:, bin))));
@@ -74,15 +77,20 @@ end
 function updateNBins(this)
 
 if(length(this.contactLocations) > (this.firstBinThreshold * 5 + (this.nPoints * 4 - 2)))
-    this.nBins = 8;
+    this.nBins = 9;
+    this.lRate = this.lRate/2;
 elseif(length(this.contactLocations) > (this.firstBinThreshold * 4 + (this.nPoints * 4 - 2)))
-    this.nBins = 6;
+    this.nBins = 7;
+    this.lRate = this.lRate/2;
 elseif(length(this.contactLocations) > (this.firstBinThreshold * 3 + (this.nPoints * 4 - 2)))
-    this.nBins = 4;
+    this.nBins = 5;
+    this.lRate = this.lRate/2;
 elseif(length(this.contactLocations) > (this.firstBinThreshold * 2 + (this.nPoints * 4 - 2)))
-    this.nBins = 2;
+    this.nBins = 3;
+    this.lRate = this.lRate/2;
 elseif(length(this.contactLocations) > (this.firstBinThreshold + (this.nPoints * 4 - 2)))
     this.nBins = 1;
+    this.lRate = this.lRate/2;
 end
 
 end

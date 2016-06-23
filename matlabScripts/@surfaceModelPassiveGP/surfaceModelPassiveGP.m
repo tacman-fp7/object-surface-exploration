@@ -13,6 +13,7 @@ classdef surfaceModelPassiveGP < surfaceModelRandom
     methods (Access = protected)
         updateModel(this)
        updateInputTesting(this)
+       surfaceUncertainty = getSurfaceUncertaintyGP(this)
     end
 end
 

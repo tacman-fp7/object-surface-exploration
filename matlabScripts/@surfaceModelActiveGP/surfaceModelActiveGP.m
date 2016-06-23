@@ -3,6 +3,7 @@ classdef surfaceModelActiveGP < surfaceModelPassiveGP
     properties
         nBins = 1;
         firstBinThreshold = 10;
+        lRate = 0.25;
     end
     
     methods (Access = public)
