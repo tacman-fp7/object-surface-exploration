@@ -11,6 +11,8 @@ classdef surfaceModelRandom < handle
         cornerPoints; 
         plotDebug = false;
         maxSamplePoints = 100;
+        epochs = 100;
+        nholdouts = 1;
     end
     
     methods (Access = public)
@@ -21,6 +23,13 @@ classdef surfaceModelRandom < handle
             evaluateRMSE(obj);
             updateModel(obj);
         end
+        function setNholdouts(this, nholdouts)
+           this.nholdouts = nholdouts; 
+        end
+        function setExpochs(this, epochs)
+           this.epochs = epochs; 
+        end
+            
         function nextSamplingLocation = getNextSamplingLocation(this)
             nextSamplingLocation = this.nextSamplingLocation;
         end

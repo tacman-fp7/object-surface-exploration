@@ -74,15 +74,15 @@ end
 function updateNBins(this)
 
 if(length(this.contactLocations) > (this.firstBinThreshold * 5 + (this.nPoints * 4 - 2)))
-    this.nBins = 12;
+    this.nBins = 8;
 elseif(length(this.contactLocations) > (this.firstBinThreshold * 4 + (this.nPoints * 4 - 2)))
-    this.nBins = 9;
-elseif(length(this.contactLocations) > (this.firstBinThreshold * 3 + (this.nPoints * 4 - 2)))
     this.nBins = 6;
+elseif(length(this.contactLocations) > (this.firstBinThreshold * 3 + (this.nPoints * 4 - 2)))
+    this.nBins = 4;
 elseif(length(this.contactLocations) > (this.firstBinThreshold * 2 + (this.nPoints * 4 - 2)))
-    this.nBins = 3;
-elseif(length(this.contactLocations) > (this.firstBinThreshold + (this.nPoints * 4 - 2)))
     this.nBins = 2;
+elseif(length(this.contactLocations) > (this.firstBinThreshold + (this.nPoints * 4 - 2)))
+    this.nBins = 1;
 end
 
 end
@@ -100,10 +100,10 @@ gpModel.seq = {'split:ho', 'paramsel:siglamho', 'kernel:rbf',...
 
 gpModel.process{1} = [2,2,2,2,0,0,0,0,0];
 gpModel.process{2} = [3,3,3,3,2,2,2,2,2];
-gpModel.epochs = 1000;
+gpModel.epochs = this.epochs;
 gpModel.hoperf = @perf_abserr;
 gpModel.save = -1;
-gpModel.nholdouts = 2;
+gpModel.nholdouts = this.nholdouts;
 gpModel.hoproportion = 0.1;
 gpModel.verbose = 0;
 end

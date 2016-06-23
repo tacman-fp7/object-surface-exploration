@@ -1,7 +1,7 @@
-function simSurfExp(objectIndex)
+function simSurfExp(objectIndex, testRunStart, testRunEnd)
 warning('off', 'all');
 maxContacts = 60;
-for testRun = 16:20
+for testRun = testRunStart:testRunEnd
     fprintf('Run: %02d\n', testRun);
     nSet = 1;
     objectName = {'circPrism', 'triangPrism', 'fish', 'fishSQ', 'hut', 'hutWave'};
@@ -26,7 +26,7 @@ for testRun = 16:20
         % % referenceSurface = [referenceSurface(:,3), referenceSurface(:,2), abs(referenceSurface(:,1))];
         % % referenceSurface = referenceSurface(referenceSurface(:,3) ~= 0, :);
         objectModel = myObject;
-        objectModel.initialise(objectName{objectIndex}, contactPoints);
+        objectModel.initialise(sprintf('%s_%02d', objectName{objectIndex}, testRun ), contactPoints);
         %objectModel.plotMesh(true, 1);
         
         %% Change to the new directory
