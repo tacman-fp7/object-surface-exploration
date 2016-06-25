@@ -11,21 +11,11 @@ surfaceUncertainty = getSurfaceUncertainty(this, surfaceProb);
 
 % Get the spatial uncertainty
 %spatialUncertainty = getSpatialUncertainty(this);
-
 spatialUncertainty = getSurfaceUncertaintyGP(this);
 
 
-% combine uncertainty from all bins
-combinedUncertainty = zeros(length(surfaceUncertainty), 1);
-for bin = 1:this.nBins
-    combinedUncertainty = combinedUncertainty +  surfaceUncertainty(:,bin);
-end
-combinedUncertainty = combinedUncertainty/this.nBins;
-
-
-
 % Weigh it again spatial uncertainty
-combinedUncertainty = combinedUncertainty * (1 - this.lRate) + spatialUncertainty * this.lRate;
+combinedUncertainty = surfaceUncertainty * (1 - this.lRate) + spatialUncertainty * this.lRate;
 
 % Pick the next sampling location
 
@@ -62,35 +52,58 @@ end;
 
 end
 
+function normalised = normalise(data)
+normalised = (data(:, end) - min(data(:,end)))/...
+    (max(data(:,end)) - min(data(:, end)));
+end
+
+
 function surfaceUncertainty = getSurfaceUncertainty(this, surfaceProb)
 
 surfaceUncertainty = abs(surfaceProb);
 
 
-
 for bin = 1: this.nBins
     surfaceUncertainty(:, bin) = 1 - ((surfaceUncertainty(:, bin) - min(surfaceUncertainty(:, bin))) ./...
         (max(surfaceUncertainty(:, bin)) - min(surfaceUncertainty(:, bin))));
+    %plotMesh(this, [this.inputTesting, surfaceUncertainty(:,bin)], false, 12 + bin, this.nPoints, 'Bins'); 
+end
+
+%plotMesh(this, [this.inputTesting, max(surfaceUncertainty')'], false, 12 + bin + 1, this.nPoints, 'max'); 
+
+% combine uncertainty from all bins
+% % combinedUncertainty = zeros(length(surfaceUncertainty), 1);
+% % for bin = 1:this.nBins
+% %     combinedUncertainty = combinedUncertainty +  surfaceUncertainty(:,bin);
+% % end
+% % combinedUncertainty = combinedUncertainty/this.nBins;
+
+if(this.nBins > 1)
+surfaceUncertainty = max(surfaceUncertainty(:,this.startBin:end)')';
 end
 end
 
 function updateNBins(this)
 
 if(length(this.contactLocations) > (this.firstBinThreshold * 5 + (this.nPoints * 4 - 2)))
-    this.nBins = 9;
-    this.lRate = this.lRate/2;
+    this.nBins = 15;
+   % this.lRate = this.lRate/2;
 elseif(length(this.contactLocations) > (this.firstBinThreshold * 4 + (this.nPoints * 4 - 2)))
-    this.nBins = 7;
-    this.lRate = this.lRate/2;
+    this.nBins = 12;
+    
+    %this.lRate = this.lRate/2;
 elseif(length(this.contactLocations) > (this.firstBinThreshold * 3 + (this.nPoints * 4 - 2)))
-    this.nBins = 5;
-    this.lRate = this.lRate/2;
+    this.nBins = 9;
+    this.startBin = 4;
+    %this.lRate = this.lRate/2;
 elseif(length(this.contactLocations) > (this.firstBinThreshold * 2 + (this.nPoints * 4 - 2)))
-    this.nBins = 3;
-    this.lRate = this.lRate/2;
+    this.nBins = 6;
+    this.startBin = 3;
+    %this.lRate = this.lRate/2;
 elseif(length(this.contactLocations) > (this.firstBinThreshold + (this.nPoints * 4 - 2)))
-    this.nBins = 1;
-    this.lRate = this.lRate/2;
+    this.nBins = 3;
+    this.startBin = 2;
+    %this.lRate = this.lRate/2;
 end
 
 end

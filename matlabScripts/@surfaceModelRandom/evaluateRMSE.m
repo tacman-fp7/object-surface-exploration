@@ -1,13 +1,13 @@
 function evaluateRMSE(this)
 
 %
-x = this.referenceSurface(:, 1);
-y = this.referenceSurface(:, 2);
+x = this.referenceSurface(1:4:end, 1);
+y = this.referenceSurface(1:4:end, 2);
 
 
 xlin = linspace(min(x),max(x), this.nPoints);
 ylin = linspace(min(y),max(y), this.nPoints);
-fReference = scatteredInterpolant(x, y, this.referenceSurface(:, 3), 'natural');
+fReference = scatteredInterpolant(x, y, this.referenceSurface(1:4:end, 3), 'natural');
 fEstimated = scatteredInterpolant([this.contactLocations(this.nPadding + 1:end,1); this.cornerPoints(:,1)],...
     [this.contactLocations(this.nPadding + 1:end,2); this.cornerPoints(:,2)],...
     [this.contactLocations(this.nPadding + 1:end,3); this.cornerPoints(:,3)], 'natural');

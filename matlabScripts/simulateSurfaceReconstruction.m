@@ -9,7 +9,7 @@ explorationType = 'Grid';
 trial = 1;
 whichHand = 'left';
 whichFinger = 'index';
-objectIndex = 1
+objectIndex = 2;
 
 fprintf('Object: %s, ', objectName{objectIndex});
 objectType = objectName{objectIndex};
@@ -29,6 +29,8 @@ objectModel.initialise(objectName{objectIndex}, contactPoints);
 
 clear surfaceModel;
 surfaceModel = surfaceModelActiveGP(objectModel, contactPoints);
+surfaceModel.setExpochs(100);
+surfaceModel.setNholdouts(1);
 surfaceModel.setMaxSamplePoints(60);
 surfaceModel.enableDebugPlot(true);
 
@@ -133,7 +135,7 @@ fprintf('\n\nDone!\n\n');
 cd('/home/nawidj/tacman/gridSurfaceExplorationData/results');
 objectName = {'circPrism', 'triangPrism', 'fish', 'fishSQ', 'hut', 'hutWave'};
 
-maxContacts = 100;
+maxContacts = 150;
 for objectType =1:6
     surfRMSE_active = [];
     surfRMSE_passive = [];
@@ -141,14 +143,15 @@ for objectType =1:6
     
     for nRun = 1:5
         
+        
         load(sprintf('%s_activeGP_%02d.mat', objectName{objectType}, nRun));
-        surfaceModel.reEvaluateRMSE();
+        %surfaceModel.reEvaluateRMSE();
         surfRMSE_active = [surfRMSE_active, surfaceModel.surfaceRMSE(1:maxContacts,:)];
         load(sprintf('%s_passiveGP_%02d.mat', objectName{objectType}, nRun));
-        surfaceModel.reEvaluateRMSE();
+        %surfaceModel.reEvaluateRMSE();
         surfRMSE_passive = [surfRMSE_passive, surfaceModel.surfaceRMSE(1:maxContacts,:)];
         load(sprintf('%s_random_%02d.mat',objectName{objectType}, nRun));
-        surfaceModel.reEvaluateRMSE();
+        %surfaceModel.reEvaluateRMSE();
         surfRMSE_random = [surfRMSE_random, surfaceModel.surfaceRMSE(1:maxContacts,:)];
         
         

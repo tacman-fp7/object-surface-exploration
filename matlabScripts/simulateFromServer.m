@@ -1,5 +1,5 @@
 %% Simulate the object sampling NO movie
-cd('/home/nawidj/tacman/gridSurfaceExplorationData/remoteResults/results');
+cd('/home/nawidj/tacman/gridSurfaceExplorationData/resultsServer');
 objectName = {'circPrism', 'triangPrism', 'fish', 'fishSQ', 'hut', 'hutWave'};
 
 
@@ -11,7 +11,7 @@ for objectType =1:6
     
     
     
-    for nRun = 20
+    for nRun = 7
         
         
         load(sprintf('%s_%02d_activeGP_%02d.mat', objectName{objectType}, nRun, nRun));
@@ -96,7 +96,7 @@ end
 
 %% plot averages
 
-cd('/home/nawidj/tacman/gridSurfaceExplorationData/remoteResults/results');
+cd('/home/nawidj/tacman/gridSurfaceExplorationData/resultsServer');
 objectName = {'circPrism', 'triangPrism', 'fish', 'fishSQ', 'hut', 'hutWave'};
 maxContacts = 60;
 
@@ -105,13 +105,16 @@ for objectType =1:6
     surfRMSE_passive = [];
     surfRMSE_random = [];
     
-    for nRun = 19:21
+    for nRun = 6:8
         
         load(sprintf('%s_%02d_activeGP_%02d.mat', objectName{objectType}, nRun, nRun));
+        surfaceModel.reEvaluateRMSE();
         surfRMSE_active = [surfRMSE_active, surfaceModel.surfaceRMSE(1:maxContacts,:)];
         load(sprintf('%s_%02d_passiveGP_%02d.mat', objectName{objectType}, nRun, nRun));
+        surfaceModel.reEvaluateRMSE()
         surfRMSE_passive = [surfRMSE_passive, surfaceModel.surfaceRMSE(1:maxContacts,:)];
         load(sprintf('%s_%02d_random_%02d.mat',objectName{objectType}, nRun, nRun));
+        surfaceModel.reEvaluateRMSE()
         surfRMSE_random = [surfRMSE_random, surfaceModel.surfaceRMSE(1:maxContacts,:)];
         
         
