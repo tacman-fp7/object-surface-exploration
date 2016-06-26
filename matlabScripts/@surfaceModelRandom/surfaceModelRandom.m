@@ -2,7 +2,7 @@ classdef surfaceModelRandom < handle
     
     properties
         contactLocations; % Contact locations sampled so far
-        nPoints = 60;
+        nPoints = 80;
         objectName;
         nextSamplingLocation;
         referenceSurface;
@@ -11,8 +11,8 @@ classdef surfaceModelRandom < handle
         cornerPoints; 
         plotDebug = false;
         maxSamplePoints = 100;
-        epochs = 10000;
-        nholdouts = 2;
+        epochs = 1000;
+        nholdouts = 1;
     end
     
     methods (Access = public)
