@@ -66,10 +66,10 @@ surfaceUncertainty = abs(surfaceProb);
 for bin = 1: this.nBins
     surfaceUncertainty(:, bin) = 1 - ((surfaceUncertainty(:, bin) - min(surfaceUncertainty(:, bin))) ./...
         (max(surfaceUncertainty(:, bin)) - min(surfaceUncertainty(:, bin))));
-    %plotMesh(this, [this.inputTesting, surfaceUncertainty(:,bin)], false, 12 + bin, this.nPoints, 'Bins'); 
+    %plotMesh(this, [this.inputTesting, surfaceUncertainty(:,bin)], false, 12 + bin, this.nPoints, 'Bins');
 end
 
-%plotMesh(this, [this.inputTesting, max(surfaceUncertainty')'], false, 12 + bin + 1, this.nPoints, 'max'); 
+%plotMesh(this, [this.inputTesting, max(surfaceUncertainty')'], false, 12 + bin + 1, this.nPoints, 'max');
 
 % combine uncertainty from all bins
 % % combinedUncertainty = zeros(length(surfaceUncertainty), 1);
@@ -79,7 +79,7 @@ end
 % % combinedUncertainty = combinedUncertainty/this.nBins;
 
 if(this.nBins > 1)
-surfaceUncertainty = max(surfaceUncertainty(:,this.startBin:end)')';
+    surfaceUncertainty = max(surfaceUncertainty(:,this.startBin:end)')';
 end
 end
 
@@ -87,23 +87,21 @@ function updateNBins(this)
 
 if(length(this.contactLocations) > (this.firstBinThreshold * 5 + (this.nPoints * 4 - 2)))
     this.nBins = 15;
-   % this.lRate = this.lRate/2;
+    this.lRate = this.lRate/2;
 elseif(length(this.contactLocations) > (this.firstBinThreshold * 4 + (this.nPoints * 4 - 2)))
     this.nBins = 12;
-    
-    %this.lRate = this.lRate/2;
+    this.lRate = this.lRate/2;
 elseif(length(this.contactLocations) > (this.firstBinThreshold * 3 + (this.nPoints * 4 - 2)))
     this.nBins = 9;
-    this.startBin = 4;
-    %this.lRate = this.lRate/2;
+    this.lRate = this.lRate/2;
 elseif(length(this.contactLocations) > (this.firstBinThreshold * 2 + (this.nPoints * 4 - 2)))
     this.nBins = 6;
     this.startBin = 3;
-    %this.lRate = this.lRate/2;
+    this.lRate = this.lRate/2;
 elseif(length(this.contactLocations) > (this.firstBinThreshold + (this.nPoints * 4 - 2)))
     this.nBins = 3;
     this.startBin = 2;
-    %this.lRate = this.lRate/2;
+    this.lRate = this.lRate/2;
 end
 
 end
@@ -121,6 +119,7 @@ gpModel.seq = {'split:ho', 'paramsel:siglamho', 'kernel:rbf',...
 
 gpModel.process{1} = [2,2,2,2,0,0,0,0,0];
 gpModel.process{2} = [3,3,3,3,2,2,2,2,2];
+gpModel.process{3} = [3,3,3,3,4,4,4,4,4];
 gpModel.epochs = this.epochs;
 gpModel.hoperf = @perf_abserr;
 gpModel.save = -1;
@@ -163,6 +162,7 @@ gurls(this.contactLocations( : , 1:2),...
     target, gpModel, jobID); % <-----------
 
 %%% Testing
+
 % Find a better place for a single one time generation
 updateInputTesting(this);
 outputTesting = zeros(size(this.inputTesting, 1),1); % dummy to help me evalate
@@ -170,7 +170,33 @@ outputTesting = zeros(size(this.inputTesting, 1),1); % dummy to help me evalate
 gurls(this.inputTesting, repmat(outputTesting, 1, this.nBins) , gpModel, 2);
 surfaceProb = gpModel.pred;
 
+% Study the distribution
+% % if(length(this.contactLocations) > this.nPadding + 5)
+% % figure(13)
+% % histfit(this.contactLocations( this.nPadding + 1:end , 3));
+% % end
+
+
+% Study the misclassification
+
+% % gurls(this.contactLocations(: , 1:2),...
+% %     target, gpModel, 2);
+% % 
+% % prediction = gpModel.pred./abs(gpModel.pred);
+% % 
+% % barsPlot = zeros(this.nBins,1);
+% % 
+% % for i = 1:this.nBins
+% %     barsPlot(i) = sum(prediction(this.nPadding + 1:end, i) == target(this.nPadding + 1:end, i));
+% %     fprintf('Class: %02d, nCorrect: %d, nMembers: %d\n\n\n', i,...
+% %         sum(prediction(this.nPadding + 1:end, i) == target(this.nPadding + 1:end, i)),...
+% %         size(target(this.nPadding +1:end, i),1));
+% % end
+% % 
+% % figure (12)
+% % bar(barsPlot);
+
+
+
 end
-
-
 

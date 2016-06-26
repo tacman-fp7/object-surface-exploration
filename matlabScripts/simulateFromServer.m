@@ -11,7 +11,7 @@ for objectType =1:6
     
     
     
-    for nRun = 7
+    for nRun = 17
         
         
         load(sprintf('%s_%02d_activeGP_%02d.mat', objectName{objectType}, nRun, nRun));
@@ -105,16 +105,16 @@ for objectType =1:6
     surfRMSE_passive = [];
     surfRMSE_random = [];
     
-    for nRun = 6:8
+    for nRun = 16:17
         
         load(sprintf('%s_%02d_activeGP_%02d.mat', objectName{objectType}, nRun, nRun));
-        surfaceModel.reEvaluateRMSE();
+        %surfaceModel.reEvaluateRMSE();
         surfRMSE_active = [surfRMSE_active, surfaceModel.surfaceRMSE(1:maxContacts,:)];
         load(sprintf('%s_%02d_passiveGP_%02d.mat', objectName{objectType}, nRun, nRun));
-        surfaceModel.reEvaluateRMSE()
+        %surfaceModel.reEvaluateRMSE()
         surfRMSE_passive = [surfRMSE_passive, surfaceModel.surfaceRMSE(1:maxContacts,:)];
         load(sprintf('%s_%02d_random_%02d.mat',objectName{objectType}, nRun, nRun));
-        surfaceModel.reEvaluateRMSE()
+        %surfaceModel.reEvaluateRMSE()
         surfRMSE_random = [surfRMSE_random, surfaceModel.surfaceRMSE(1:maxContacts,:)];
         
         
