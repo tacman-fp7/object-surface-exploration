@@ -9,7 +9,7 @@ explorationType = 'Grid';
 trial = 1;
 whichHand = 'left';
 whichFinger = 'index';
-objectIndex = 2;
+objectIndex = 1;
 
 fprintf('Object: %s, ', objectName{objectIndex});
 objectType = objectName{objectIndex};
@@ -25,8 +25,10 @@ contactPoints = contactPoints(:,1:3);
 
 objectModel = myObject;
 objectModel.initialise(objectName{objectIndex}, contactPoints);
+objectModel.expandObject();
+contactPoints = objectModel.objectSurface;
 
-
+%%
 clear surfaceModel;
 surfaceModel = surfaceModelActiveGP(objectModel, contactPoints);
 surfaceModel.setExpochs(100);

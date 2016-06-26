@@ -2,7 +2,7 @@ classdef surfaceModelRandom < handle
     
     properties
         contactLocations; % Contact locations sampled so far
-        nPoints = 80;
+        nPoints = 60;
         objectName;
         nextSamplingLocation;
         referenceSurface;
@@ -22,6 +22,7 @@ classdef surfaceModelRandom < handle
             obj.referenceSurface = referenceSurface;
             evaluateRMSE(obj);
             updateModel(obj);
+            obj.nextSamplingLocation = [(objectSurface.xMin + objectSurface.xMax)/2, (objectSurface.yMin + objectSurface.yMax)/2];
         end
         function setNholdouts(this, nholdouts)
            this.nholdouts = nholdouts; 

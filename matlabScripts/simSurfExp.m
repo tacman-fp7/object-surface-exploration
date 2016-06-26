@@ -27,6 +27,8 @@ for testRun = testRunStart:testRunEnd
         % % referenceSurface = referenceSurface(referenceSurface(:,3) ~= 0, :);
         objectModel = myObject;
         objectModel.initialise(sprintf('%s_%02d', objectName{objectIndex}, testRun ), contactPoints);
+        objectModel.expandObject();
+        contactPoints = objectModel.objectSurface;
         %objectModel.plotMesh(true, 1);
         
         %% Change to the new directory

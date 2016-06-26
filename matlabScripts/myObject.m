@@ -27,54 +27,89 @@ classdef  myObject < handle
         
         function contactPoint = sampleObject(this, location)
             %[contactIndex, ~] = knnsearch(this.kdNSearcher, location, 'K', 1);
-            contactIndex = nearestneighbour(location', this.objectSurface(:,1:2)'); 
+            contactIndex = nearestneighbour(location', this.objectSurface(:,1:2)');
             contactPoint = this.objectSurface(contactIndex,:);
         end
         
         function plotMesh(this, plotPC, figNum)
             plotMesh(this, plotPC, figNum);
         end
+        
+        function expandObject(this)
+            expandObject(this);
+        end
     end
 end
 
 
-function contactBins = bin(this, nBins)
 
-binSize = (max(this.objectSurface(:, 3)) - min(this.objectSurface(:, 3))) / (nBins + 1);
-contactBins = zeros(length(this.objectSurface(:,3)), nBins) - 1;
 
-for i = 1:length(this.objectSurface(:, 3))
-    height = this.objectSurface(i, 3) - min(this.objectSurface(:, 3));
+function expandObject(this)
+
+nPoints = 10;
+paddingPoints = [];
+
+for expansion = linspace(0, 0.025, 15)
+    xMin = min(this.objectSurface(:, 1)) - expansion;
+    xMax = max(this.objectSurface(:, 1)) + expansion;
+    yMin = min(this.objectSurface(:, 2)) - expansion * 2;
+    yMax = max(this.objectSurface(:, 2)) + expansion * 2;
+    a = sort(this.objectSurface(:, 3));
+    zMin = median(a(1:31));
     
-    for j = 1:nBins
-       if(height < binSize * j)
-           contactBins(i, j) = 1;
-           break;
-       end
-    end
+    xlin = linspace(xMin, xMax, nPoints);
+    ylin = linspace(yMin, yMax, nPoints);
+    
+    paddingPoints = [paddingPoints;...
+        xlin', repmat(yMin, length(xlin), 1),  repmat(zMin, length(xlin), 1);...
+        xlin', repmat(yMax, length(xlin), 1),  repmat(zMin, length(xlin), 1);...
+        repmat(xMin, length(ylin) - 2, 1), ylin(2 : end - 1)', repmat(zMin, length(ylin) - 2, 1);...
+        repmat(xMax, length(ylin) - 2, 1), ylin(2 : end - 1)', repmat(zMin, length(ylin) - 2, 1)...
+        ];
+    
 end
 
+for i = 1:length(paddingPoints)
+    location = [paddingPoints(i, 1)+rand*expansion/2, paddingPoints(i,2) + rand * expansion];
+    %contactIndex = nearestneighbour(location', this.objectSurface(:,1:2)', 'NumberOfNeighbours', 3);
+    %paddingPoints(i,3) = median(this.objectSurface(contactIndex, 3));
+    paddingPoints(i,1:2) = location;
 end
 
 
-function quantizedSurf = binSurf(this, nBins)
-% try 10 bins
-binSize = (max(this.objectSurface(:,3)) - min(this.objectSurface(:,3)))/nBins;
+this.objectSurface = [this.objectSurface; paddingPoints];
 
-quantizedSurf = zeros(length(this.objectSurface(:,3)), 1);
-minVal = min(this.objectSurface(:,3));
+this.xMin = min(this.objectSurface(:, 1));
+this.xMax = max(this.objectSurface(:, 1));
+this.yMin = min(this.objectSurface(:, 2));
+this.yMax = max(this.objectSurface(:, 2));
+this.zMin = min(this.objectSurface(:, 3));
+this.zMax = max(this.objectSurface(:, 3));
 
-for i = 1: length(quantizedSurf)
-    quantizedSurf(i) = floor((this.objectSurface(i, 3) - minVal )/binSize);
-end
+% % nPoints = 60;
+% % x = this.objectSurface(:, 1);
+% % y = this.objectSurface(:, 2);
+% % z = this.objectSurface(:, 3);
+% %
+% % xlin = linspace(min(x),max(x), nPoints);
+% % ylin = linspace(min(y),max(y), nPoints);
+% % [XT,YT] = meshgrid(xlin,ylin);
+% %
+% % f = scatteredInterpolant(x,y,z, 'natural');
+% % ZT = f(XT,YT);
+% %
+% %
+% % mesh(XT, YT, ZT);
+% % title('Object Mesh', 'fontsize', 24);
+% %
+% % hold on
+% % scatter3(...
+% %     this.objectSurface(:, 1),...
+% %     this.objectSurface(:, 2),... %this.objectSurface(:, 3),...
+% %     z,...
+% %     'fill', 'markerFaceColor', 'blue', 'sizeData', [90]);
+% % hold off
 
-end
-
-function quantizedSurf = quantizeSurf(this)
-
-%quantizedSurf = sign(detrend(this.objectSurface(:,3), 'constant'));% - mean(this.objectSurface(:,3)));
-quantizedSurf = sign(this.objectSurface(:,3) - ...
-    (max(this.objectSurface(:,3)) - min(this.objectSurface(:,3)))/2);
 
 end
 
@@ -87,9 +122,6 @@ if nargin < 2; plotPC = false; end;
 x = this.objectSurface(:, 1);
 y = this.objectSurface(:, 2);
 z = this.objectSurface(:, 3);
-%z = quantizeSurf(this);
-%z = binSurf(this, 5);
-%z = bin(this, 1);
 
 xlin = linspace(min(x),max(x), nPoints);
 ylin = linspace(min(y),max(y), nPoints);
