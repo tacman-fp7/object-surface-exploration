@@ -9,6 +9,11 @@ this.contactLocations = [...
     repmat(objectSurface.xMax, length(ylin) - 2, 1), ylin(2 : end - 1)', repmat(objectSurface.zMin, length(ylin) - 2, 1)...
     ];
 
+for i = 1:length(this.contactLocations)
+    contactIndex = nearestneighbour([this.contactLocations(i, 1) this.contactLocations(i,2)]', objectSurface.objectSurface(:,1:2)');
+    this.contactLocations(i,3) = objectSurface.objectSurface(contactIndex, 3);
+end
+
 this.objectName = objectSurface.objectName;
 this.nPadding = length(this.contactLocations(:,3));
 
