@@ -16,6 +16,7 @@ spatialUncertainty = getSurfaceUncertaintyGP(this);
 
 % Weigh it again spatial uncertainty
 combinedUncertainty = surfaceUncertainty * (1 - this.lRate) + spatialUncertainty * this.lRate;
+%combinedUncertainty = surfaceUncertainty .* spatialUncertainty;
 
 % Pick the next sampling location
 
@@ -87,22 +88,22 @@ function updateNBins(this)
 
 if(length(this.contactLocations) > (this.firstBinThreshold * 5 + (this.nPoints * 4 - 2)))
     this.nBins = 12;
-    this.lRate = this.lRate/2;
+    %this.lRate = this.lRate/2;
 elseif(length(this.contactLocations) > (this.firstBinThreshold * 4 + (this.nPoints * 4 - 2)))
     this.nBins = 9;
-    this.lRate = this.lRate/2;
+    %this.lRate = this.lRate/2;
 elseif(length(this.contactLocations) > (this.firstBinThreshold * 3 + (this.nPoints * 4 - 2)))
     this.nBins = 6;
     this.startBin = 3;
-    this.lRate = this.lRate/2;
+    %this.lRate = this.lRate/2;
 elseif(length(this.contactLocations) > (this.firstBinThreshold * 2 + (this.nPoints * 4 - 2)))
     this.nBins = 3;
     this.startBin = 2;
-    this.lRate = this.lRate/2;
+    %this.lRate = this.lRate/2;
 elseif(length(this.contactLocations) > (this.firstBinThreshold + (this.nPoints * 4 - 2)))
     this.nBins = 1;
     %this.startBin = 2;
-    this.lRate = this.lRate/2;
+    %this.lRate = this.lRate/2;
 end
 
 end

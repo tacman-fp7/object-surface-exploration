@@ -49,11 +49,11 @@ function expandObject(this)
 nPoints = 10;
 paddingPoints = [];
 
-for expansion = linspace(0, 0.025, 15)
+for expansion = linspace(0, 0.0125, 15)
     xMin = min(this.objectSurface(:, 1)) - expansion;
     xMax = max(this.objectSurface(:, 1)) + expansion;
-    yMin = min(this.objectSurface(:, 2)) - expansion * 2;
-    yMax = max(this.objectSurface(:, 2)) + expansion * 2;
+    yMin = min(this.objectSurface(:, 2)) - expansion;
+    yMax = max(this.objectSurface(:, 2)) + expansion;
     a = sort(this.objectSurface(:, 3));
     zMin = median(a(1:31));
     
