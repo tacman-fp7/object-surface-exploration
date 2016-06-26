@@ -93,7 +93,7 @@ elseif(length(this.contactLocations) > (this.firstBinThreshold * 4 + (this.nPoin
     this.lRate = this.lRate/2;
 elseif(length(this.contactLocations) > (this.firstBinThreshold * 3 + (this.nPoints * 4 - 2)))
     this.nBins = 6;
-    this.startBins = 3;
+    this.startBin = 3;
     this.lRate = this.lRate/2;
 elseif(length(this.contactLocations) > (this.firstBinThreshold * 2 + (this.nPoints * 4 - 2)))
     this.nBins = 3;
