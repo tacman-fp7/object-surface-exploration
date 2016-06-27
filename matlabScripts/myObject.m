@@ -49,7 +49,7 @@ function expandObject(this)
 nPoints = 10;
 paddingPoints = [];
 
-for expansion = linspace(0, 0.0125, 15)
+for expansion = linspace(0, 0.019, 15)
     xMin = min(this.objectSurface(:, 1)) - expansion;
     xMax = max(this.objectSurface(:, 1)) + expansion;
     yMin = min(this.objectSurface(:, 2)) - expansion;

@@ -2,7 +2,7 @@ classdef surfaceModelRandom < handle
     
     properties
         contactLocations; % Contact locations sampled so far
-        nPoints = 60;
+        nPoints = 80;
         objectName;
         nextSamplingLocation;
         referenceSurface;
@@ -13,6 +13,7 @@ classdef surfaceModelRandom < handle
         maxSamplePoints = 100;
         epochs = 1000;
         nholdouts = 1;
+        refSurf;
     end
     
     methods (Access = public)
@@ -20,6 +21,7 @@ classdef surfaceModelRandom < handle
             addPaddingPoints(obj, objectSurface);
             generateCornerPoints(obj, objectSurface);
             obj.referenceSurface = referenceSurface;
+            initRefSurf(obj)
             evaluateRMSE(obj);
             updateModel(obj);
             obj.nextSamplingLocation = [(objectSurface.xMin + objectSurface.xMax)/2, (objectSurface.yMin + objectSurface.yMax)/2];
@@ -70,6 +72,7 @@ classdef surfaceModelRandom < handle
         generateCornerPoints(this, objectSurface)
         plotMesh(this, contactLocations, plotPC, figNum, nPoints, plotTitle) 
         plotNextLocation(this, zPos, figNum)
+        initRefSurf(this);
     end
 end
 
