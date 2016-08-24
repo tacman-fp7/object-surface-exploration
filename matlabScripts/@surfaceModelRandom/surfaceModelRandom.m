@@ -57,7 +57,7 @@ classdef surfaceModelRandom < handle
         figNum = plotResults(this)
         getMesh(this, nConctacts, plotTitle, viewPars)
         function plotReferenceSurace(this, plotTitle, viewPars)
-           plotMeshAll(this, this.referenceSurface, plotTitle, viewPars); 
+           plotMeshAll(this, [this.refSurf.paddingPoints; this.referenceSurface], plotTitle, viewPars); 
         end
         function reEvalRMSE(this)
             reEvaluateRMSE(this);

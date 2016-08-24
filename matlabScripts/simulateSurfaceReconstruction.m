@@ -25,7 +25,7 @@ contactPoints = contactPoints(:,1:3);
 
 objectModel = myObject;
 objectModel.initialise(objectName{objectIndex}, contactPoints);
-objectModel.expandObject();
+%objectModel.expandObject();
 %contactPoints = objectModel.objectSurface;
 
 %%

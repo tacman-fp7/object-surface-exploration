@@ -35,6 +35,9 @@ classdef  myObject < handle
             plotMesh(this, plotPC, figNum);
         end
         
+        function getMesh(this, plotTitle, viewPars, nPoints, plotPC)
+            getMesh(this, plotTitle, viewPars, nPoints, plotPC);
+        end
         function expandObject(this)
             expandObject(this);
         end
@@ -143,4 +146,41 @@ if(plotPC)
     hold off
 end
 
+end
+
+
+function getMesh(this, plotTitle, viewPars, nPoints, plotPC)
+
+
+
+
+
+
+
+x = this.objectSurface(:, 1);
+y = this.objectSurface(:, 2);
+z = this.objectSurface(:, 3);
+
+xlin = linspace(min(x),max(x), nPoints);
+ylin = linspace(min(y),max(y), nPoints);
+[XT,YT] = meshgrid(xlin,ylin);
+
+f = scatteredInterpolant(x,y,z, 'natural');
+ZT = f(XT,YT);
+
+
+mesh(XT, YT, ZT);
+set(gca, 'fontname', 'Bitstream Charter','fontsize', 15);
+%title('Object Mesh', 'fontsize', 24);
+if(plotPC)
+    hold on
+    scatter3(...
+        this.objectSurface(:, 1),...
+        this.objectSurface(:, 2),... %this.objectSurface(:, 3),...
+        z,...
+        'fill', 'markerFaceColor', 'blue', 'sizeData', [40]);
+    hold off
+end
+axis('equal');
+view(viewPars);
 end

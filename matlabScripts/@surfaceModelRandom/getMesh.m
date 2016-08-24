@@ -11,8 +11,8 @@ y = this.contactLocations(1:this.nPadding + nContacts, 2);
 surface = this.contactLocations(1:this.nPadding + nContacts, 3);
 
 
-xlin = linspace(min(x),max(x), this.nPoints);
-ylin = linspace(min(y),max(y), this.nPoints);
+xlin = linspace(min(x),max(x), this.nPoints/2);
+ylin = linspace(min(y),max(y), this.nPoints/2);
 [XT,YT] = meshgrid(xlin,ylin);
 
 f = scatteredInterpolant(x,y,surface, 'natural');
@@ -26,8 +26,8 @@ title(plotTitle, 'fontsize', 20, 'interpreter', 'tex');
     scatter3(...
         this.contactLocations(this.nPadding + 1:this.nPadding + nContacts, 1),...
         this.contactLocations(this.nPadding + 1:this.nPadding + nContacts, 2),...
-        this.contactLocations(this.nPadding + 1:this.nPadding + nContacts, 3),...
-        'fill', 'markerFaceColor', 'blue', 'sizeData', [90]);
+        this.contactLocations(this.nPadding + 1:this.nPadding + nContacts, 3)+2/1000,...
+        'fill', 'markerFaceColor', 'blue', 'sizeData', [40]);
     hold off
 
     zlim([min(this.contactLocations(:,3)) max(this.contactLocations(:,3))]);
