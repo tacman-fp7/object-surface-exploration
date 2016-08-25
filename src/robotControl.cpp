@@ -155,6 +155,15 @@ public:
   virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
+class robotControl_multiFinger : public yarp::os::Portable {
+public:
+  double angle;
+  bool _return;
+  void init(const double angle);
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
+};
+
 class robotControl_quit : public yarp::os::Portable {
 public:
   bool _return;
@@ -551,6 +560,29 @@ void robotControl_setHeight::init(const double height) {
   this->height = height;
 }
 
+bool robotControl_multiFinger::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(2)) return false;
+  if (!writer.writeTag("multiFinger",1,1)) return false;
+  if (!writer.writeDouble(angle)) return false;
+  return true;
+}
+
+bool robotControl_multiFinger::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void robotControl_multiFinger::init(const double angle) {
+  _return = false;
+  this->angle = angle;
+}
+
 bool robotControl_quit::write(yarp::os::ConnectionWriter& connection) {
   yarp::os::idl::WireWriter writer(connection);
   if (!writer.writeListHeader(1)) return false;
@@ -751,6 +783,16 @@ bool robotControl::setHeight(const double height) {
   helper.init(height);
   if (!yarp().canWrite()) {
     yError("Missing server method '%s'?","bool robotControl::setHeight(const double height)");
+  }
+  bool ok = yarp().write(helper,helper);
+  return ok?helper._return:_return;
+}
+bool robotControl::multiFinger(const double angle) {
+  bool _return = false;
+  robotControl_multiFinger helper;
+  helper.init(angle);
+  if (!yarp().canWrite()) {
+    yError("Missing server method '%s'?","bool robotControl::multiFinger(const double angle)");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
@@ -998,6 +1040,22 @@ bool robotControl::read(yarp::os::ConnectionReader& connection) {
       reader.accept();
       return true;
     }
+    if (tag == "multiFinger") {
+      double angle;
+      if (!reader.readDouble(angle)) {
+        reader.fail();
+        return false;
+      }
+      bool _return;
+      _return = multiFinger(angle);
+      yarp::os::idl::WireWriter writer(reader);
+      if (!writer.isNull()) {
+        if (!writer.writeListHeader(1)) return false;
+        if (!writer.writeBool(_return)) return false;
+      }
+      reader.accept();
+      return true;
+    }
     if (tag == "quit") {
       bool _return;
       _return = quit();
@@ -1061,6 +1119,7 @@ std::vector<std::string> robotControl::help(const std::string& functionName) {
     helpString.push_back("validatePositionsEnable");
     helpString.push_back("validatePositionsDisable");
     helpString.push_back("setHeight");
+    helpString.push_back("multiFinger");
     helpString.push_back("quit");
     helpString.push_back("help");
   }
@@ -1118,6 +1177,9 @@ std::vector<std::string> robotControl::help(const std::string& functionName) {
     }
     if (functionName=="setHeight") {
       helpString.push_back("bool setHeight(const double height) ");
+    }
+    if (functionName=="multiFinger") {
+      helpString.push_back("bool multiFinger(const double angle) ");
     }
     if (functionName=="quit") {
       helpString.push_back("bool quit() ");

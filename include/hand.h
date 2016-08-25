@@ -53,6 +53,7 @@ public:
     bool goToStartingPose();
     bool goToEndPose();
     bool setHeight(double height);
+    bool multiContact(double angle);
     //void relaxTolerence();
     //void strictTolerence();
 
@@ -77,6 +78,7 @@ protected:
     string _robotName;
 
     Finger* _indexFinger; // Think of a better way that will allow multiple fingers
+    Finger* _middleFinger;
     Finger* _thumb;
 
 

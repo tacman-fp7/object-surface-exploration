@@ -15,6 +15,10 @@ using std::cerr;
 using std::endl;
 using yarp::os::Value;
 
+bool ExploreObject::multiFinger(const double angle){
+    _robotHand->multiContact(angle);
+}
+
 bool ExploreObject::validatePositionsEnable(){
     _exploreObjectGP_thread->enableValidatePositions();
     return true;

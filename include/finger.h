@@ -15,19 +15,26 @@ enum fingerJoints{
     THUMB_PROXIMAL = 9,
     THUMB_DISTAL = 10,
     INDEX_PROXIMAL = 11,
-    INDEX_DISTAL = 12
+    INDEX_DISTAL = 12,
+    MIDDLE_PROXIMAL = 13,
+    MIDDLE_DISTAL = 14
 };
 
 enum fingerEncoders{
     // Double check the thumb data
-    THUMB_PROXIMAL_ENCODER = 1,
-    THUMB_MIDDLE_ENCODER = 2,
-    THUMB_DISTAL_ENCODER = 3,
+    THUMB_PROXIMAL_ENCODER = 0, // TODO: check this
+    THUMB_MIDDLE_ENCODER = 1,
+    THUMB_DISTAL_ENCODER = 2,
 
 
     INDEX_PROXIMAL_ENCODER = 3,
     INDEX_MIDDLE_ENCODER = 4,
-    INDEX_DISTAL_ENCODER = 5
+    INDEX_DISTAL_ENCODER = 5,
+
+    // TODO: validate the values
+    MIDDLE_PROXIMAL_ENCODER = 6,
+    MIDDLE_MIDDLE_ENCODER = 7,
+    MIDDLE_DISTAL_ENCODER = 8
 
 };
 
@@ -178,6 +185,13 @@ public:
 
 
 
+class MiddleFinger: public icubFinger{
+
+public:
+    MiddleFinger(t_controllerData ctrlData);
+    bool prepare(){}
+};
+
 class Thumb:public icubFinger{
 
 public:
@@ -192,11 +206,14 @@ public:
     Finger* createFinger(string whichFinger, string whichRobot, t_controllerData ctrlData
                          ){
 
-          ctrlData.whichFinger = whichFinger;
+        ctrlData.whichFinger = whichFinger;
 
         if(whichRobot.compare("icub") == 0){
             if(whichFinger.compare("index") == 0){
                 return new IndexFinger(ctrlData);
+            }
+            if(whichFinger.compare("middle") == 0){
+                return new MiddleFinger(ctrlData);
             }
             else if(whichFinger.compare("thumb") == 0){
                 return new Thumb(ctrlData);
@@ -205,6 +222,10 @@ public:
         else if(whichRobot.compare("icubSim") == 0){
             if(whichFinger.compare("index") == 0){
                 return new SimIndexFinger(ctrlData);
+            }
+            if(whichFinger.compare("index") == 0){
+                std::cerr << "NO Sim Middle finger defined" << std::endl;
+                return NULL;
             }
             else if(whichFinger.compare("thumb") == 0){
                 return new SimThumb(ctrlData);

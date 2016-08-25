@@ -593,10 +593,10 @@ void IndexFinger::getRawTactileData(yarp::sig::Vector& rawTactileData){
     //cout << tactileData->toString() << endl;
     int startIndex = 0;
     if(tactileData != NULL){
-           for (int i = startIndex; i < 12; i++)
-           {
-               rawTactileData[i - startIndex] = tactileData->get(i).asDouble();
-           }
+        for (int i = startIndex; i < 12; i++)
+        {
+            rawTactileData[i - startIndex] = tactileData->get(i).asDouble();
+        }
     }
 }
 
@@ -729,8 +729,8 @@ bool IndexFinger::prepare(){
     bool ret = true;
 
     setSynchroProximalAngle(0);
-//    ret = ret && setAngle(_distalJointIndex, 20);
-//    ret = ret && setAngle(_proximalJointIndex, 20);
+    //    ret = ret && setAngle(_distalJointIndex, 20);
+    //    ret = ret && setAngle(_proximalJointIndex, 20);
 
     return ret;
 
@@ -750,10 +750,36 @@ bool SimIndexFinger::prepare(){
 
 }
 
+
+///////////////////////Middle Fingr///////////////////
+
+MiddleFinger::MiddleFinger(t_controllerData ctrlData):
+    icubFinger(ctrlData){
+
+    _iCubFinger = new iCub::iKin::iCubFinger(ctrlData.whichHand + "_middle");
+
+    // Joint indexes as defined in iCub
+    _proximalJointIndex = MIDDLE_PROXIMAL;
+    _distalJointIndex = MIDDLE_DISTAL;
+
+    _proximalEncoderIndex = MIDDLE_PROXIMAL_ENCODER;
+    _middleEncoderIndex = MIDDLE_MIDDLE_ENCODER;
+    _distalEncoderIndex = MIDDLE_DISTAL_ENCODER;
+
+    // TODO: Put it in a config file!
+    _maxProximal = 235;
+    _minProximal = 14;
+    _maxMiddle = 215;
+    _minMiddle = 20;
+    _maxDistal = 250;
+    _minDistal = 24;
+
+}
+
+
 Thumb::Thumb(t_controllerData ctrlData):
     icubFinger(ctrlData){
 
-    //Finger::Finger(armEncoder, armJointModeCtrl, armJointPositionCtrl);
 
 
 

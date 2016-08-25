@@ -32,10 +32,17 @@ Hand::Hand(ResourceFinder rf){
     _armCartesianCtrl = NULL;
 
     _indexFinger = NULL;
+    _middleFinger = NULL;
     _thumb = NULL;
 
     configure(rf);
 
+}
+
+bool Hand::multiContact(double angle){
+
+
+   _middleFinger->setAngles(0, angle, 30);
 }
 
 bool Hand::setWayPoint(yarp::sig::Vector pos){
@@ -48,6 +55,7 @@ bool Hand::prepare(){
 
     setAbduction(0);
     _indexFinger->prepare();
+    _middleFinger->prepare();
     _thumb->prepare();
 
     return true;
@@ -59,6 +67,8 @@ bool Hand::calibrate(){
 
     _indexFinger->open();
     _thumb->open();
+    _middleFinger->open();
+
     _indexFinger->calibrate();
 
     return true;
@@ -66,8 +76,9 @@ bool Hand::calibrate(){
 
 bool Hand::checkOpenMotionDone(){
 
-    bool ret_index, ret_thumb;
+    bool ret_index, ret_middle, ret_thumb;
     ret_index = _indexFinger->checkMotionDone();
+    ret_middle = _middleFinger->checkMotionDone();
     ret_thumb = _thumb->checkMotionDone();
 
     return(ret_index && ret_thumb);
@@ -80,6 +91,7 @@ bool Hand::open(){
 
     // Ask all fingers to open
     _indexFinger->open();
+    _middleFinger->open();
     _thumb->open();
 }
 
@@ -693,6 +705,7 @@ bool icubHand::configure(yarp::os::ResourceFinder rf){
 
     _thumb = fingerCreator.createFinger("thumb", "icub", ctrlData);
     _indexFinger = fingerCreator.createFinger("index", "icub", ctrlData);
+    _middleFinger = fingerCreator.createFinger("middle", "icub", ctrlData);
 
     return true;
 

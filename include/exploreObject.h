@@ -54,6 +54,7 @@ public: // Methods related to the robot control
     bool nRepeatsSet(const int32_t nRepeats);
     bool setHeight(double height);
     bool quit();
+    bool multiFinger(const double angle);
     
 public: // Methods related to the RF module
     bool attach(yarp::os::Port &source);
