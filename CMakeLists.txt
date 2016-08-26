@@ -82,7 +82,7 @@ yarp_install(FILES ${APP_CONF} DESTINATION ${ICUBCONTRIB_CONTEXTS_INSTALL_DIR}/$
 icubcontrib_add_uninstall_target()
 
 
-
+subdirs(app)
 
 
 
