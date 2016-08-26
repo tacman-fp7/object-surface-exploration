@@ -63,8 +63,8 @@ target_link_libraries(${PROJECTNAME} ${YARP_LIBRARIES} ${ICUB_LIBRARIES} ${Gurls
 
 install(TARGETS ${PROJECTNAME} DESTINATION bin)
 
-install(DIRECTORY ./contexts/
-  DESTINATION share/ICUBcontrib/contexts/${PROJECTNAME})
+#install(DIRECTORY ./contexts/
+#  DESTINATION share/ICUBcontrib/contexts/${PROJECTNAME})
 
 
 # Search for application files

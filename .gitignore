@@ -35,3 +35,17 @@
 build
 *.*~
 
+CMakeCache.txt
+CMakeFiles/
+CMakeLists.txt.user
+Makefile
+_yarp_idl_/
+app/CMakeFiles/
+app/Makefile
+app/cmake_install.cmake
+bin/
+cmake_install.cmake
+icubcontrib-config-uninstall.cmake
+install_manifest.txt
+object-surface-exploration.cbp
+

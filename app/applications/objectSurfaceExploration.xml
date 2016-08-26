@@ -1,7 +1,7 @@
 <application>
 	<!-- yarpmanager file for the object surface exploration experiments -->
-	<name> Surface Exploration </name>
-	<description> Surface Exploration </description>
+	<name> NJ_ObjectSurfaceExploration </name>
+	<description> Object Surface Exploration </description>
 	<version> 0.0 </version>
 
 	<authors>
@@ -10,37 +10,17 @@
 
 	<!-- Required modules -->
 	<module>
-		<name>force-cop-estimator</name>
-		<parameters>--from icubLeftIndex_combined.ini</parameters>
-		<node>icub-b3</node>
+		<name>object-surface-exploration</name>
+		<parameters>--from icubLeft.ini</parameters>
+		<node>localhost</node>
 		<display></display>
 		<stdio></stdio>
 		<dependencies>
-		  <port timeout="5.0">/icubSim/skin/left_hand_comp</port>
+		  <port timeout="1.0">/force-cop-estimator/left_index/force:o</port>
 		</dependencies>
 	</module>
   
-	<module>
-		<name>force-cop-estimator</name>
-		<parameters>--from icubLeftMiddle_combined.ini</parameters>
-		<node>icub-b3</node>
-		<display></display>
-		<stdio></stdio>
-		<dependencies>
-		  <port timeout="5.0">/icubSim/skin/left_hand_comp</port>
-		</dependencies>
-	</module>
-
-        <module>
-		<name>yarpscope</name>
-		<parameters>--context force-cop-estimator --xml forceTaxel_icubLeftIndex.xml</parameters>
-		<node>icub22</node>
-        </module>
 	
-	<module>
-		<name>yarpscope</name>
-		<parameters>--context force-cop-estimator --xml forceTaxel_icubLeftMiddle.xml</parameters>
-		<node>icub22</node>
-        </module>
+
 
 </application>
