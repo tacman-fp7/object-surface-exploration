@@ -228,7 +228,7 @@ bool icubFinger::getPosition(yarp::sig::Vector &position){
     bool ret;
 
     Vector fingerEncoders;
-    fingerEncoders.size(3);
+    fingerEncoders.resize(3);
     ret = readEncoders(fingerEncoders);
 
     ret = ret && getPosition(position, fingerEncoders);
