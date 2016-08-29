@@ -93,6 +93,7 @@ ExploreObject::ExploreObject(yarp::os::ResourceFinder& rf)
     //_contactSafetyThread = NULL;
     _exploreObjectThread = NULL;
     _exploreObjectGP_thread = NULL;
+    _exploreObjectMultifinger_thread = NULL;
     _exploreGPSurface_thread = NULL;
 
     //// TODO: I save system parameters here that I use in this module.
@@ -129,6 +130,14 @@ ExploreObject::~ExploreObject()
             _exploreObjectGP_thread->stop();
         delete(_exploreObjectGP_thread);
         _exploreObjectGP_thread = NULL;
+    }
+
+    if(_exploreObjectMultifinger_thread != NULL)
+    {
+        if(_exploreObjectMultifinger_thread->isRunning())
+            _exploreObjectMultifinger_thread->stop();
+        delete(_exploreObjectMultifinger_thread);
+        _exploreObjectMultifinger_thread = NULL;
     }
 
     if(_exploreGPSurface_thread != NULL)
@@ -272,6 +281,83 @@ bool ExploreObject::exploreGPSurface(const std::string& objectName)
 
 
 
+}
+
+
+
+bool ExploreObject::startExploringMultifinger(const string& objectName)
+{
+    bool ret = true;
+
+    cout << "Explore object starting" << endl;
+
+    if(!_exploreObjectValid)
+    {
+        cerr << _dbgtag << "Cannot start exploring, one or more of the dependencies have not been met" << endl;
+        return false;
+    }
+
+
+
+    if(_exploreObjectOnOff)
+    {
+        prepHand();
+        if(!this->goToStartingPose())
+            ret = false;
+        _robotHand->waitMotionDone(0.1, 20);
+        //_armCartesianController->waitMotionDone(0.1, 20);
+
+        // Ge the current position of the arm.
+        Vector pos, orient;
+       // pos.resize(3);
+       // orient.resize(4);
+        if(!_robotHand->getPose(pos, orient))
+        {
+            cerr << _dbgtag << "Could not read the arm position, cannot start exploration" << endl;
+            return false;
+        }
+
+
+        // Setting the way point to the start of the exploration
+        if(!_robotHand->setWayPoint(pos, orient))
+        {
+            cerr << _dbgtag << "Failed to set the initial waypoint. Aborting exploration!" << endl;
+            return false;
+        }
+
+
+        _exploreObjectMultifinger_thread =
+                new GPExplorationMultifingerThread(_explorationThreadPeriod,
+                                        _robotHand, _explorationFinger, objectName, _objectFeaturesThread);
+
+
+        if(!_exploreObjectMultifinger_thread->start()){
+            ret = false;
+
+
+
+            cerr << "Exploration could not be started" << endl;
+            if(_exploreObjectMultifinger_thread != NULL){
+                delete(_exploreObjectMultifinger_thread);
+                _exploreObjectMultifinger_thread = NULL;
+            }
+
+            return ret;
+        }
+
+        _exploreObjectOnOff = false;
+
+        cout << "Exoploring the object using GP\n" << endl;
+
+    }
+    else{
+
+        cout << "Warning! Already exploring." << endl;
+    }
+
+
+
+    return ret;
 }
 
 
@@ -438,6 +524,9 @@ bool ExploreObject::startExploring(const std::string &type, const std::string &o
     else if(type.compare("grid") == 0){
         startExploringGrid(objectName);
     }
+    else if(type.compare("multi") == 0){
+        startExploringMultifinger(objectName);
+    }
 }
 
 bool ExploreObject::stopExploring()
@@ -470,6 +559,13 @@ bool ExploreObject::stopExploring()
             }
             delete _exploreObjectGP_thread;
             _exploreObjectGP_thread = NULL;
+        }
+        if(_exploreObjectMultifinger_thread != NULL){
+            if(_exploreObjectMultifinger_thread->isRunning()){
+                _exploreObjectMultifinger_thread->stop();
+            }
+            delete _exploreObjectMultifinger_thread;
+            _exploreObjectMultifinger_thread = NULL;
         }
         if(_exploreGPSurface_thread != NULL){
             if(_exploreGPSurface_thread->isRunning()){

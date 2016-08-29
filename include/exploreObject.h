@@ -12,6 +12,7 @@
 #include <robotControl.h>
 #include <surfaceModelGP.h>
 #include <exploreGPSurfaceThread.h>
+#include "gpExplorationMultifinger.h"
 #include "hand.h"
 
 using yarp::os::RFModule;
@@ -44,6 +45,7 @@ public: // Methods related to the robot control
     bool prepHand();
     bool calibrateHand();
     bool startExploringGP(const string& objectName);
+    bool startExploringMultifinger(const string& objectName);
     bool exploreGPSurface(const string& objectName);
     bool enableSurfaceSampling();
     bool disableSurfaceSampling();
@@ -71,7 +73,8 @@ private:
     
     // Different exploration strategies
     ExplorationStrategyThread *_exploreObjectThread; // run appropriate exploration strategy
-    GPExplorationThread *_exploreObjectGP_thread;
+    GPExplorationThread *_exploreObjectGP_thread; //TODO: fix this os there is only one pointer to the exploration strategy
+    GPExplorationMultifingerThread *_exploreObjectMultifinger_thread;
     ExploreGPSurfaceThread * _exploreGPSurface_thread;
 
 
