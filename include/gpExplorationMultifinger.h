@@ -20,8 +20,10 @@ public:
     virtual void run();
     virtual bool threadInit();
     virtual void threadRelease();
-
     void multifingerContact();
+
+protected:
+    bool clenchFinger(Finger *finger, double maxAngle);
 
 
 }; // end of class

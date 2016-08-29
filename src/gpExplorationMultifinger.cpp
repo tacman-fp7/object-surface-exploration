@@ -122,6 +122,57 @@ void GPExplorationMultifingerThread::run()
 
 }
 
+bool GPExplorationMultifingerThread::clenchFinger(Finger *finger, double maxAngle)
+{
+    bool ret = false;
+    cout << "Checking the contact...";
+
+
+    /////// Move finger to starting position
+    /// initial angle
+    /// end angle
+    /// force threshold
+
+
+
+
+    // Move the finger
+    moveFingerBlocking(finger, 10/2, _curAbduction, 40);
+
+    Vector fingerAngles;
+    double angle;
+    for (int i = 10; i < maxAngle * 2; i++)
+    {
+        angle = i/2;
+        moveFinger(finger, angle, _curAbduction);
+
+        while(!finger->checkMotionDone()){
+
+            finger->getAngels(fingerAngles);
+
+            if(finger->getContactForce() >= _forceThreshold){
+                cout << "contact confirmed" << endl;
+                ret = true;
+                break;
+            }
+            else if(fingerAngles[1] < 1){
+                cout << "...[exceeded angle]..." << endl;
+                ret = true;
+                break;
+            }
+        }
+        if(ret == true){
+            break;
+        }
+    }
+
+
+    if(ret == false){
+        moveFingerBlocking(finger, 10/2, _curAbduction, 40);
+    }
+    return ret;
+
+}
 
 
 void GPExplorationMultifingerThread::multifingerContact(){
@@ -130,9 +181,15 @@ void GPExplorationMultifingerThread::multifingerContact(){
     // Step three register the location
     // Can I move all of them in parallel
 
-    _robotHand->multiContact(60);
-    yarp::os::Time::delay(2);
-    _robotHand->multiContact(0);
+    Finger *finger = _robotHand->getMiddleFinger();
+
+    if(clenchFinger(finger, 80)){
+        Vector fingerPos;
+        finger->getPosition(fingerPos);
+        std::cout << "Finger pos: " << fingerPos.toString() << std::endl;
+    }
+
+
 }
 
 bool GPExplorationMultifingerThread::threadInit()

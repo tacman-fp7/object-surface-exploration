@@ -73,6 +73,10 @@ protected:
     void moveIndexFingerBlocking(double proximalAngle, double abductionAngle, double speed);
     void moveIndexFingerBlocking(double proximalAngle, double distalAngle, double abductionAngle, double speed);
 
+    void moveFinger(Finger *finger, double proximalAngle, double abductionAngle, double speed = 40);
+    void moveFingerBlocking(Finger *finger, double proximalAngle, double abductionAngle, double speed);
+    void moveFingerBlocking(Finger *finger, double proximalAngle, double distalAngle, double abductionAngle, double speed);
+
 private:
     void moveArmToWayPoint(Vector pos, Vector orient);
     void detectContact(double maxAngle);

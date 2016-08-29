@@ -59,6 +59,7 @@ public:
 
 
     Finger* getIndexFinger(){return _indexFinger;}
+    Finger* getMiddleFinger(){return _middleFinger;}
     string getArmName(){return _whichHand;}
     string getRobotName(){return _robotName;}
 

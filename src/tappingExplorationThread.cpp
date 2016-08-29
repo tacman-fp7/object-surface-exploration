@@ -311,15 +311,38 @@ void TappingExplorationThread::moveIndexFinger(double proximalAngle, double abdu
 {
     _curProximal = proximalAngle;
     _curAbduction = abductionAngle;
-    //_curDistal = 90 - _curProximal;
-    //logFingertipControl();
-    //_robotHand->setProximalAngle(_curProximal);
-   // _robotHand->setIndexFingerAngles(_curProximal, _curAbduction, speed);
     _robotHand->setAbduction(abductionAngle, speed);
     _explorationFinger->setAngles(_curProximal, speed);
 
 }
 
+void TappingExplorationThread::moveFinger(Finger *finger, double proximalAngle, double abductionAngle, double speed)
+{
+    //_curProximal = proximalAngle;
+    //_curAbduction = abductionAngle;
+    _robotHand->setAbduction(abductionAngle, speed);
+    finger->setAngles(proximalAngle, speed);
+
+}
+
+void TappingExplorationThread::moveFingerBlocking(Finger *finger, double proximalAngle, double abductionAngle, double speed)
+{
+    moveFinger(finger, proximalAngle, abductionAngle);
+    while(!finger->checkMotionDone() && !isStopping() )
+        ;
+}
+
+void TappingExplorationThread::moveFingerBlocking(Finger *finger, double proximalAngle, double distalAngle, double abductionAngle, double speed)
+{
+
+    finger->setAngles(proximalAngle, distalAngle, speed);
+    _robotHand->setAbduction(abductionAngle, speed);
+
+    while(!_explorationFinger->checkMotionDone()){
+        ;
+    }
+
+}
 void TappingExplorationThread::approachObject()
 {
 
