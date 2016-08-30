@@ -184,9 +184,11 @@ void GPExplorationMultifingerThread::multifingerContact(){
     Finger *finger = _robotHand->getMiddleFinger();
 
     if(clenchFinger(finger, 80)){
-        Vector fingerPos;
-        finger->getPosition(fingerPos);
-        std::cout << "Finger pos: " << fingerPos.toString() << std::endl;
+        Vector fingertipPosition;
+        finger->getPosition(fingertipPosition);
+        std::cout << "Finger pos: " << fingertipPosition.toString() << std::endl;
+        _surfaceModel->addContactPoint(fingertipPosition);
+
     }
 
     // Move back to the starting position
