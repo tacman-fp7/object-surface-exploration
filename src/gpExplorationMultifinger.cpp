@@ -189,6 +189,7 @@ void GPExplorationMultifingerThread::multifingerContact(){
         std::cout << "Finger pos: " << fingerPos.toString() << std::endl;
     }
 
+    // Move back to the starting position
     finger->setAngles(0, 0, 60);
 
 
