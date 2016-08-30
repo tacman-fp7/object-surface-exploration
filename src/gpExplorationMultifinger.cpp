@@ -122,6 +122,62 @@ void GPExplorationMultifingerThread::run()
 
 }
 
+bool GPExplorationMultifingerThread::clenchRingLittleFinger(Finger *ringFinger, Finger *littleFinger, double maxAngle)
+{
+    bool ret = false;
+    cout << "Checking the contact...";
+
+
+    /////// Move finger to starting position
+    /// initial angle
+    /// end angle
+    /// force threshold
+
+
+
+
+    // Move the finger
+    moveFingerBlocking(ringFinger, 10/2, _curAbduction, 40);
+
+    Vector ringFingerAngles;
+    Vector littleFingerAngles;
+
+    double angle;
+    for (int i = 10; i < maxAngle * 2; i++)
+    {
+        angle = i/2;
+        moveFinger(ringFinger, angle, _curAbduction);
+
+        while(!ringFinger->checkMotionDone()){
+
+            ringFinger->getAngels(ringFingerAngles);
+            littleFinger->getAngels(littleFingerAngles);
+
+            if(ringFinger->getContactForce() >= _forceThreshold || littleFinger->getContactForce() >= _forceThreshold){
+                cout << "contact confirmed" << endl;
+                ret = true;
+                break;
+            }
+            else if(ringFingerAngles[1] < 1 || littleFingerAngles[1] < 1){
+                cout << "...[exceeded angle]..." << endl;
+                ret = true;
+                break;
+            }
+        }
+        if(ret == true){
+            break;
+        }
+    }
+
+
+    if(ret == false){
+        moveFingerBlocking(ringFinger, 10/2, _curAbduction, 40);
+    }
+    return ret;
+
+}
+
+
 bool GPExplorationMultifingerThread::clenchFinger(Finger *finger, double maxAngle)
 {
     bool ret = false;
@@ -181,19 +237,23 @@ void GPExplorationMultifingerThread::multifingerContact(){
     // Step three register the location
     // Can I move all of them in parallel
 
-    Finger *finger = _robotHand->getMiddleFinger();
+    Finger *middleFinger = _robotHand->getMiddleFinger();
+    Finger *ringFinger = _robotHand->getRingerFinger();
+    Finger *littleFinger = _robotHand->getLittleFinger();
 
-    if(clenchFinger(finger, 80)){
+    if(clenchFinger(middleFinger, 80)){
         Vector fingertipPosition;
-        finger->getPosition(fingertipPosition);
+        middleFinger->getPosition(fingertipPosition);
         std::cout << "Finger pos: " << fingertipPosition.toString() << std::endl;
         _surfaceModel->addContactPoint(fingertipPosition);
-
     }
 
-    // Move back to the starting position
-    finger->setAngles(0, 0, 60);
+    clenchRingLittleFinger(ringFinger, littleFinger, 80);
 
+
+    // Move back to the starting position
+    middleFinger->setAngles(0, 0, 60);
+    ringFinger->setAngles(0, 0, 60);
 
 }
 

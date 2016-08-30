@@ -60,6 +60,9 @@ public:
 
     Finger* getIndexFinger(){return _indexFinger;}
     Finger* getMiddleFinger(){return _middleFinger;}
+    Finger* getRingerFinger(){return _ringFinger;}
+    Finger* getLittleFinger(){return _littleFinger;}
+
     string getArmName(){return _whichHand;}
     string getRobotName(){return _robotName;}
 
@@ -80,6 +83,8 @@ protected:
 
     Finger* _indexFinger; // Think of a better way that will allow multiple fingers
     Finger* _middleFinger;
+    Finger* _ringFinger;
+    Finger* _littleFinger;
     Finger* _thumb;
 
 

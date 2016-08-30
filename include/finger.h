@@ -19,12 +19,13 @@ enum fingerJoints{
     INDEX_PROXIMAL = 11,
     INDEX_DISTAL = 12,
     MIDDLE_PROXIMAL = 13,
-    MIDDLE_DISTAL = 14
+    MIDDLE_DISTAL = 14,
+    PINKY = 15
 };
 
 enum fingerEncoders{
-    // Double check the thumb data
-    THUMB_PROXIMAL_ENCODER = 0, // TODO: check this
+
+    THUMB_PROXIMAL_ENCODER = 0,
     THUMB_MIDDLE_ENCODER = 1,
     THUMB_DISTAL_ENCODER = 2,
 
@@ -33,10 +34,19 @@ enum fingerEncoders{
     INDEX_MIDDLE_ENCODER = 4,
     INDEX_DISTAL_ENCODER = 5,
 
-    // TODO: validate the values
+
     MIDDLE_PROXIMAL_ENCODER = 6,
     MIDDLE_MIDDLE_ENCODER = 7,
-    MIDDLE_DISTAL_ENCODER = 8
+    MIDDLE_DISTAL_ENCODER = 8,
+
+    RING_PROXIMAL_ENCODER = 9,
+    RING_MIDDLE_ENCODER = 10,
+    RING_DISTAL_ENCODER = 11,
+
+    LITTLE_PROXIMAL_ENCODER = 12,
+    LITTLE_MIDDLE_ENCODER = 13,
+    LITTLE_DISTAL_ENCODER = 14,
+
 
 };
 
@@ -69,10 +79,10 @@ public:
     virtual bool prepare(){}
     bool open();
     virtual bool toArmPosition(Vector &fingertipPosition, Vector &retArmpPosition);
-    bool setAngles(double proximal, double distal, double speed);
-    bool setAngles(double proximal, double speed); //consider changing the name to something meaningful both distal and proximal are moves
-    bool setProximalAngle(double angle, double speed = 30);
-    bool setDistalAngle(double angle, double speed = 30);
+    virtual bool setAngles(double proximal, double distal, double speed);
+    virtual bool setAngles(double proximal, double speed); //consider changing the name to something meaningful both distal and proximal are moves
+    virtual bool setProximalAngle(double angle, double speed = 30);
+    virtual bool setDistalAngle(double angle, double speed = 30);
     virtual bool setSynchroProximalAngle(double proximal){}
     virtual void calibrate();
     bool checkMotionDone();
@@ -84,6 +94,8 @@ public:
     bool getContactCoP(yarp::sig::Vector& contactCoP);
     bool hasForceCoP();
     virtual void getRawTactileData(Vector& rawTactileData){rawTactileData.resize(12); rawTactileData.zero();}
+    virtual bool calibrate2(){}
+    virtual void printJointLimits(){}
 
 protected:
     Finger(t_controllerData);
@@ -142,6 +154,8 @@ public:
     bool toArmPosition(Vector &fingertipPosition, Vector &retArmpPosition);
     bool getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders);
     bool getPosition(yarp::sig::Vector &position);
+    bool calibrate2();
+    void printJointLimits();
 protected:
     icubFinger(t_controllerData ctrlData);
     BufferedPort<Bottle>* _fingerEncoders;
@@ -191,11 +205,36 @@ public:
 
 
 
+
 class MiddleFinger: public icubFinger{
 
 public:
     MiddleFinger(t_controllerData ctrlData);
     bool prepare(){}
+};
+
+class RingAndLittleFingers: public icubFinger{
+public:
+    RingAndLittleFingers(t_controllerData ctrlData);
+
+public:
+    virtual bool setAngles(double proximal, double distal, double speed);
+    virtual bool setAngles(double proximal, double speed); //consider changing the name to something meaningful both distal and proximal are moves
+    virtual bool setProximalAngle(double angle, double speed = 30);
+    virtual bool setDistalAngle(double angle, double speed = 30);
+    virtual bool setSynchroProximalAngle(double proximal);
+
+};
+
+class RingFinger: public RingAndLittleFingers{
+public:
+    RingFinger(t_controllerData ctrlData);
+
+};
+
+class LittleFinger: public RingAndLittleFingers{
+public:
+    LittleFinger(t_controllerData ctrlData);
 };
 
 class Thumb:public icubFinger{
@@ -222,6 +261,12 @@ public:
             }
             if(whichFinger.compare("middle") == 0){
                 return new MiddleFinger(ctrlData);
+            }
+            if(whichFinger.compare("ring") == 0){
+                return new RingFinger(ctrlData);
+            }
+            if(whichFinger.compare("little") == 0){
+                return new LittleFinger(ctrlData);
             }
             else if(whichFinger.compare("thumb") == 0){
                 return new Thumb(ctrlData);

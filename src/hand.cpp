@@ -33,6 +33,8 @@ Hand::Hand(ResourceFinder rf){
 
     _indexFinger = NULL;
     _middleFinger = NULL;
+    _ringFinger = NULL;
+    _littleFinger = NULL;
     _thumb = NULL;
 
     configure(rf);
@@ -56,6 +58,8 @@ bool Hand::prepare(){
     setAbduction(0);
     _indexFinger->prepare();
     _middleFinger->prepare();
+    _ringFinger->prepare();
+    _littleFinger->prepare();
     _thumb->prepare();
 
     return true;
@@ -65,23 +69,29 @@ bool Hand::prepare(){
 
 bool Hand::calibrate(){
 
-    _indexFinger->open();
+    _indexFinger->printJointLimits();
+    _indexFinger->calibrate2();
+    _indexFinger->printJointLimits();
+
+
+ /*   _indexFinger->open();
     _thumb->open();
     _middleFinger->open();
 
     _indexFinger->calibrate();
-
+*/
     return true;
 }
 
 bool Hand::checkOpenMotionDone(){
 
-    bool ret_index, ret_middle, ret_thumb;
+    bool ret_index, ret_middle, ret_ring, ret_little, ret_thumb;
     ret_index = _indexFinger->checkMotionDone();
     ret_middle = _middleFinger->checkMotionDone();
+
     ret_thumb = _thumb->checkMotionDone();
 
-    return(ret_index && ret_thumb);
+    return(ret_index && ret_middle && ret_thumb);
 
 }
 
@@ -92,6 +102,8 @@ bool Hand::open(){
     // Ask all fingers to open
     _indexFinger->open();
     _middleFinger->open();
+    _ringFinger->open();
+    //_littleFinger->open(); //This not needed because it is linked to the ring finger
     _thumb->open();
 }
 
@@ -712,7 +724,8 @@ bool icubHand::configure(yarp::os::ResourceFinder rf){
     _thumb = fingerCreator.createFinger("thumb", "icub", ctrlData);
     _indexFinger = fingerCreator.createFinger("index", "icub", ctrlData);
     _middleFinger = fingerCreator.createFinger("middle", "icub", ctrlData);
-
+    _ringFinger = fingerCreator.createFinger("ring", "icub", ctrlData);
+    _littleFinger = fingerCreator.createFinger("little", "icub", ctrlData);
 
     return true;
 

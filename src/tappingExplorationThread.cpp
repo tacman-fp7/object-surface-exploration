@@ -338,7 +338,7 @@ void TappingExplorationThread::moveFingerBlocking(Finger *finger, double proxima
     finger->setAngles(proximalAngle, distalAngle, speed);
     _robotHand->setAbduction(abductionAngle, speed);
 
-    while(!_explorationFinger->checkMotionDone()){
+    while(!finger->checkMotionDone()){
         ;
     }
 

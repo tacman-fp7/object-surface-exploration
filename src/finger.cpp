@@ -791,6 +791,89 @@ MiddleFinger::MiddleFinger(t_controllerData ctrlData):
 }
 
 
+/// Ring and Little Finger joint class ////
+
+
+RingAndLittleFingers::RingAndLittleFingers(t_controllerData ctrlData): icubFinger(ctrlData){
+    _proximalEncoderIndex = PINKY;
+    _distalJointIndex = PINKY;
+
+
+}
+
+bool  RingAndLittleFingers::setAngles(double proximal, double distal, double speed){
+    return Finger::setAngle(PINKY, proximal, speed);
+}
+
+bool RingAndLittleFingers::setAngles(double proximal, double speed){
+    return Finger::setAngle(PINKY, proximal, speed);
+}
+
+bool RingAndLittleFingers::setProximalAngle(double angle, double speed){
+    return Finger::setAngle(PINKY, angle, speed);
+}
+
+bool RingAndLittleFingers::setDistalAngle(double angle, double speed){
+    return Finger::setAngle(PINKY, angle, speed);
+}
+
+bool RingAndLittleFingers::setSynchroProximalAngle(double proximal){
+    return setProximalAngle(PINKY, proximal);
+}
+
+RingFinger::RingFinger(t_controllerData ctrlData): RingAndLittleFingers(ctrlData){
+
+    _iCubFinger = new iCub::iKin::iCubFinger(ctrlData.whichHand + "_ring");
+    alignJointsBounds();
+
+    _proximalEncoderIndex = RING_PROXIMAL_ENCODER;
+    _middleEncoderIndex = RING_MIDDLE_ENCODER;
+    _distalEncoderIndex = RING_DISTAL_ENCODER;
+
+    // TODO: check if I can get them from the IControlLimits
+
+    _maxProximal = 235;
+    _minProximal = 14;
+    _maxMiddle = 215;
+    _minMiddle = 20;
+    _maxDistal = 250;
+    _minDistal = 24;
+}
+
+LittleFinger::LittleFinger(t_controllerData ctrlData): RingAndLittleFingers(ctrlData){
+    _iCubFinger = new iCub::iKin::iCubFinger(ctrlData.whichHand + "_little");
+    alignJointsBounds();
+
+    _proximalEncoderIndex = LITTLE_PROXIMAL_ENCODER;
+    _middleEncoderIndex = LITTLE_MIDDLE_ENCODER;
+    _distalEncoderIndex = LITTLE_DISTAL_ENCODER;
+
+    // TODO: check if I can get them from the IControlLimits
+
+    _maxProximal = 235;
+    _minProximal = 14;
+    _maxMiddle = 215;
+    _minMiddle = 20;
+    _maxDistal = 250;
+    _minDistal = 24;
+}
+
+bool icubFinger::calibrate2(){
+    _armControlLimits->getLimits(_proximalJointIndex, &_minProximal, &_maxProximal);
+    _armControlLimits->getLimits(_distalJointIndex, &_minDistal, &_maxDistal);
+}
+
+void icubFinger::printJointLimits(){
+
+    std::cout << "Min proximal: " << _minProximal << ",\tMax proximal" << _maxProximal << std::endl;
+    std::cout << "Min middle: " << _minMiddle << ",\tMax middle" << _maxMiddle << std::endl;
+    std::cout << "Min distal: " <<  _minDistal << ",\tMax distal" << _maxDistal << std::endl;
+}
+
+/////////////////////
+/// \brief Thumb::Thumb
+/// \param ctrlData
+///
 Thumb::Thumb(t_controllerData ctrlData):
     icubFinger(ctrlData){
 

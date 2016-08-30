@@ -24,6 +24,7 @@ public:
 
 protected:
     bool clenchFinger(Finger *finger, double maxAngle);
+    bool clenchRingLittleFinger(Finger *ringFinger, Finger *littleFinger, double maxAngle);
 
 
 }; // end of class
