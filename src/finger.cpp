@@ -4,6 +4,8 @@
 #include <math.h>
 #include <yarp/os/Network.h>
 #include <stdexcept>
+#include <deque>
+
 
 namespace objectExploration {
 
@@ -11,6 +13,15 @@ using std::cerr;
 using std::endl;
 using std::cout;
 using yarp::os::Network;
+using yarp::dev::IControlLimits;
+using std::deque;
+
+void Finger::alignJointsBounds(){
+
+    deque<IControlLimits*> limits;
+    limits.push_back(_armControlLimits);
+    _iCubFinger->alignJointsBounds(limits);
+}
 
 bool Finger::setProximalAngle(double angle, double speed){
     _curProximalAngle = angle;
@@ -318,6 +329,7 @@ Finger::Finger(t_controllerData ctrlData){
     _isActiveTaxelValid = false;
     _whichFinger = ctrlData.whichFinger;
     _rawTactileData_in = ctrlData.rawTactileData_in;
+    _armControlLimits = ctrlData.armLimits;
 
     //_fingerEncoders = ctrlData.fingerEncoders;
 
@@ -378,6 +390,7 @@ bool Finger::hasForceCoP(){
 
 icubFinger::icubFinger(t_controllerData ctrlData):Finger(ctrlData){
     _fingerEncoders = ctrlData.fingerEncoders;
+
 
 }
 
@@ -605,6 +618,7 @@ IndexFinger::IndexFinger(t_controllerData ctrlData):
 
 
     _iCubFinger = new iCub::iKin::iCubFinger(ctrlData.whichHand + "_index");
+    alignJointsBounds();
 
     // Joint indexes as defined in iCub
     _proximalJointIndex = INDEX_PROXIMAL;
@@ -631,7 +645,7 @@ SimIndexFinger::SimIndexFinger(t_controllerData ctrlData):
 
 
     _iCubFinger = new iCub::iKin::iCubFinger(ctrlData.whichHand + "_index");
-
+    alignJointsBounds();
     // Joint indexes as defined in iCub
     _proximalJointIndex = INDEX_PROXIMAL;
     _distalJointIndex = INDEX_DISTAL;
@@ -757,7 +771,7 @@ MiddleFinger::MiddleFinger(t_controllerData ctrlData):
     icubFinger(ctrlData){
 
     _iCubFinger = new iCub::iKin::iCubFinger(ctrlData.whichHand + "_middle");
-
+    alignJointsBounds();
     // Joint indexes as defined in iCub
     _proximalJointIndex = MIDDLE_PROXIMAL;
     _distalJointIndex = MIDDLE_DISTAL;
@@ -785,7 +799,7 @@ Thumb::Thumb(t_controllerData ctrlData):
 
 
     _iCubFinger = new iCub::iKin::iCubFinger(ctrlData.whichHand + "_thumb");
-
+    alignJointsBounds();
     // Joint indexes as defined in iCub
     _proximalJointIndex = THUMB_PROXIMAL;
     _distalJointIndex = THUMB_DISTAL;
@@ -826,7 +840,7 @@ SimThumb::SimThumb(t_controllerData ctrlData):
 
 
     _iCubFinger = new iCub::iKin::iCubFinger(ctrlData.whichHand + "_thumb");
-
+    alignJointsBounds();
     // Joint indexes as defined in iCub
     _proximalJointIndex = THUMB_PROXIMAL;
     _distalJointIndex = THUMB_DISTAL;

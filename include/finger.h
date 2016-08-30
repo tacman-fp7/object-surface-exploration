@@ -8,6 +8,8 @@
 #include <yarp/dev/CartesianControl.h>
 #include <yarp/os/BufferedPort.h>
 
+
+
 namespace objectExploration {
 
 enum fingerJoints{
@@ -44,7 +46,8 @@ struct fingerControllerData{
     yarp::dev::IEncoders *armEncoder;
     yarp::dev::IControlMode2 *armJointModeCtrl;
     yarp::dev::IPositionControl *armJointPositionCtrl;
-    yarp::dev::ICartesianControl* armCartesianCtrl;
+    yarp::dev::ICartesianControl *armCartesianCtrl;
+    yarp::dev::IControlLimits *armLimits;
     yarp::os::BufferedPort<yarp::os::Bottle>* fingerEncoders;
     yarp::os::BufferedPort<yarp::os::Bottle>* rawTactileData_in;
 
@@ -86,14 +89,17 @@ protected:
     Finger(t_controllerData);
     bool setAngle(int joint, double angle, double speed = 30);
     double _prevContactForce;
+    void alignJointsBounds();
 
 private:
     static void initController(ResourceFinder& rf);
 
+
 protected:
     yarp::dev::IControlMode2 *_armJointModeCtrl;
     yarp::dev::IPositionControl *_armJointPositionCtrl;
-    yarp::dev::ICartesianControl* _armCartesianCtrl;
+    yarp::dev::ICartesianControl *_armCartesianCtrl;
+    yarp::dev::IControlLimits *_armControlLimits;
 
     string _dbgtag;
     yarp::dev::IEncoders* _armEncoder;
@@ -208,9 +214,11 @@ public:
 
         ctrlData.whichFinger = whichFinger;
 
+
         if(whichRobot.compare("icub") == 0){
             if(whichFinger.compare("index") == 0){
                 return new IndexFinger(ctrlData);
+
             }
             if(whichFinger.compare("middle") == 0){
                 return new MiddleFinger(ctrlData);
