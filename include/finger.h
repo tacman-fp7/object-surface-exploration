@@ -57,7 +57,7 @@ struct fingerControllerData{
     yarp::dev::IControlMode2 *armJointModeCtrl;
     yarp::dev::IPositionControl *armJointPositionCtrl;
     yarp::dev::ICartesianControl *armCartesianCtrl;
-    yarp::dev::IControlLimits *armLimits;
+    //yarp::dev::IControlLimits *armLimits;
     yarp::os::BufferedPort<yarp::os::Bottle>* fingerEncoders;
     yarp::os::BufferedPort<yarp::os::Bottle>* rawTactileData_in;
 
@@ -94,7 +94,7 @@ public:
     bool getContactCoP(yarp::sig::Vector& contactCoP);
     bool hasForceCoP();
     virtual void getRawTactileData(Vector& rawTactileData){rawTactileData.resize(12); rawTactileData.zero();}
-    virtual bool calibrate2(){}
+    //virtual bool calibrate2(){}
     virtual void printJointLimits(){}
 
 protected:
@@ -111,7 +111,7 @@ protected:
     yarp::dev::IControlMode2 *_armJointModeCtrl;
     yarp::dev::IPositionControl *_armJointPositionCtrl;
     yarp::dev::ICartesianControl *_armCartesianCtrl;
-    yarp::dev::IControlLimits *_armControlLimits;
+    //yarp::dev::IControlLimits *_armControlLimits;
 
     string _dbgtag;
     yarp::dev::IEncoders* _armEncoder;
@@ -125,6 +125,7 @@ protected:
 
     int _proximalJointIndex;
     int _distalJointIndex;
+
     int _proximalEncoderIndex;
     int _middleEncoderIndex;
     int _distalEncoderIndex;

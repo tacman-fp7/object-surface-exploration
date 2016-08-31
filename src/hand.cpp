@@ -69,17 +69,17 @@ bool Hand::prepare(){
 
 bool Hand::calibrate(){
 
-    _indexFinger->printJointLimits();
+/*    _indexFinger->printJointLimits();
     _indexFinger->calibrate2();
     _indexFinger->printJointLimits();
+*/
 
-
- /*   _indexFinger->open();
+    _indexFinger->open();
     _thumb->open();
     _middleFinger->open();
 
     _indexFinger->calibrate();
-*/
+
     return true;
 }
 
@@ -545,10 +545,11 @@ void Hand::configure(yarp::os::ResourceFinder rf){
     }
 
     // Open arm limits view
-    if(!_deviceController_joint.view(_armLimits)){
+    /*if(!_deviceController_joint.view(_armLimits)){
         cerr << _dbgtag << "Failed to open Control Limists view" << endl;
         throw std::runtime_error("Failed to open arm encoder view");
-    }
+    }*/
+
     // Open an encoder view
     if(!_deviceController_joint.view(_armEncoders))
     {
@@ -717,7 +718,7 @@ bool icubHand::configure(yarp::os::ResourceFinder rf){
     ctrlData.fingerEncoders = &_fingerEncoders;
     ctrlData.armCartesianCtrl = _armCartesianCtrl;
     ctrlData.rawTactileData_in = &_rawTactileData_in;
-    ctrlData.armLimits = _armLimits;
+    //ctrlData.armLimits = _armLimits;
 
     FingerFactory fingerCreator;
 

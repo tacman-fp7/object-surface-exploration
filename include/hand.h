@@ -93,8 +93,8 @@ protected:
     yarp::dev::IControlMode2 *_armJointModeCtrl;
     yarp::dev::IPositionControl *_armJointPositionCtrl;
     yarp::dev::ICartesianControl *_armCartesianCtrl;
-    yarp::dev::IControlLimits *_armLimits;
-    //ContactSafetyThread* _contactSafetyThread;
+    //yarp::dev::IControlLimits *_armLimits;
+
 
 private:
 

@@ -70,8 +70,8 @@ void GPExplorationMultifingerThread::run()
                 _stateMutex.unlock();
             }
             else{
-                 GPExplorationThread::maintainContact();
-                 multifingerContact();
+                GPExplorationThread::maintainContact();
+                multifingerContact();
             }
             //_stateMutex.unlock();
             break;
@@ -122,9 +122,12 @@ void GPExplorationMultifingerThread::run()
 
 }
 
-bool GPExplorationMultifingerThread::clenchRingLittleFinger(Finger *ringFinger, Finger *littleFinger, double maxAngle)
+bool GPExplorationMultifingerThread::clenchRingLittleFinger(Finger *ringFinger, Finger *littleFinger, double maxAngle, clenchResults_t *clenchResults)
 {
     bool ret = false;
+    bool ringFingerForce, littleFingerForce, ringFingerExAngle, littleFingerExAngle;
+    ringFingerForce = littleFingerForce = ringFingerExAngle = littleFingerExAngle = false;
+
     cout << "Checking the contact...";
 
 
@@ -137,42 +140,64 @@ bool GPExplorationMultifingerThread::clenchRingLittleFinger(Finger *ringFinger, 
 
 
     // Move the finger
-    moveFingerBlocking(ringFinger, 10/2, _curAbduction, 40);
+    moveFingerBlocking(ringFinger, 40, _curAbduction, 60);
 
     Vector ringFingerAngles;
     Vector littleFingerAngles;
 
     double angle;
-    for (int i = 10; i < maxAngle * 2; i++)
+    for (int i = 40; i < maxAngle; i+=2)
     {
-        angle = i/2;
+        angle = i;
         moveFinger(ringFinger, angle, _curAbduction);
 
-        while(!ringFinger->checkMotionDone()){
+        do{
 
             ringFinger->getAngels(ringFingerAngles);
             littleFinger->getAngels(littleFingerAngles);
+            //cout << endl << "Ring  : " << ringFingerAngles.toString() << endl;
+            //cout << "Little: " << littleFingerAngles.toString() << endl;
 
-            if(ringFinger->getContactForce() >= _forceThreshold || littleFinger->getContactForce() >= _forceThreshold){
-                cout << "contact confirmed" << endl;
-                ret = true;
+
+            if(ringFinger->getContactForce() >= _forceThreshold/4.0){
+                cout << "Ring finger contact confirmed" << endl;
+                ringFingerForce = true;
+
+            }
+            if(littleFinger->getContactForce() >= _forceThreshold/4.0){
+                cout << "Little finger contact confirmed" << endl;
+                littleFingerForce = true;
+            }
+            if(ringFingerAngles[0] < 10 ){
+                cout << "...ring finger [exceeded angle]..." << endl;
+                ringFingerExAngle = true;
+            }
+            if(littleFingerAngles[0] < 10){
+                cout << "...little finger [exceeded angle]..." << endl;
+                littleFingerExAngle = true;
+            }
+
+            if(ringFingerExAngle || littleFingerExAngle){
                 break;
             }
-            else if(ringFingerAngles[1] < 1 || littleFingerAngles[1] < 1){
-                cout << "...[exceeded angle]..." << endl;
-                ret = true;
-                break;
-            }
-        }
-        if(ret == true){
+        }while(!ringFinger->checkMotionDone());
+
+        if(ret = ringFingerForce || ringFingerExAngle ||
+                littleFingerForce || littleFingerExAngle){
             break;
         }
     }
 
 
     if(ret == false){
-        moveFingerBlocking(ringFinger, 10/2, _curAbduction, 40);
+        cout << "no contact was detected" << endl;
+        moveFingerBlocking(ringFinger, 0, _curAbduction, 40);
     }
+    clenchResults->littleFingerExAngle  = littleFingerExAngle;
+    clenchResults->littleFingerForce = littleFingerForce;
+    clenchResults->ringFingerExAngle = ringFingerExAngle;
+    clenchResults->ringFingerForce = ringFingerForce;
+
     return ret;
 
 }
@@ -202,7 +227,7 @@ bool GPExplorationMultifingerThread::clenchFinger(Finger *finger, double maxAngl
         angle = i/2;
         moveFinger(finger, angle, _curAbduction);
 
-        while(!finger->checkMotionDone()){
+        do{
 
             finger->getAngels(fingerAngles);
 
@@ -216,7 +241,7 @@ bool GPExplorationMultifingerThread::clenchFinger(Finger *finger, double maxAngl
                 ret = true;
                 break;
             }
-        }
+        } while(!finger->checkMotionDone());
         if(ret == true){
             break;
         }
@@ -244,11 +269,33 @@ void GPExplorationMultifingerThread::multifingerContact(){
     if(clenchFinger(middleFinger, 80)){
         Vector fingertipPosition;
         middleFinger->getPosition(fingertipPosition);
-        std::cout << "Finger pos: " << fingertipPosition.toString() << std::endl;
+        std::cout << "Middle finger pos: " << fingertipPosition.toString() << std::endl;
         _surfaceModel->addContactPoint(fingertipPosition);
     }
+    clenchResults_t clenchResults;
 
-    clenchRingLittleFinger(ringFinger, littleFinger, 80);
+    if(clenchRingLittleFinger(ringFinger, littleFinger, 120, &clenchResults)){
+
+
+
+
+        if(clenchResults.littleFingerForce || clenchResults.littleFingerExAngle){
+            cout << "Little finger contact" << endl;
+            /*Vector fingertipPosition;
+            littleFinger->getPosition(fingertipPosition);
+            std::cout << "Little finger pos: " << fingertipPosition.toString() << std::endl;
+            _surfaceModel->addContactPoint(fingertipPosition);*/
+        }
+        if(clenchResults.ringFingerForce||clenchResults.ringFingerExAngle){
+
+            cout << "Ring finger contact" << endl;
+            /*Vector fingertipPosition;
+            ringFinger->getPosition(fingertipPosition);
+            std::cout << "Ring finger pos: " << fingertipPosition.toString() << std::endl;
+            _surfaceModel->addContactPoint(fingertipPosition);*/
+
+        }
+    }
 
 
     // Move back to the starting position

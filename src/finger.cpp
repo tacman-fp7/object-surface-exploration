@@ -18,9 +18,9 @@ using std::deque;
 
 void Finger::alignJointsBounds(){
 
-    deque<IControlLimits*> limits;
-    limits.push_back(_armControlLimits);
-    _iCubFinger->alignJointsBounds(limits);
+    //deque<IControlLimits*> limits;
+    //limits.push_back(_armControlLimits);
+    //_iCubFinger->alignJointsBounds(limits);
 }
 
 bool Finger::setProximalAngle(double angle, double speed){
@@ -282,15 +282,13 @@ bool icubFinger::getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fin
         cerr << _dbgtag << "Failed to read arm encoder data" << endl;
     }
 
+
     ret = ret && _iCubFinger->getChainJoints(encs, joints);
 
-    //cout << fingerEncoders.toString() << endl;
-
-    // TODO: This should be moved to readEncoders method
-    //adjustMinMax(fingerEncoders[0], _minProximal, _maxProximal);
-    //adjustMinMax(fingerEncoders[1], _minMiddle, _maxMiddle);
-    //adjustMinMax(fingerEncoders[2], _minDistal, _maxDistal);
-
+    if(ret == false){
+        cout << "failed to get chain joints" << endl;
+        return false;
+    }
 
 
     // Replace the joins with the encoder readings
@@ -299,6 +297,7 @@ bool icubFinger::getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fin
     joints[2] = 90 * (1 - (fingerEncoders[1] - _minMiddle) / (_maxMiddle - _minMiddle) );
     joints[3] = 90 * (1 - (fingerEncoders[2] - _minDistal) / (_maxDistal - _minDistal) );
 
+    //cout << joints.size() << endl;
     //Convert the joints to radians.
     for (int j = 0; j < joints.size(); j++)
         joints[j] *= M_PI/180;
@@ -329,7 +328,7 @@ Finger::Finger(t_controllerData ctrlData){
     _isActiveTaxelValid = false;
     _whichFinger = ctrlData.whichFinger;
     _rawTactileData_in = ctrlData.rawTactileData_in;
-    _armControlLimits = ctrlData.armLimits;
+    //_armControlLimits = ctrlData.armLimits;
 
     //_fingerEncoders = ctrlData.fingerEncoders;
 
@@ -830,6 +829,8 @@ RingFinger::RingFinger(t_controllerData ctrlData): RingAndLittleFingers(ctrlData
     _middleEncoderIndex = RING_MIDDLE_ENCODER;
     _distalEncoderIndex = RING_DISTAL_ENCODER;
 
+    _proximalJointIndex = PINKY;
+    _distalJointIndex = PINKY;
     // TODO: check if I can get them from the IControlLimits
 
     _maxProximal = 235;
@@ -848,6 +849,8 @@ LittleFinger::LittleFinger(t_controllerData ctrlData): RingAndLittleFingers(ctrl
     _middleEncoderIndex = LITTLE_MIDDLE_ENCODER;
     _distalEncoderIndex = LITTLE_DISTAL_ENCODER;
 
+    _proximalJointIndex = PINKY;
+    _distalJointIndex = PINKY;
     // TODO: check if I can get them from the IControlLimits
 
     _maxProximal = 235;
@@ -858,10 +861,10 @@ LittleFinger::LittleFinger(t_controllerData ctrlData): RingAndLittleFingers(ctrl
     _minDistal = 24;
 }
 
-bool icubFinger::calibrate2(){
+/*bool icubFinger::calibrate2(){
     _armControlLimits->getLimits(_proximalJointIndex, &_minProximal, &_maxProximal);
     _armControlLimits->getLimits(_distalJointIndex, &_minDistal, &_maxDistal);
-}
+}*/
 
 void icubFinger::printJointLimits(){
 

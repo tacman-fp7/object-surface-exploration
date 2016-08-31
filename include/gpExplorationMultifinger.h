@@ -7,6 +7,15 @@ namespace objectExploration
 {
 using yarp::os::Mutex;
 
+struct clenchResults{
+    bool ringFingerForce;
+    bool ringFingerExAngle;
+    bool littleFingerForce;
+    bool littleFingerExAngle;
+};
+
+typedef struct clenchResults clenchResults_t;
+
 class GPExplorationMultifingerThread: public GPExplorationThread
 {
 
@@ -24,7 +33,7 @@ public:
 
 protected:
     bool clenchFinger(Finger *finger, double maxAngle);
-    bool clenchRingLittleFinger(Finger *ringFinger, Finger *littleFinger, double maxAngle);
+    bool clenchRingLittleFinger(Finger *ringFinger, Finger *littleFinger, double maxAngle, clenchResults_t *clenchResults);
 
 
 }; // end of class
