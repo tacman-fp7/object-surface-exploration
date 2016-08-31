@@ -266,15 +266,37 @@ void GPExplorationMultifingerThread::multifingerContact(){
     Finger *ringFinger = _robotHand->getRingerFinger();
     Finger *littleFinger = _robotHand->getLittleFinger();
 
-    if(clenchFinger(middleFinger, 80)){
+    clenchResults_t clenchResults;
+    bool middleFingerHasContact;
+
+
+    _contactMiddleFinger.initThread(middleFinger, 80, _forceThreshold);
+    _contactMiddleFinger.start();
+
+    _contactRingAndLittleFingers.initThread(ringFinger, littleFinger, 120, _forceThreshold);
+    _contactRingAndLittleFingers.start();
+
+
+
+    while(_contactMiddleFinger.isRunning() || _contactMiddleFinger.isRunning())
+        ;
+
+    _contactMiddleFinger.getResults(&middleFingerHasContact);
+    _contactRingAndLittleFingers.getResults(&clenchResults);
+
+
+
+    if(middleFingerHasContact){
         Vector fingertipPosition;
         middleFinger->getPosition(fingertipPosition);
         std::cout << "Middle finger pos: " << fingertipPosition.toString() << std::endl;
         _surfaceModel->addContactPoint(fingertipPosition);
     }
-    clenchResults_t clenchResults;
 
-    if(clenchRingLittleFinger(ringFinger, littleFinger, 120, &clenchResults)){
+
+
+    if(clenchResults.littleFingerExAngle || clenchResults.littleFingerForce
+            || clenchResults.ringFingerExAngle || clenchResults.ringFingerForce){
 
 
 
@@ -321,6 +343,129 @@ void GPExplorationMultifingerThread::threadRelease()
 
 }
 
+void RingAndLittleFingersContactThread::run(){
+    cout << "Checking the ring contact...";
+    _clenchResults.littleFingerExAngle = false;
+    _clenchResults.littleFingerForce = false;
+    _clenchResults.ringFingerExAngle = false;
+    _clenchResults.ringFingerForce = false;
 
+  bool ret;
+
+    //bool ringFingerForce, littleFingerForce, ringFingerExAngle, littleFingerExAngle;
+    //ringFingerForce = littleFingerForce = ringFingerExAngle = littleFingerExAngle = false;
+
+
+
+
+    /////// Move finger to starting position
+    /// initial angle
+    /// end angle
+    /// force threshold
+
+    /////// Move finger to starting position
+    _ringFinger->setAngles(40, 60);
+    while(!_ringFinger->checkMotionDone() && !isStopping() )
+        ;
+
+    Vector ringFingerAngles;
+    Vector littleFingerAngles;
+
+
+    for (int angle = 40; angle < _maxAngle; angle+=2)
+    {
+
+        _ringFinger->setAngles(angle, 60);
+
+        do{
+
+            _ringFinger->getAngels(ringFingerAngles);
+            _littleFinger->getAngels(littleFingerAngles);
+            //cout << endl << "Ring  : " << ringFingerAngles.toString() << endl;
+            //cout << "Little: " << littleFingerAngles.toString() << endl;
+
+
+            if(_ringFinger->getContactForce() >= _forceThreshold/4.0){
+                cout << "Ring finger contact confirmed" << endl;
+                _clenchResults.ringFingerForce = true;
+
+            }
+            if(_littleFinger->getContactForce() >= _forceThreshold/4.0){
+                cout << "Little finger contact confirmed" << endl;
+                _clenchResults.littleFingerForce = true;
+            }
+            if(ringFingerAngles[0] < 10 ){
+                cout << "...ring finger [exceeded angle]..." << endl;
+                _clenchResults.ringFingerExAngle = true;
+            }
+            if(littleFingerAngles[0] < 10){
+                cout << "...little finger [exceeded angle]..." << endl;
+                _clenchResults.littleFingerExAngle = true;
+            }
+
+            if(_clenchResults.ringFingerExAngle || _clenchResults.littleFingerExAngle){
+                break;
+            }
+        }while(!_ringFinger->checkMotionDone());
+
+        if(ret = _clenchResults.ringFingerForce  || _clenchResults.ringFingerExAngle ||
+                _clenchResults.littleFingerForce || _clenchResults.littleFingerExAngle){
+            break;
+        }
+    }
+
+
+    if(ret == false){
+        cout << "no contact was detected" << endl;
+        _ringFinger->setAngles(40, 60);
+        while(!_ringFinger->checkMotionDone() && !isStopping() )
+            ;
+    }
+}
+
+void MiddleFingerContactThread::run(){
+    cout << "Checking the contact...";
+    _contactState = false;
+    /////// Move finger to starting position
+    _middleFinger->setAngles(10/2, 40);
+    while(!_middleFinger->checkMotionDone() && !isStopping() )
+        ;
+
+
+    Vector fingerAngles;
+    double angle;
+    for (int i = 10; i < _maxAngle * 2; i++)
+    {
+        angle = i/2;
+        _middleFinger->setAngles(angle, 40);
+
+        do{
+
+            _middleFinger->getAngels(fingerAngles);
+
+            if(_middleFinger->getContactForce() >= _forceThreshold){
+                cout << "contact confirmed" << endl;
+                _contactState = true;
+                break;
+            }
+            else if(fingerAngles[1] < 1){
+                cout << "...[exceeded angle]..." << endl;
+                _contactState = true;
+                break;
+            }
+        } while(!_middleFinger->checkMotionDone());
+
+        if(_contactState == true){
+            break;
+        }
+    }
+
+
+    if(_contactState == false){
+        _middleFinger->setAngles(10/2, 40);
+        while(!_middleFinger->checkMotionDone() && !isStopping() )
+            ;
+    }
+}
 
 } // end of namespace
