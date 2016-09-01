@@ -21,10 +21,10 @@ typedef struct clenchResults clenchResults_t;
 class MiddleFingerContactThread: public yarp::os::Thread{
 public:
     virtual void run();
-    virtual bool threadInit(){_middleFinger = NULL; _maxAngle = 0; _contactState = false; return true;}
+    //virtual bool threadInit(){_middleFinger = NULL; _maxAngle = 0; _contactState = false; return true;}
     virtual void threadRelease(){_middleFinger = NULL, _maxAngle = 0;}
 
-    void initThread(Finger *finger, double maxAngle, double forceThreshold){_middleFinger = finger, _maxAngle = maxAngle; _forceThreshold = forceThreshold;}
+    void initThread(Finger *finger, double maxAngle, double forceThreshold);//{_middleFinger = finger; _maxAngle = maxAngle; _forceThreshold = forceThreshold;}
     void getResults(bool *contactState){*contactState = _contactState;}
 
 private:
@@ -39,11 +39,11 @@ class RingAndLittleFingersContactThread: public yarp::os::Thread{
 
 public:
     virtual void run();
-    virtual bool threadInit(){_ringFinger = NULL, _littleFinger = NULL; _forceThreshold = 0; _maxAngle = 0;
+    virtual bool threadInit();/*{
                             _clenchResults.littleFingerExAngle = false;
                              _clenchResults.littleFingerForce = false;
                              _clenchResults.ringFingerExAngle = false;
-                             _clenchResults.ringFingerForce = false;}
+                             _clenchResults.ringFingerForce = false;} */
     virtual void threadRelease(){_ringFinger = NULL; _littleFinger = NULL;}
     void initThread(Finger *ringFinger, Finger *littleFinger, double maxAngle, double forceThreshold){
     _ringFinger = ringFinger; _littleFinger = littleFinger; _maxAngle = maxAngle, _forceThreshold = forceThreshold;

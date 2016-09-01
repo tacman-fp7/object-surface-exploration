@@ -198,6 +198,7 @@ bool Finger::getPosition(yarp::sig::Vector &position){
         cerr << _dbgtag << "Failed to read arm encoder data" << endl;
     }
 
+    cout << encs.toString() << endl;
     ret = ret && _iCubFinger->getChainJoints(encs, joints);
 
     //cout << fingerEncoders.toString() << endl;

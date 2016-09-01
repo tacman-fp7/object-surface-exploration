@@ -57,6 +57,8 @@ bool ExploreObject::prepHand(){
 }
 
 bool ExploreObject::calibrateHand(){
+
+
     _robotHand->calibrate();
     return true;
 }

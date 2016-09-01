@@ -343,6 +343,13 @@ void GPExplorationMultifingerThread::threadRelease()
 
 }
 
+bool RingAndLittleFingersContactThread::threadInit(){
+    _clenchResults.littleFingerExAngle = false;
+    _clenchResults.littleFingerForce = false;
+    _clenchResults.ringFingerExAngle = false;
+    _clenchResults.ringFingerForce = false;
+}
+
 void RingAndLittleFingersContactThread::run(){
     cout << "Checking the ring contact...";
     _clenchResults.littleFingerExAngle = false;
@@ -350,7 +357,7 @@ void RingAndLittleFingersContactThread::run(){
     _clenchResults.ringFingerExAngle = false;
     _clenchResults.ringFingerForce = false;
 
-  bool ret;
+    bool ret;
 
     //bool ringFingerForce, littleFingerForce, ringFingerExAngle, littleFingerExAngle;
     //ringFingerForce = littleFingerForce = ringFingerExAngle = littleFingerExAngle = false;
@@ -423,11 +430,16 @@ void RingAndLittleFingersContactThread::run(){
     }
 }
 
+void MiddleFingerContactThread::initThread(Finger *finger, double maxAngle, double forceThreshold){
+    _middleFinger = finger;
+    _maxAngle = maxAngle;
+    _forceThreshold = forceThreshold;}
+
 void MiddleFingerContactThread::run(){
     cout << "Checking the contact...";
     _contactState = false;
     /////// Move finger to starting position
-    _middleFinger->setAngles(10/2, 40);
+    _middleFinger->setAngles(10/2, 60);
     while(!_middleFinger->checkMotionDone() && !isStopping() )
         ;
 
@@ -437,7 +449,7 @@ void MiddleFingerContactThread::run(){
     for (int i = 10; i < _maxAngle * 2; i++)
     {
         angle = i/2;
-        _middleFinger->setAngles(angle, 40);
+        _middleFinger->setAngles(angle, 60);
 
         do{
 
@@ -462,7 +474,7 @@ void MiddleFingerContactThread::run(){
 
 
     if(_contactState == false){
-        _middleFinger->setAngles(10/2, 40);
+        _middleFinger->setAngles(10/2, 60);
         while(!_middleFinger->checkMotionDone() && !isStopping() )
             ;
     }
