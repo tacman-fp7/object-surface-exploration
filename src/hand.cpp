@@ -2,7 +2,7 @@
 #include <iostream>
 #include <yarp/os/Value.h>
 #include <stdexcept>
-
+#include <deque>
 
 namespace objectExploration {
 using std::cerr;
@@ -69,16 +69,35 @@ bool Hand::prepare(){
 
 bool Hand::calibrate(){
 
+    Vector position;
+    _indexFinger->getPosition(position);
+    cout << position.toString() << endl;
+
+    cout << "Little" << endl;
+    _littleFinger->getPosition(position);
+    cout << position.toString() << endl;
+
+    //double min, max;
+
+    //_armControlLimits->getLimits(11, &min, &max);
+    //std::cout << "Min: " << min << "Max: " << max << std::endl;
+
+    //std::deque<yarp::dev::IControlLimits*> calib;
+   // calib.push_back(_armControlLimits);
+    //_indexFinger->alignJointsBounds(calib);
+
+    //calib.push_back(_armControlLimits);
+
 /*    _indexFinger->printJointLimits();
     _indexFinger->calibrate2();
     _indexFinger->printJointLimits();
 */
 
-    _indexFinger->open();
+/*    _indexFinger->open();
     _thumb->open();
     _middleFinger->open();
 
-    _indexFinger->calibrate();
+    _indexFinger->calibrate();*/
 
     return true;
 }
@@ -545,10 +564,10 @@ void Hand::configure(yarp::os::ResourceFinder rf){
     }
 
     // Open arm limits view
-    /*if(!_deviceController_joint.view(_armLimits)){
+    if(!_deviceController_joint.view(_armControlLimits)){
         cerr << _dbgtag << "Failed to open Control Limists view" << endl;
         throw std::runtime_error("Failed to open arm encoder view");
-    }*/
+    }
 
     // Open an encoder view
     if(!_deviceController_joint.view(_armEncoders))
@@ -718,7 +737,7 @@ bool icubHand::configure(yarp::os::ResourceFinder rf){
     ctrlData.fingerEncoders = &_fingerEncoders;
     ctrlData.armCartesianCtrl = _armCartesianCtrl;
     ctrlData.rawTactileData_in = &_rawTactileData_in;
-    //ctrlData.armLimits = _armLimits;
+    ctrlData.armControlLimits = _armControlLimits;
 
     FingerFactory fingerCreator;
 

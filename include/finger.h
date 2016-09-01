@@ -7,7 +7,7 @@
 #include <yarp/os/ResourceFinder.h>
 #include <yarp/dev/CartesianControl.h>
 #include <yarp/os/BufferedPort.h>
-
+#include <deque>
 
 
 namespace objectExploration {
@@ -57,7 +57,7 @@ struct fingerControllerData{
     yarp::dev::IControlMode2 *armJointModeCtrl;
     yarp::dev::IPositionControl *armJointPositionCtrl;
     yarp::dev::ICartesianControl *armCartesianCtrl;
-    //yarp::dev::IControlLimits *armLimits;
+    yarp::dev::IControlLimits *armControlLimits;
     yarp::os::BufferedPort<yarp::os::Bottle>* fingerEncoders;
     yarp::os::BufferedPort<yarp::os::Bottle>* rawTactileData_in;
 
@@ -97,10 +97,11 @@ public:
     //virtual bool calibrate2(){}
     virtual void printJointLimits(){}
 
+
 protected:
     Finger(t_controllerData);
     bool setAngle(int joint, double angle, double speed = 30);
-    double _prevContactForce;
+
     void alignJointsBounds();
 
 private:
@@ -108,10 +109,12 @@ private:
 
 
 protected:
+    double _prevContactForce;
+
     yarp::dev::IControlMode2 *_armJointModeCtrl;
     yarp::dev::IPositionControl *_armJointPositionCtrl;
     yarp::dev::ICartesianControl *_armCartesianCtrl;
-    //yarp::dev::IControlLimits *_armControlLimits;
+    yarp::dev::IControlLimits *_armControlLimits;
 
     string _dbgtag;
     yarp::dev::IEncoders* _armEncoder;

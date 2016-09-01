@@ -18,9 +18,9 @@ using std::deque;
 
 void Finger::alignJointsBounds(){
 
-    //deque<IControlLimits*> limits;
-    //limits.push_back(_armControlLimits);
-    //_iCubFinger->alignJointsBounds(limits);
+    deque<IControlLimits*> limits;
+    limits.push_back(_armControlLimits);
+    _iCubFinger->alignJointsBounds(limits);
 }
 
 bool Finger::setProximalAngle(double angle, double speed){
@@ -284,7 +284,10 @@ bool icubFinger::getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fin
     }
 
 
+    cout << encs.toString() << endl;
+
     ret = ret && _iCubFinger->getChainJoints(encs, joints);
+
 
     if(ret == false){
         cout << "failed to get chain joints" << endl;
@@ -329,7 +332,7 @@ Finger::Finger(t_controllerData ctrlData){
     _isActiveTaxelValid = false;
     _whichFinger = ctrlData.whichFinger;
     _rawTactileData_in = ctrlData.rawTactileData_in;
-    //_armControlLimits = ctrlData.armLimits;
+    _armControlLimits = ctrlData.armControlLimits;
 
     //_fingerEncoders = ctrlData.fingerEncoders;
 
