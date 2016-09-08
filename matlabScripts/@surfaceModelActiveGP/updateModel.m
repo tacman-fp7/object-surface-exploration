@@ -61,6 +61,7 @@ end
 
 function surfaceUncertainty = getSurfaceUncertainty(this, surfaceProb)
 
+% Convert the 
 surfaceUncertainty = abs(surfaceProb);
 
 
