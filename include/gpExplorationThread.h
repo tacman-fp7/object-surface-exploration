@@ -2,7 +2,7 @@
 #define GPEXPLORATION
 
 #include "tappingExplorationThread.h"
-#include "surfaceModelGP.h"
+#include "surfaceModelGPActive.h"
 #include <contactSafetyThread.h>
 #include <yarp/os/Mutex.h>
 #include <vector>
@@ -21,7 +21,7 @@ public:
                         ObjectFeaturesThread* objectFeatures):
         TappingExplorationThread(period, robotHand, explorationFinger, objectName,
                                  objectFeatures){
-        _surfaceModel = new SurfaceModelGP(objectName);
+        _surfaceModel = new SurfaceModelGPActive(objectName);
         _forceThreshold = FORCE_TH;
         _sampleSurface = true;
         _refineModel = false;

@@ -22,7 +22,7 @@ using std::string;
 SurfaceModelGP::SurfaceModelGP(const std::string objectName){
     _dbgtg = "surfaceModelGP ( " + objectName + " ):";
     _objectName = objectName;
-    _opt = NULL;
+    //_opt = NULL;
     _isValidModel = false;
     _isValidMaxVar = false;
     _inputTraining.resize(0,2);
@@ -38,6 +38,8 @@ SurfaceModelGP::SurfaceModelGP(const std::string objectName){
     _currentRow = 4;
     _currentCol = 1;
 
+    string modelFileName = objectName + "_GPRegression";
+    _opt = new GurlsOptionsList(modelFileName, true);
 
 }
 
@@ -184,8 +186,7 @@ bool SurfaceModelGP::trainModel(){
 
 
     // build an options' structure
-    string modelFileName = "GURLSgpr";
-    _opt = new GurlsOptionsList(modelFileName, true);
+
     _opt->addOpt("seq", seq);
     _opt->addOpt("processes", process);
 

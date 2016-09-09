@@ -11,15 +11,18 @@ class TrainModelGPClassificationThread;
 class SurfaceModelGPActive: public SurfaceModelGP{
 public:
     SurfaceModelGPActive(const std::string objectName);
+    ~SurfaceModelGPActive();
     virtual bool updateModel(); //This seems to be useless
     virtual bool trainModel(); // This the one run
     virtual bool updateSurfaceEstimate(const unsigned int nPoints, const double offset);
 
 private:
-    gMat2D<double>* eval(const gMat2D<double> &X, gMat2D<double> &vars, gurls::GurlsOptionsList  *opt);
+    gMat2D<double>* evalClassification(const gMat2D<double> &X, gMat2D<double> &vars, gurls::GurlsOptionsList  *opt);
     void getSurfaceUncertainty(gMat2D<double> &classProb, gMat2D<double> &vars);
     void updateNBins();
     void binContacts();
+    void configureRegressionOpt(gurls::GurlsOptionsList  *opt);
+    void configureClassificationOpt(gurls::GurlsOptionsList  *opt);
   //  bool trainGPClassificationModel();
   //  bool trainGPRegressionModel();
 
@@ -29,6 +32,7 @@ private:
     unsigned int _startBin;
     unsigned int _firstBinThreshold;
     double _lRate;
+    gurls::GurlsOptionsList *_optClassification;
 
     gMat2D<double> _outputTrainingClassification;
 
