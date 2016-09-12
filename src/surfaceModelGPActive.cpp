@@ -495,6 +495,7 @@ gMat2D<double>* SurfaceModelGPActive::evalClassification(const gMat2D<double> &X
 
 void SurfaceModelGPActive::getMaxProbSurface(const gMat2D<double> &classProb, gMat2D<double> &maxProbSurface) const{
 
+    maxProbSurface.resize(classProb.rows(), classProb.cols());
     maxProbSurface.zeros(classProb.rows(),1);
 
     if(classProb.cols() < 2){

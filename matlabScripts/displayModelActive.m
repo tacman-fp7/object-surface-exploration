@@ -36,7 +36,7 @@ while(true)
     
     
     
-    %delete(nextPointFileName);
+    delete(nextPointFileName);
     
     system('python taxel2latent.py');
     
@@ -164,7 +164,7 @@ while(true)
     ylabel('Length [mm]','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'top');
     zlabel('Height [mm]','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'bottom');
     title('Object Surface [GP Classification]', 'fontsize', 20, 'interpreter', 'tex');
-    axis('equal');
+    %axis('equal');
     axis  tight
     view(viewVars);
     
@@ -308,7 +308,7 @@ while(true)
     
     drawnow;
     
-    pause;
+    %pause;
     
 end
 
