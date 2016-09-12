@@ -61,7 +61,7 @@ void SurfaceModelGPActive::configureClassificationOpt(GurlsOptionsList *opt){
               << GURLS::ignore
               << GURLS::ignore
               << GURLS::ignore;
-              //<< GURLS::ignore;
+    //<< GURLS::ignore;
     process->addOpt("train", process1);
 
     // defines instructions for testing process
@@ -73,7 +73,7 @@ void SurfaceModelGPActive::configureClassificationOpt(GurlsOptionsList *opt){
               << GURLS::computeNsave
               << GURLS::computeNsave
               << GURLS::computeNsave;
-              //<< GURLS::computeNsave;
+    //<< GURLS::computeNsave;
     process->addOpt("eval", process2);
 
 
@@ -379,6 +379,7 @@ bool SurfaceModelGPActive::updateSurfaceEstimate(const unsigned int nPoints, con
 
     gMat2D<double> varsClassification;
     gMat2D<double>* meansClassification;
+    gMat2D<double> surfaceGPClassification;
 
     gMat2D<double> varsRegression;
     gMat2D<double>* meansRegression;
@@ -395,14 +396,14 @@ bool SurfaceModelGPActive::updateSurfaceEstimate(const unsigned int nPoints, con
         // If we have enough points, run classification
         trainingPoints = _inputTraining.rows() - _paddingPoints;
         if(trainingPoints > 3){
-            meansClassification = evalClassification(_inputTesting, varsClassification, _optClassification);
+            meansClassification = evalClassification(_inputTesting, varsClassification, surfaceGPClassification,  _optClassification);
             combinedVar.resize(varsRegression.rows(), varsRegression.cols());
             combinedVar = varsClassification * (1 - _lRate) + varsRegression * _lRate;
         }
         else{
             combinedVar.resize(varsRegression.rows(), varsRegression.cols());
             combinedVar = varsRegression;
-             // combinedVar = varsClassification * (1 - _lRate) + varsRegression * _lRate;combinedVar = varsRegression;
+            // combinedVar = varsClassification * (1 - _lRate) + varsRegression * _lRate;combinedVar = varsRegression;
         }
     }
     else{
@@ -416,7 +417,7 @@ bool SurfaceModelGPActive::updateSurfaceEstimate(const unsigned int nPoints, con
 
 
 
-            //surfaceUncertainty * (1 - this.lRate) + spatialUncertainty * this.lRate;
+    //surfaceUncertainty * (1 - this.lRate) + spatialUncertainty * this.lRate;
     while(true){
         getMaxVariancePose(_inputTesting, varsRegression, *meansRegression, _maxVariancePos);
         if(!_repeatVar){
@@ -430,10 +431,11 @@ bool SurfaceModelGPActive::updateSurfaceEstimate(const unsigned int nPoints, con
     _inputTesting.saveCSV(_objectName + "_model_input.csv");
     meansRegression->saveCSV(_objectName + "_model_output_GPRegression.csv");
     varsRegression.saveCSV(_objectName + "_model_variance_GPRegression.csv");
-    combinedVar.saveCSV("combinedVars.csv");
+    combinedVar.saveCSV(_objectName + "_model_variance_GPCombined.csv");
     if(trainingPoints > 3){
-    meansClassification->saveCSV(_objectName + "_model_output_GPClassification.csv");
-    varsClassification.saveCSV(_objectName + "_model_variance_GPClassification.csv");
+        meansClassification->saveCSV(_objectName + "_model_output_GPClassification.csv");
+        surfaceGPClassification.saveCSV(_objectName + "_model_output_GPSurfaceClassification.csv");
+        varsClassification.saveCSV(_objectName + "_model_variance_GPClassification.csv");
 
     }
     saveContactPoints();
@@ -449,7 +451,7 @@ bool SurfaceModelGPActive::updateSurfaceEstimate(const unsigned int nPoints, con
 }
 
 
-gMat2D<double>* SurfaceModelGPActive::evalClassification(const gMat2D<double> &X, gMat2D<double> &vars, gurls::GurlsOptionsList  *opt){
+gMat2D<double>* SurfaceModelGPActive::evalClassification(const gMat2D<double> &X, gMat2D<double> &vars, gMat2D<double> &maxProbSruface, gurls::GurlsOptionsList  *opt){
 
     typedef double T;
 
@@ -484,12 +486,40 @@ gMat2D<double>* SurfaceModelGPActive::evalClassification(const gMat2D<double> &X
     // Conver the class preditions to uncertainty
     getSurfaceUncertainty(classPred, vars);
 
-//    delete pred;
+    getMaxProbSurface(classPred, maxProbSruface);
+
+    //    delete pred;
 
     return &classPred;
 }
 
-void SurfaceModelGPActive::getSurfaceUncertainty(gMat2D<double> &classProb, gMat2D<double> &vars){
+void SurfaceModelGPActive::getMaxProbSurface(const gMat2D<double> &classProb, gMat2D<double> &maxProbSurface) const{
+
+    maxProbSurface.zeros(classProb.rows(),1);
+
+    if(classProb.cols() < 2){
+        for (unsigned long i = 0; i < classProb.rows(); i++){
+            if(classProb(i,0) > 0){
+                maxProbSurface(i,0) = 1;
+            }
+        }
+    }
+    else{
+        for (unsigned long i = 0; i < classProb.rows(); i++){
+            double maxProb = classProb(i, 0);
+
+            for (unsigned long j = 1; j < classProb.cols(); j++){
+                if(classProb(i,j) > maxProb){
+                    maxProbSurface(i) = j;
+                    maxProb = classProb(i,j);
+                }
+            }
+        }
+    }
+}
+
+
+void SurfaceModelGPActive::getSurfaceUncertainty(const gMat2D<double> &classProb, gMat2D<double> &vars) const{
 
     // GURLS outputs class probabilities in nSamples by nClasses matrix. For each sample
     // A large positive number indicates it has strong evidence for the class
@@ -497,29 +527,33 @@ void SurfaceModelGPActive::getSurfaceUncertainty(gMat2D<double> &classProb, gMat
 
     // As a first step we take absolute value of each value
 
+    gMat2D<double> tempClassProb;
+
     unsigned long nSamples = classProb.rows();
     unsigned int nClasses = classProb.cols();
 
+    tempClassProb.resize(nSamples, nClasses);
+
     for (unsigned long sample = 0; sample < nSamples; sample++){
         for(unsigned int mclass = 0; mclass < nClasses; mclass++){
-            classProb(sample, mclass) = std::fabs(classProb(sample, mclass));
+            tempClassProb(sample, mclass) = std::fabs(classProb(sample, mclass));
         }
     }
 
     // Second step, normalise each precition and convert it to uncertainty
-    gVec<double> *max = classProb.max(gurls::COLUMNWISE);
-    gVec<double> *min = classProb.min(gurls::COLUMNWISE);
+    gVec<double> *max = tempClassProb.max(gurls::COLUMNWISE);
+    gVec<double> *min = tempClassProb.min(gurls::COLUMNWISE);
 
     for (unsigned long sample = 0; sample < nSamples; sample++){
         for(unsigned int mclass = 0; mclass < nClasses; mclass++){
-            classProb(sample, mclass) = 1 - ((classProb(sample, mclass) - min->at(mclass)) /
-                                             (max->at(mclass) - min->at(mclass)));
+            tempClassProb(sample, mclass) = 1 - ((tempClassProb(sample, mclass) - min->at(mclass)) /
+                                                 (max->at(mclass) - min->at(mclass)));
         }
     }
 
     // The third step is to combine all of them into one
     vars.resize(nSamples, 1); // Only one row
-    vars.setColumn(*classProb.max(gurls::ROWWISE), 0);
+    vars.setColumn(*tempClassProb.max(gurls::ROWWISE), 0);
 
 
 }
@@ -551,9 +585,9 @@ void TrainModelGPRegressionThread::run(){
     //cout << "After: " << endl << opt->toString();
     //return ret;
 
- //   std::cout << _opt->toString() << std::endl;
-//    if(_opt->hasOpt("optimizer"))
-//        std::cout << "has optimizer" << std::endl;
+    //   std::cout << _opt->toString() << std::endl;
+    //    if(_opt->hasOpt("optimizer"))
+    //        std::cout << "has optimizer" << std::endl;
 }
 
 TrainModelGPRegressionThread::TrainModelGPRegressionThread(gMat2D<double> *inputTraining,

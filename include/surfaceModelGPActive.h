@@ -17,8 +17,9 @@ public:
     virtual bool updateSurfaceEstimate(const unsigned int nPoints, const double offset);
 
 private:
-    gMat2D<double>* evalClassification(const gMat2D<double> &X, gMat2D<double> &vars, gurls::GurlsOptionsList  *opt);
-    void getSurfaceUncertainty(gMat2D<double> &classProb, gMat2D<double> &vars);
+    gMat2D<double>* evalClassification(const gMat2D<double> &X, gMat2D<double> &vars, gMat2D<double> &maxProbSurface, gurls::GurlsOptionsList  *opt);
+    void getSurfaceUncertainty(const gMat2D<double> &classProb, gMat2D<double> &vars) const;
+    void getMaxProbSurface(const gMat2D<double> &classProb, gMat2D<double> &maxProbSurface) const;
     void updateNBins();
     void binContacts();
     void configureRegressionOpt(gurls::GurlsOptionsList  *opt);
