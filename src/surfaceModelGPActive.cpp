@@ -495,9 +495,14 @@ gMat2D<double>* SurfaceModelGPActive::evalClassification(const gMat2D<double> &X
 
 void SurfaceModelGPActive::getMaxProbSurface(const gMat2D<double> &classProb, gMat2D<double> &maxProbSurface) const{
 
-    maxProbSurface.resize(classProb.rows(), classProb.cols());
+    maxProbSurface.resize(classProb.rows(), 1);
+    // This zero out is not working
     maxProbSurface.zeros(classProb.rows(),1);
 
+    for (int i = 0; i < classProb.rows(); i++){
+        maxProbSurface(i,0) = 0.0;
+    }
+    maxProbSurface.saveCSV("text.csv");
     if(classProb.cols() < 2){
         for (unsigned long i = 0; i < classProb.rows(); i++){
             if(classProb(i,0) > 0){
@@ -511,7 +516,7 @@ void SurfaceModelGPActive::getMaxProbSurface(const gMat2D<double> &classProb, gM
 
             for (unsigned long j = 1; j < classProb.cols(); j++){
                 if(classProb(i,j) > maxProb){
-                    maxProbSurface(i) = j;
+                    maxProbSurface(i,0) = j;
                     maxProb = classProb(i,j);
                 }
             }
