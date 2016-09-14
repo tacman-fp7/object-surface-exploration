@@ -24,6 +24,8 @@ private:
     void binContacts();
     void configureRegressionOpt(gurls::GurlsOptionsList  *opt);
     void configureClassificationOpt(gurls::GurlsOptionsList  *opt);
+    void normalise(gMat2D<double> &vector);
+
   //  bool trainGPClassificationModel();
   //  bool trainGPRegressionModel();
 
@@ -36,6 +38,7 @@ private:
     gurls::GurlsOptionsList *_optClassification;
 
     gMat2D<double> _outputTrainingClassification;
+    //gMat2D<double> _inputTrainingClassification;
 
     TrainModelGPRegressionThread *_GPRegressionThread;
     TrainModelGPClassificationThread *_GPClassificationThread;

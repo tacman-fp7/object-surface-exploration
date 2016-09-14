@@ -152,7 +152,7 @@ while(true)
     
     
        
-    ZTClassification = reshape(modelOutputSurfaceClassification, nPoints, nPoints);
+    ZTClassification = reshape(modelOutputSurfaceClassification * 10, nPoints, nPoints);
     ZVClassification = reshape(modelVarianceClassification, nPoints, nPoints);
     
     subplot(3,2,3)
@@ -164,23 +164,10 @@ while(true)
     ylabel('Length [mm]','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'top');
     zlabel('Height [mm]','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'bottom');
     title('Object Surface [GP Classification]', 'fontsize', 20, 'interpreter', 'tex');
-    %axis('equal');
+    axis('equal');
     axis  tight
     view(viewVars);
-    
-    hold on
-       h_cp = scatter3(maxVarPoint(1), maxVarPoint(2),...
-           maxVarPoint(3), 'fill', 'markerFaceColor', 'black', 'sizeData', [100]);
-    
-    %     scatter3(nextSamplePoint(1), nextSamplePoint(2), nextSamplePoint(3),...
-    %         'fill', 'markerFaceColor', 'black', 'sizeData', [100]);
-    hold off
-    
-    
-    hold on
-    h_cp = scatter3(trainingInput(:,1), trainingInput(:,2),...
-        trainingTarget(:,1), 'fill', 'markerFaceColor', 'blue', 'sizeData', [50]);
-    hold off
+
     
     subplot(3,2,4)
     %figure(2)
