@@ -38,7 +38,7 @@ private:
     gurls::GurlsOptionsList *_optClassification;
 
     gMat2D<double> _outputTrainingClassification;
-    //gMat2D<double> _inputTrainingClassification;
+    gMat2D<double> _inputTrainingClassification;
 
     TrainModelGPRegressionThread *_GPRegressionThread;
     TrainModelGPClassificationThread *_GPClassificationThread;

@@ -21,7 +21,7 @@ SurfaceModelGPActive::SurfaceModelGPActive(const std::string objectName):Surface
     _optClassification = new GurlsOptionsList(modelFileName, true);
 
 
-    _GPClassificationThread = new TrainModelGPClassificationThread(&_inputTraining, &_outputTrainingClassification, _optClassification);
+    _GPClassificationThread = new TrainModelGPClassificationThread(&_inputTrainingClassification, &_outputTrainingClassification, _optClassification);
     _GPRegressionThread = new TrainModelGPRegressionThread(&_inputTraining, &_outputTraining, _opt);
 
     configureRegressionOpt(_opt);
@@ -249,19 +249,26 @@ void SurfaceModelGPActive::updateNBins(){
 
 void SurfaceModelGPActive::binContacts(){
 
+    double minTarget;
 
-/*    _inputTrainingClassification.resize(_inputTraining.rows() - _paddingPoints , _inputTraining.cols());
+
+    _outputTrainingClassification.resize(_inputTraining.rows() - _paddingPoints, 1);
+    _inputTrainingClassification.resize(_inputTraining.rows() - _paddingPoints , _inputTraining.cols());
     for(int i = _paddingPoints; i < _inputTraining.rows(); i++){
         for(int j = 0; j < _inputTraining.cols(); j++){
             _inputTrainingClassification(i - _paddingPoints, j) = _inputTraining(i,j);
+            _outputTrainingClassification(i - _paddingPoints, 0) = _outputTraining(i,0);
         }
     }
-*/
-    double binSize = (_outputTraining.max(gurls::COLUMNWISE)->at(0) - _outputTraining.min(gurls::COLUMNWISE)->at(0))/(_nBins + 1);
+
+
+
+    minTarget = _outputTrainingClassification.min(gurls::COLUMNWISE)->at(0);
+    double binSize = (_outputTrainingClassification.max(gurls::COLUMNWISE)->at(0) - _outputTrainingClassification.min(gurls::COLUMNWISE)->at(0))/(_nBins + 1);
 
     //std::cout << _outputTraining.max(gurls::COLUMNWISE)->getSize() << ", " << _outputTraining.min(gurls::ROWWISE)->getSize() << std::endl;
-    _outputTrainingClassification.resize(_outputTraining.rows(), _nBins);
-    _outputTrainingClassification.zeros(_outputTraining.rows(), _nBins);
+    _outputTrainingClassification.resize(_outputTrainingClassification.rows(), _nBins);
+    //_outputTrainingClassification.zeros(_outputTraining.rows(), _nBins);
 
 
 
@@ -274,12 +281,12 @@ void SurfaceModelGPActive::binContacts(){
 
     _outputTrainingClassification.saveCSV("trainingClassificationZeros.csv");
 
-    for (int i = 0; i < _outputTraining.rows(); i++){
-        double height = std::fabs(_outputTraining(i,0) - _outputTraining.min(gurls::COLUMNWISE)->at(0));
+    for (int i = _paddingPoints; i < _outputTraining.rows(); i++){
+        double height = std::fabs(_outputTraining(i,0) - minTarget);
 
         for (int j = 0; j < _nBins; j++){
             if(height > binSize * (j + 1)){
-                _outputTrainingClassification(i,j) = 1;
+                _outputTrainingClassification(i - _paddingPoints,j) = 1;
                 break;
             }
         }
