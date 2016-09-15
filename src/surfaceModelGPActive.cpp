@@ -285,7 +285,7 @@ void SurfaceModelGPActive::binContacts(){
         double height = std::fabs(_outputTraining(i,0) - minTarget);
 
         for (int j = 0; j < _nBins; j++){
-            if(height > binSize * (j + 1)){
+            if(height < binSize * (j + 1)){
                 _outputTrainingClassification(i - _paddingPoints,j) = 1;
                 break;
             }
@@ -296,6 +296,55 @@ void SurfaceModelGPActive::binContacts(){
     // I may have to make sure that each lass has at least one sample
 
 }
+/*void SurfaceModelGPActive::binContacts(){
+
+    double minTarget;
+
+
+    _outputTrainingClassification.resize(_inputTraining.rows() - _paddingPoints, 1);
+    _inputTrainingClassification.resize(_inputTraining.rows() - _paddingPoints , _inputTraining.cols());
+    for(int i = _paddingPoints; i < _inputTraining.rows(); i++){
+        for(int j = 0; j < _inputTraining.cols(); j++){
+            _inputTrainingClassification(i - _paddingPoints, j) = _inputTraining(i,j);
+            _outputTrainingClassification(i - _paddingPoints, 0) = _outputTraining(i,0);
+        }
+    }
+
+
+
+    minTarget = _outputTrainingClassification.min(gurls::COLUMNWISE)->at(0);
+    double binSize = (_outputTrainingClassification.max(gurls::COLUMNWISE)->at(0) - _outputTrainingClassification.min(gurls::COLUMNWISE)->at(0))/(_nBins + 1);
+
+    //std::cout << _outputTraining.max(gurls::COLUMNWISE)->getSize() << ", " << _outputTraining.min(gurls::ROWWISE)->getSize() << std::endl;
+    _outputTrainingClassification.resize(_outputTrainingClassification.rows(), _nBins);
+    //_outputTrainingClassification.zeros(_outputTraining.rows(), _nBins);
+
+
+
+    for(int i = 0; i < _outputTrainingClassification.rows(); i++){
+        for(int j = 0; j < _outputTrainingClassification.cols(); j++){
+            _outputTrainingClassification(i,j) = 0;
+        }
+    }
+
+
+    _outputTrainingClassification.saveCSV("trainingClassificationZeros.csv");
+
+    for (int i = _paddingPoints; i < _outputTraining.rows(); i++){
+        double height = std::fabs(_outputTraining(i,0) - minTarget);
+
+        for (int j = 0; j < _nBins; j++){
+            if(height < binSize * (j + 1)){
+                _outputTrainingClassification(i - _paddingPoints,j) = 1;
+                break;
+            }
+        }
+    }
+
+    _outputTrainingClassification.saveCSV("trainingClassification.csv");
+    // I may have to make sure that each lass has at least one sample
+
+}*/
 
 // Assumes that the contact data has already been loaded
 /*bool SurfaceModelGPActive::trainGPClassificationModel(){

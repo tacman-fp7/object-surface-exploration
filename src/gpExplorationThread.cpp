@@ -305,7 +305,7 @@ void GPExplorationThread::maintainContact()
 
     _zPoints.push_back(fingertipPosition[2]);
 
-    while (_zPoints.size() < 3) {
+    while (_zPoints.size() < 1) {
 
         moveIndexFingerBlocking(0, _curAbduction, 40);
 
