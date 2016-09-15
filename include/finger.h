@@ -87,6 +87,7 @@ public:
     virtual void calibrate();
     bool checkMotionDone();
     virtual bool getAngels(Vector &angles);
+    bool getPositionCoPAdjusted(yarp::sig::Vector &position);
     virtual bool getPosition(yarp::sig::Vector &position);
     virtual bool getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders);
     virtual bool readEncoders(Vector &encoderValues);
@@ -156,7 +157,7 @@ public:
     void calibrate();
     bool getAngels(Vector &angles);
     bool toArmPosition(Vector &fingertipPosition, Vector &retArmpPosition);
-    bool getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders);
+    virtual bool getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders);
     bool getPosition(yarp::sig::Vector &position);
     bool calibrate2();
     void printJointLimits();
@@ -214,6 +215,7 @@ class MiddleFinger: public icubFinger{
 
 public:
     MiddleFinger(t_controllerData ctrlData);
+    bool getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders);
     bool prepare(){}
 };
 

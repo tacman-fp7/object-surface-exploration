@@ -397,6 +397,10 @@ icubFinger::icubFinger(t_controllerData ctrlData):Finger(ctrlData){
 
 }
 
+bool Finger::getPositionCoPAdjusted(yarp::sig::Vector &position){
+    // To implemented
+    cout << "Not yet implemented" << endl;
+}
 
 bool Finger::getContactCoP(yarp::sig::Vector &contactCoP){
     int nPendingReads;
@@ -793,6 +797,70 @@ MiddleFinger::MiddleFinger(t_controllerData ctrlData):
 
 }
 
+// Slightly different from the index finger. It is not affected by the abduction
+bool MiddleFinger::getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders){
+
+
+    // I am using an hybrid fingertip position forward kinematics. Fristly, I use the the actual encoder
+    // data for the last three joints. Secondly, the behaviour of the icubFinger position estimation
+    // is a little unpredictable, so I am transforming the fingertip position into the robot coordingates
+    // myself.
+
+    bool ret = true;
+    Vector joints;
+
+    int nEncs;
+
+    position.clear();
+    position.resize(3); //x,y, z position
+
+
+    ret = ret && _armEncoder->getAxes(&nEncs);
+    Vector encs(nEncs);
+    if(! (ret = ret && _armEncoder->getEncoders(encs.data())))
+    {
+        cerr << _dbgtag << "Failed to read arm encoder data" << endl;
+    }
+
+
+    cout << encs.toString() << endl;
+
+    ret = ret && _iCubFinger->getChainJoints(encs, joints);
+
+
+    if(ret == false){
+        cout << "failed to get chain joints" << endl;
+        return false;
+    }
+
+
+    std::cout << "From iCubFinger: " << joints.toString() << endl;
+    //This is where it is different from the index finger
+
+    joints[0] = 90 * (1 - (fingerEncoders[0] - _minProximal) / (_maxProximal - _minProximal) );
+    joints[1] = 90 * (1 - (fingerEncoders[1] - _minMiddle) / (_maxMiddle - _minMiddle) );
+    joints[2] = 90 * (1 - (fingerEncoders[2] - _minDistal) / (_maxDistal - _minDistal) );
+
+    cout << "From mycalculat: " << joints.toString() << endl;
+    //cout << joints.size() << endl;
+    //Convert the joints to radians.
+    for (int j = 0; j < joints.size(); j++)
+        joints[j] *= M_PI/180;
+
+    yarp::sig::Matrix tipFrame = _iCubFinger->getH(joints);
+    Vector tip_x = tipFrame.getCol(3); // Tip's position in the hand coordinate
+    //cout << "TipX: " << tip_x.toString() << endl;
+    Vector armPos, armOrient;
+    _armCartesianCtrl->getPose(armPos, armOrient);
+
+    // My own transformation
+    yarp::sig::Matrix T_rotoTrans(4,4);
+    T_rotoTrans = yarp::math::axis2dcm(armOrient);
+    T_rotoTrans.setSubcol(armPos, 0,3);
+    Vector retMat = yarp::math::operator *(T_rotoTrans, tip_x);
+    position = retMat.subVector(0,2);
+    //cout << "Finger position: " << position.toString()  << endl;
+}
 
 /// Ring and Little Finger joint class ////
 
