@@ -94,53 +94,53 @@ while(true)
     %clf('reset');
     set(figH, 'color', 'white');
     
-    subplot(3,2,1)
-    %figure(1)
+% % %     subplot(3,2,1)
+% % %     figure(1)
+% % %     
+% % %     mesh(XT, YT, ZTRegression);
+% % %     set(gca, 'fontname', 'Bitstream Charter','fontsize', 15);
+% % %     xlabel('Width [mm]','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'bottom');
+% % %     ylabel('Length [mm]','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'top');
+% % %     zlabel('Height [mm]','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'bottom');
+% % %     title('Object Surface [GP Regression]', 'fontsize', 20, 'interpreter', 'tex');
+% % %     axis('equal');
+% % %     axis  tight
+% % %     view(viewVars);
+% % %     
+% % %     hold on
+% % %     h_cp = scatter3(maxVarPoint(1), maxVarPoint(2),...
+% % %         maxVarPoint(3), 'fill', 'markerFaceColor', 'black', 'sizeData', [100]);
+% % %     
+% % %     scatter3(nextSamplePoint(1), nextSamplePoint(2), nextSamplePoint(3),...
+% % %         'fill', 'markerFaceColor', 'black', 'sizeData', [100]);
+% % %     hold off
+% % %     
+% % %     
+% % %     hold on
+% % %     h_cp = scatter3(trainingInput(:,1), trainingInput(:,2),...
+% % %         trainingTarget(:,1), 'fill', 'markerFaceColor', 'blue', 'sizeData', [50]);
+% % %     hold off
     
-    mesh(XT, YT, ZTRegression);
-    set(gca, 'fontname', 'Bitstream Charter','fontsize', 15);
-    xlabel('Width [mm]','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'bottom');
-    ylabel('Length [mm]','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'top');
-    zlabel('Height [mm]','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'bottom');
-    title('Object Surface [GP Regression]', 'fontsize', 20, 'interpreter', 'tex');
-    axis('equal');
-    axis  tight
-    view(viewVars);
-    
-    hold on
-       h_cp = scatter3(maxVarPoint(1), maxVarPoint(2),...
-           maxVarPoint(3), 'fill', 'markerFaceColor', 'black', 'sizeData', [100]);
-    
-    %     scatter3(nextSamplePoint(1), nextSamplePoint(2), nextSamplePoint(3),...
-    %         'fill', 'markerFaceColor', 'black', 'sizeData', [100]);
-    hold off
-    
-    
-    hold on
-    h_cp = scatter3(trainingInput(:,1), trainingInput(:,2),...
-        trainingTarget(:,1), 'fill', 'markerFaceColor', 'blue', 'sizeData', [50]);
-    hold off
-    
-    subplot(3,2,2)
-    %figure(2)
-    mesh(XT,YT, ZVRegression);
-    set(gca, 'fontname', 'Bitstream Charter','fontsize', 15);
-    xlabel('Width [mm]','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'bottom');
-    ylabel('Length [mm]','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'top');
-    zlabel('Uncertainty','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'bottom');
-    title('GP Regression Variance', 'fontsize', 20, 'interpreter', 'tex');
-    %zlim([0 5]);
-    %axis('equal');
-    axis tight;
-    view(viewVars);
-    
-    hold on
-       h_cp = scatter3(maxVarPoint(1), maxVarPoint(2),...
-           maxVarPoint(4), 'fill', 'markerFaceColor', 'black', 'sizeData', [100]);
-    
-    %     scatter3(nextSamplePoint(1), nextSamplePoint(2), nextSamplePoint(3),...
-    %         'fill', 'markerFaceColor', 'black', 'sizeData', [100]);
-    hold off
+% % %     subplot(2,2,1)
+% % %     %figure(2)
+% % %     mesh(XT,YT, ZVRegression);
+% % %     set(gca, 'fontname', 'Bitstream Charter','fontsize', 15);
+% % %     xlabel('Width [mm]','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'bottom');
+% % %     ylabel('Length [mm]','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'top');
+% % %     zlabel('Uncertainty','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'bottom');
+% % %     title('GP Regression Variance', 'fontsize', 20, 'interpreter', 'tex');
+% % %     %zlim([0 5]);
+% % %     %axis('equal');
+% % %     axis tight;
+% % %     view(viewVars);
+% % %     
+% % %     hold on
+% % %        h_cp = scatter3(maxVarPoint(1), maxVarPoint(2),...
+% % %            maxVarPoint(4), 'fill', 'markerFaceColor', 'black', 'sizeData', [100]);
+% % %     
+% % %     %     scatter3(nextSamplePoint(1), nextSamplePoint(2), nextSamplePoint(3),...
+% % %     %         'fill', 'markerFaceColor', 'black', 'sizeData', [100]);
+% % %     hold off
     
     % %     hold on
     % %     h_cp = scatter3(maxVarPoint(1), maxVarPoint(2),...
@@ -155,7 +155,7 @@ while(true)
     ZTClassification = reshape(modelOutputSurfaceClassification * 10, nPoints, nPoints);
     ZVClassification = reshape(modelVarianceClassification, nPoints, nPoints);
     
-    subplot(3,2,3)
+    subplot(2,2,1)
     %figure(1)
     
     mesh(XT, YT, ZTClassification);
@@ -169,12 +169,12 @@ while(true)
     view(viewVars);
 
     
-    subplot(3,2,4)
+    subplot(2,2,2)
     %figure(2)
     mesh(XT,YT, ZVClassification);
     set(gca, 'fontname', 'Bitstream Charter','fontsize', 15);
     xlabel('Width [mm]','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'bottom');
-    ylabel('Length [mm]','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'top');
+    ylabel('Lengt [mm]','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'top');
     zlabel('Uncertainty','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'bottom');
     title('GP Classification Variance', 'fontsize', 20, 'interpreter', 'tex');
     %zlim([0 5]);
@@ -200,7 +200,7 @@ while(true)
         
        ZVCombined = reshape(modelVarianceCombined, nPoints, nPoints);
     
-    subplot(3,2,6)
+    subplot(2,2,4)
     %figure(1)
     
     mesh(XT, YT, ZVCombined);
@@ -222,15 +222,15 @@ while(true)
     hold off
     
     
-    hold on
-    h_cp = scatter3(trainingInput(:,1), trainingInput(:,2),...
-        trainingTarget(:,1), 'fill', 'markerFaceColor', 'blue', 'sizeData', [50]);
-    hold off
+% %     hold on
+% %     h_cp = scatter3(trainingInput(:,1), trainingInput(:,2),...
+% %         trainingTarget(:,1), 'fill', 'markerFaceColor', 'blue', 'sizeData', [50]);
+% %     hold off
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
     %figure(3)
-    subplot(3,2,5)
+    subplot(2,2,3)
     x = trainingInput(1:end, 1);
     y = trainingInput(1:end, 2);
     z = trainingTarget(1:end, 1);

@@ -262,6 +262,7 @@ void GPExplorationMultifingerThread::multifingerContact(){
     // Step three register the location
     // Can I move all of them in parallel
 
+    return;
     Finger *middleFinger = _robotHand->getMiddleFinger();
     Finger *ringFinger = _robotHand->getRingerFinger();
     Finger *littleFinger = _robotHand->getLittleFinger();

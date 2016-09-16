@@ -10,6 +10,8 @@ using std::cerr;
 using std::endl;
 using namespace gurls;
 
+
+
 SurfaceModelGPActive::SurfaceModelGPActive(const std::string objectName):SurfaceModelGP(objectName){
     _dbgtg = "SurfaceModelGPActive: ";
     _nBins = 1;
@@ -21,7 +23,7 @@ SurfaceModelGPActive::SurfaceModelGPActive(const std::string objectName):Surface
     _optClassification = new GurlsOptionsList(modelFileName, true);
 
 
-    _GPClassificationThread = new TrainModelGPClassificationThread(&_inputTrainingClassification, &_outputTrainingClassification, _optClassification);
+    _GPClassificationThread = new TrainModelGPClassificationThread(&_inputTraining, &_outputTrainingClassification, _optClassification);
     _GPRegressionThread = new TrainModelGPRegressionThread(&_inputTraining, &_outputTraining, _opt);
 
     configureRegressionOpt(_opt);
@@ -47,8 +49,9 @@ void SurfaceModelGPActive::configureClassificationOpt(GurlsOptionsList *opt){
     seq->addTask("optimizer:rlsdual");
     seq->addTask("predkernel:traintest");
     seq->addTask("pred:dual");
-    seq->addTask("perf:macroavg");
-    //seq->addTask("conf:confBoltzman");
+    //seq->addTask("conf:precrec");
+    //seq->addTask("perf:macroavg");
+    seq->addTask("conf:boltzman");
 
     GurlsOptionsList * process = new GurlsOptionsList("processes", false);
 
@@ -75,6 +78,7 @@ void SurfaceModelGPActive::configureClassificationOpt(GurlsOptionsList *opt){
               << GURLS::computeNsave;
     //<< GURLS::computeNsave;
     process->addOpt("eval", process2);
+
 
 
 
@@ -210,7 +214,7 @@ bool SurfaceModelGPActive::trainModel(){
     updateNBins();
 
     unsigned long trainingPoints = _inputTraining.rows() - _paddingPoints;
-    if(trainingPoints > 3){
+    if(trainingPoints > 0){
         binContacts();
         // run sufrace classificatin
         // trainGPClassificationModel();
@@ -232,14 +236,14 @@ void SurfaceModelGPActive::updateNBins(){
 
     unsigned long trainingPoints = _inputTraining.rows() - _paddingPoints;
 
-    if(trainingPoints > _firstBinThreshold * 5){
+    if(trainingPoints > (_firstBinThreshold * 5)){
         _nBins = 12;
-    } else if(trainingPoints > _firstBinThreshold * 4){
+    } else if(trainingPoints > (_firstBinThreshold * 4)){
         _nBins = 9;
-    } else if(trainingPoints > _firstBinThreshold * 3){
+    } else if(trainingPoints > (_firstBinThreshold * 3)){
         _nBins = 6;
         _startBin = 3;
-    } else if(trainingPoints > _firstBinThreshold * 2){
+    } else if(trainingPoints > (_firstBinThreshold * 2)){
         _nBins = 3;
         _startBin = 2;
     } else if(trainingPoints > _firstBinThreshold * 1){
@@ -249,44 +253,30 @@ void SurfaceModelGPActive::updateNBins(){
 
 void SurfaceModelGPActive::binContacts(){
 
-    double minTarget;
 
-
-    _outputTrainingClassification.resize(_inputTraining.rows() - _paddingPoints, 1);
-    _inputTrainingClassification.resize(_inputTraining.rows() - _paddingPoints , _inputTraining.cols());
-    for(int i = _paddingPoints; i < _inputTraining.rows(); i++){
-        for(int j = 0; j < _inputTraining.cols(); j++){
-            _inputTrainingClassification(i - _paddingPoints, j) = _inputTraining(i,j);
-            _outputTrainingClassification(i - _paddingPoints, 0) = _outputTraining(i,0);
-        }
-    }
-
-
-
-    minTarget = _outputTrainingClassification.min(gurls::COLUMNWISE)->at(0);
-    double binSize = (_outputTrainingClassification.max(gurls::COLUMNWISE)->at(0) - _outputTrainingClassification.min(gurls::COLUMNWISE)->at(0))/(_nBins + 1);
+    double binSize = (_outputTraining.max(gurls::COLUMNWISE)->at(0) - _outputTraining.min(gurls::COLUMNWISE)->at(0))/(_nBins + 1);
 
     //std::cout << _outputTraining.max(gurls::COLUMNWISE)->getSize() << ", " << _outputTraining.min(gurls::ROWWISE)->getSize() << std::endl;
-    _outputTrainingClassification.resize(_outputTrainingClassification.rows(), _nBins);
+    _outputTrainingClassification.resize(_outputTraining.rows(), _nBins);
+
+
     //_outputTrainingClassification.zeros(_outputTraining.rows(), _nBins);
 
 
 
     for(int i = 0; i < _outputTrainingClassification.rows(); i++){
         for(int j = 0; j < _outputTrainingClassification.cols(); j++){
-            _outputTrainingClassification(i,j) = 0;
+            _outputTrainingClassification(i,j) = NEGATIVE_EXAMPLE;
         }
     }
 
 
-    _outputTrainingClassification.saveCSV("trainingClassificationZeros.csv");
+    for (int i = 0; i < _outputTraining.rows(); i++){
+        double height = std::fabs(_outputTraining(i,0) - _outputTraining.min(gurls::COLUMNWISE)->at(0));
 
-    for (int i = _paddingPoints; i < _outputTraining.rows(); i++){
-        double height = std::fabs(_outputTraining(i,0) - minTarget);
-
-        for (int j = 0; j < _nBins; j++){
-            if(height < binSize * (j + 1)){
-                _outputTrainingClassification(i - _paddingPoints,j) = 1;
+        for (int j = _nBins -1; j >= 0; j--){
+            if(height > binSize * (j + 1)){
+                _outputTrainingClassification(i,j) = POSITIVE_EXAMPLE;
                 break;
             }
         }
@@ -296,6 +286,9 @@ void SurfaceModelGPActive::binContacts(){
     // I may have to make sure that each lass has at least one sample
 
 }
+
+
+
 /*void SurfaceModelGPActive::binContacts(){
 
     double minTarget;
@@ -460,7 +453,7 @@ bool SurfaceModelGPActive::updateSurfaceEstimate(const unsigned int nPoints, con
 
     gMat2D<double> varsRegression;
     gMat2D<double>* meansRegression;
-
+    gMat2D<double> *urgh;
     gMat2D<double> combinedVar;
 
     unsigned long trainingPoints;
@@ -474,7 +467,43 @@ bool SurfaceModelGPActive::updateSurfaceEstimate(const unsigned int nPoints, con
 
         // If we have enough points, run classification
         trainingPoints = _inputTraining.rows() - _paddingPoints;
-        if(trainingPoints > 3){
+        if(trainingPoints > 0){
+
+   /*         if(_classificationWraper != NULL){
+                delete _classificationWraper;
+            }
+            _classificationWraper = new KernelRLSWrapper<double>("classWrapper");
+            _classificationWraper->setKernelType(KernelRLSWrapper<double>::RBF);
+            _classificationWraper->setProblemType(KernelRLSWrapper<double>::CLASSIFICATION);
+            _classificationWraper->
+            _classificationWraper->train(_inputTraining, _outputTrainingClassification);
+            urgh =  _classificationWraper->eval(_inputTesting);
+
+            urgh->saveCSV("wrapper.csv");
+*/
+
+
+
+/*
+                    string jobId0("eval");
+
+                    gMat2D<double> dummyTest;
+                    //dummyTest.resize(_inputTesting.rows(), _outputTrainingClassification.cols());
+                    //dummyTest.zeros(_inputTesting.rows(), _outputTrainingClassification.cols());
+                   delete _optClassification;
+                    _optClassification = new GurlsOptionsList("dummy", true);
+                    configureClassificationOpt(_optClassification);
+
+                    _objectModelTest.run(_inputTesting, dummyTest, *_optClassification, jobId0);
+
+            //gurls::GurlsOption *classOpt = _optClassification->getOpt("pred");
+        OptMatrix< gMat2D< double > >   a = _optClassification->getOptValue<  OptMatrix< gMat2D< double > > >("pred");
+
+        a.getValue().saveCSV("omg.csv");
+            //gurls::gMat2D<double> classOpt = _optClassification->getOptValue< gMat2D<double> >("pred");
+
+            //cout << *classOpt << endl;
+*/
             meansClassification = evalClassification(_inputTesting, varsClassification, surfaceGPClassification,  _optClassification);
             combinedVar.resize(varsRegression.rows(), varsRegression.cols());
             combinedVar = varsClassification * (1 - _lRate) + varsRegression * _lRate;
@@ -511,7 +540,7 @@ bool SurfaceModelGPActive::updateSurfaceEstimate(const unsigned int nPoints, con
     meansRegression->saveCSV(_objectName + "_model_output_GPRegression.csv");
     varsRegression.saveCSV(_objectName + "_model_variance_GPRegression.csv");
     combinedVar.saveCSV(_objectName + "_model_variance_GPCombined.csv");
-    if(trainingPoints > 3){
+    if(trainingPoints > 0){
         meansClassification->saveCSV(_objectName + "_model_output_GPClassification.csv");
         surfaceGPClassification.saveCSV(_objectName + "_model_output_GPSurfaceClassification.csv");
         varsClassification.saveCSV(_objectName + "_model_variance_GPClassification.csv");
@@ -562,6 +591,9 @@ gMat2D<double>* SurfaceModelGPActive::evalClassification(const gMat2D<double> &X
     gMat2D<T> &classPred = classPredOptMatrix->getValue();
 
 
+    /*classPred.saveCSV("predBefore.csv");
+    classPred -= (classPred.max(gurls::COLUMNWISE)->at(0) - classPred.min(gurls::COLUMNWISE)->at(0))/2;
+classPred.saveCSV("predAfter.csv");*/
     // Conver the class preditions to uncertainty
     getSurfaceUncertainty(classPred, vars);
 
@@ -617,7 +649,7 @@ void SurfaceModelGPActive::getSurfaceUncertainty(const gMat2D<double> &classProb
 
     unsigned long nSamples = classProb.rows();
     unsigned int nClasses = classProb.cols();
-
+    classProb.saveCSV("classProb.csv");
     tempClassProb.resize(nSamples, nClasses);
 
     for (unsigned long sample = 0; sample < nSamples; sample++){
@@ -625,6 +657,8 @@ void SurfaceModelGPActive::getSurfaceUncertainty(const gMat2D<double> &classProb
             tempClassProb(sample, mclass) = std::fabs(classProb(sample, mclass));
         }
     }
+
+    tempClassProb.saveCSV("classProbAbs.csv");
 
     // Second step, normalise each precition and convert it to uncertainty
     gVec<double> *max = tempClassProb.max(gurls::COLUMNWISE);
@@ -637,10 +671,13 @@ void SurfaceModelGPActive::getSurfaceUncertainty(const gMat2D<double> &classProb
         }
     }
 
+    tempClassProb.saveCSV("classProbAbsNorm.csv");
+
     // The third step is to combine all of them into one
     vars.resize(nSamples, 1); // Only one row
     vars.setColumn(*tempClassProb.max(gurls::ROWWISE), 0);
 
+    vars.saveCSV("classProbAbsNormMax.csv");
 
 }
 

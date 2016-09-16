@@ -731,7 +731,7 @@ bool GPExplorationThread::initialiseGP(Vector startingPos, Vector startingOrient
     xMax = startingPos[0];
     xMin = xMax - 90.0/1000;
 
-    zMin = -0.148; // TODO: fix it! Maybe take it form reachable space
+    zMin = -0.15;//-0.148; // TODO: fix it! Maybe take it form reachable space
     if(startingPos[1] < endingPos[1])
     {
         yMin = startingPos[1];

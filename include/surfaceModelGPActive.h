@@ -5,6 +5,11 @@
 
 namespace objectExploration {
 
+
+
+static const int POSITIVE_EXAMPLE = 1;
+static const int NEGATIVE_EXAMPLE = -1;
+
 class TrainModelGPRegressionThread;
 class TrainModelGPClassificationThread;
 
@@ -14,7 +19,7 @@ public:
     ~SurfaceModelGPActive();
     virtual bool updateModel(); //This seems to be useless
     virtual bool trainModel(); // This the one run
-    virtual bool updateSurfaceEstimate(const unsigned int nPoints, const double offset);
+    virtual bool updateSurfaceEstimate(const unsigned int nPoints = 120, const double offset = 0.0/1000.0);
 
 private:
     gMat2D<double>* evalClassification(const gMat2D<double> &X, gMat2D<double> &vars, gMat2D<double> &maxProbSurface, gurls::GurlsOptionsList  *opt);
@@ -38,7 +43,7 @@ private:
     gurls::GurlsOptionsList *_optClassification;
 
     gMat2D<double> _outputTrainingClassification;
-    gMat2D<double> _inputTrainingClassification;
+    //gMat2D<double> _inputTrainingClassification;
 
     TrainModelGPRegressionThread *_GPRegressionThread;
     TrainModelGPClassificationThread *_GPClassificationThread;
