@@ -124,6 +124,8 @@ void GPExplorationMultifingerThread::run()
 
 bool GPExplorationMultifingerThread::clenchRingLittleFinger(Finger *ringFinger, Finger *littleFinger, double maxAngle, clenchResults_t *clenchResults)
 {
+
+    return true;
     bool ret = false;
     bool ringFingerForce, littleFingerForce, ringFingerExAngle, littleFingerExAngle;
     ringFingerForce = littleFingerForce = ringFingerExAngle = littleFingerExAngle = false;
@@ -262,7 +264,7 @@ void GPExplorationMultifingerThread::multifingerContact(){
     // Step three register the location
     // Can I move all of them in parallel
 
-    return;
+  return;
     Finger *middleFinger = _robotHand->getMiddleFinger();
     Finger *ringFinger = _robotHand->getRingerFinger();
     Finger *littleFinger = _robotHand->getLittleFinger();
@@ -274,8 +276,8 @@ void GPExplorationMultifingerThread::multifingerContact(){
     _contactMiddleFinger.initThread(middleFinger, 80, _forceThreshold);
     _contactMiddleFinger.start();
 
-    _contactRingAndLittleFingers.initThread(ringFinger, littleFinger, 120, _forceThreshold);
-    _contactRingAndLittleFingers.start();
+   // _contactRingAndLittleFingers.initThread(ringFinger, littleFinger, 120, _forceThreshold);
+   // _contactRingAndLittleFingers.start();
 
 
 
@@ -283,14 +285,14 @@ void GPExplorationMultifingerThread::multifingerContact(){
         ;
 
     _contactMiddleFinger.getResults(&middleFingerHasContact);
-    _contactRingAndLittleFingers.getResults(&clenchResults);
+    //_contactRingAndLittleFingers.getResults(&clenchResults);
 
 
 
     if(middleFingerHasContact){
         Vector fingertipPosition;
         middleFinger->getPosition(fingertipPosition);
-        //std::cout << "Middle finger pos: " << fingertipPosition.toString() << std::endl;
+        std::cout << "Middle finger pos: " << fingertipPosition.toString() << std::endl;
         _surfaceModel->addContactPoint(fingertipPosition);
     }
 

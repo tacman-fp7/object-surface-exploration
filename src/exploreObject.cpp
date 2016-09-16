@@ -16,7 +16,22 @@ using std::endl;
 using yarp::os::Value;
 
 bool ExploreObject::multiFinger(const double angle){
-    _robotHand->multiContact(angle);
+    //_robotHand->multiContact(angle);
+
+    Finger *indexFinger = _robotHand->getIndexFinger();
+    Finger *MiddleFinger = _robotHand->getMiddleFinger();
+
+    yarp::sig::Vector position;
+
+    indexFinger->setSynchroProximalAngle(angle);
+    indexFinger->getPosition(position);
+    cout << "I Finger: " << position.toString() << endl;
+
+
+    MiddleFinger->setSynchroProximalAngle(angle);
+    MiddleFinger->getPosition(position);
+    cout << "M Finger: " << position.toString() << endl << endl;
+
 }
 
 bool ExploreObject::validatePositionsEnable(){

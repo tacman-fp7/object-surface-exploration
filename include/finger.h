@@ -188,7 +188,7 @@ public:
     SimIndexFinger(t_controllerData ctrlData);
     void calibrate(){}
     bool prepare();
-    bool setSynchroProximalAngle(double proximal);
+    virtual bool setSynchroProximalAngle(double proximal);
     void getRawTactileData(Vector rawTactileData);
 };
 
@@ -204,7 +204,7 @@ public:
     IndexFinger(t_controllerData);
     void calibrate();
     bool prepare();
-    bool setSynchroProximalAngle(double proximal);
+    virtual bool setSynchroProximalAngle(double proximal);
     void getRawTactileData(Vector& rawTactileData);
 };
 
@@ -216,6 +216,7 @@ class MiddleFinger: public icubFinger{
 public:
     MiddleFinger(t_controllerData ctrlData);
     bool getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders);
+    virtual bool setSynchroProximalAngle(double proximal);
     bool prepare(){}
 };
 

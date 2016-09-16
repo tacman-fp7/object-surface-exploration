@@ -284,7 +284,7 @@ bool icubFinger::getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fin
     }
 
 
-    cout << encs.toString() << endl;
+    //cout << encs.toString() << endl;
 
     ret = ret && _iCubFinger->getChainJoints(encs, joints);
 
@@ -670,6 +670,12 @@ bool IndexFinger::setSynchroProximalAngle(double angle){
     return setAngles(angle, distal, 40);
 }
 
+bool MiddleFinger::setSynchroProximalAngle(double angle){
+
+    double distal = 90-angle;
+    return setAngles(angle, distal, 40);
+}
+
 bool SimIndexFinger::setSynchroProximalAngle(double angle){
 
     double distal = 90-angle;
@@ -823,8 +829,8 @@ bool MiddleFinger::getPosition(yarp::sig::Vector &position, yarp::sig::Vector &f
     }
 
 
-    cout << encs.toString() << endl;
-
+    //cout << encs.toString() << endl;
+    //cout << fingerEncoders.toString() << endl;
     ret = ret && _iCubFinger->getChainJoints(encs, joints);
 
 
@@ -834,14 +840,14 @@ bool MiddleFinger::getPosition(yarp::sig::Vector &position, yarp::sig::Vector &f
     }
 
 
-    std::cout << "From iCubFinger: " << joints.toString() << endl;
+    //std::cout << "From iCubFinger: " << joints.toString() << endl;
     //This is where it is different from the index finger
 
     joints[0] = 90 * (1 - (fingerEncoders[0] - _minProximal) / (_maxProximal - _minProximal) );
     joints[1] = 90 * (1 - (fingerEncoders[1] - _minMiddle) / (_maxMiddle - _minMiddle) );
     joints[2] = 90 * (1 - (fingerEncoders[2] - _minDistal) / (_maxDistal - _minDistal) );
 
-    cout << "From mycalculat: " << joints.toString() << endl;
+    //cout << "From mycalculat: " << joints.toString() << endl;
     //cout << joints.size() << endl;
     //Convert the joints to radians.
     for (int j = 0; j < joints.size(); j++)
