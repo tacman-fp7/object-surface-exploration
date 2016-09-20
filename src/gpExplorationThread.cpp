@@ -338,7 +338,7 @@ void GPExplorationThread::maintainContact()
         std::ofstream myFile;
         myFile.open("taxel.csv", std::ios::app);
 
-        myFile << "1458686550.2213881015777587890625" << ", ";
+        //myFile << "1458686550.2213881015777587890625" << ", ";
 
         for (int i = 0; i < 11; i++){
             myFile << msg->get(i).asDouble() << ", ";
