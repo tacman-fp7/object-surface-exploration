@@ -38,7 +38,7 @@ void TappingExplorationThread::run()
     // put the finger in known position
     _curProximal = 0;
     _curAbduction = 0;
-    moveIndexFingerBlocking(_curProximal, _curAbduction, 40);
+    moveExplorationFingerBlocking(_curProximal, _curAbduction, 40);
 
     while(!isStopping() && !(_contactState == STOP)) // Keep running this
     {
@@ -155,7 +155,7 @@ void TappingExplorationThread::finshExploration()
     // Move the fingertip
     _curProximal = 0;
     _curAbduction = 0;
-    moveIndexFingerBlocking(_curProximal, _curAbduction, 40);
+    moveExplorationFingerBlocking(_curProximal, _curAbduction, 40);
 
 
     if(_robotHand->getStartingPose(starting_pos, starting_orient))
@@ -174,7 +174,7 @@ void TappingExplorationThread::maintainContact()
 
     _curProximal = 10;
     _curAbduction = 0;
-    moveIndexFingerBlocking(_curProximal, _curAbduction, 40);
+    moveExplorationFingerBlocking(_curProximal, _curAbduction, 40);
 
     if(_repeats < _nRepeats) // TODO: change
     {
@@ -221,7 +221,7 @@ void TappingExplorationThread::calculateNewWaypoint()
         //_explorationFinger->getPosition()
         //Open the finger
         _curProximal = 10;
-        moveIndexFingerBlocking(_curProximal, _curAbduction, 40);
+        moveExplorationFingerBlocking(_curProximal, _curAbduction, 40);
 
 
         Vector prepDeltaPosition;
@@ -282,7 +282,7 @@ void TappingExplorationThread::moveArmToWayPoint(yarp::sig::Vector pos, yarp::si
     }
 }
 
-void TappingExplorationThread::moveIndexFingerBlocking(double proximalAngle, double distalAngle, double abductionAngle, double speed)
+void TappingExplorationThread::moveExplorationFingerBlocking(double proximalAngle, double distalAngle, double abductionAngle, double speed)
 {
 
     _explorationFinger->setAngles(proximalAngle, distalAngle, speed);
@@ -300,14 +300,14 @@ void TappingExplorationThread::moveIndexFingerBlocking(double proximalAngle, dou
 //        ;
 }
 
-void TappingExplorationThread::moveIndexFingerBlocking(double proximalAngle, double abductionAngle, double speed)
+void TappingExplorationThread::moveExplorationFingerBlocking(double proximalAngle, double abductionAngle, double speed)
 {
-    moveIndexFinger(proximalAngle, abductionAngle);
+    moveExplorationFinger(proximalAngle, abductionAngle);
     while(!_explorationFinger->checkMotionDone() && !isStopping() )
         ;
 }
 
-void TappingExplorationThread::moveIndexFinger(double proximalAngle, double abductionAngle, double speed)
+void TappingExplorationThread::moveExplorationFinger(double proximalAngle, double abductionAngle, double speed)
 {
     _curProximal = proximalAngle;
     _curAbduction = abductionAngle;
@@ -354,7 +354,7 @@ void TappingExplorationThread::approachObject()
     double maxProximal = 40;
 
     ///// Put the index finger in the starting position /////
-    moveIndexFingerBlocking(10, _curAbduction, 40);
+    moveExplorationFingerBlocking(10, _curAbduction, 40);
 
 
     // Go to the wayPoint if only it is a valid wayPoint.
@@ -379,7 +379,7 @@ void TappingExplorationThread::approachObject()
     if(_contactState == APPROACH_OBJECT)
     {
         // Tell the finger controller to approach the object
-        moveIndexFinger(maxProximal, _curAbduction);
+        moveExplorationFinger(maxProximal, _curAbduction);
 
         // Wait for contact event
         detectContact(maxProximal);
@@ -392,7 +392,7 @@ void TappingExplorationThread::approachObject()
         else if(_contactState == CALCULATE_NEWWAYPONT)
         {
             // No contact detected put the hand in prep position
-            moveIndexFingerBlocking(10, _curAbduction, 40);
+            moveExplorationFingerBlocking(10, _curAbduction, 40);
         }
     }
 
@@ -453,7 +453,7 @@ bool TappingExplorationThread::confrimContact(double maxAngle)
 {
     bool ret = false;
     cout << "Checking the contact...";
-    moveIndexFingerBlocking(10/2, _curAbduction, 40);
+    moveExplorationFingerBlocking(10/2, _curAbduction, 40);
     //cout << "Move done" << endl;
     //yarp::os::Time::delay(1);
     _contactState = APPROACH_OBJECT;
@@ -463,7 +463,7 @@ bool TappingExplorationThread::confrimContact(double maxAngle)
     for (int i = 10; i < maxAngle * 2; i++)
     {
         angle = i/2;
-        moveIndexFinger(angle, _curAbduction);
+        moveExplorationFinger(angle, _curAbduction);
         //cout << "Moving finger" << endl;
 
         while(!_explorationFinger->checkMotionDone())
@@ -615,7 +615,7 @@ void TappingExplorationThread::moveArmUp()
 {
     Vector wayPointPos, wayPointOrient;
     Vector armPos, orient;
-    moveIndexFinger(10, _curAbduction);
+    moveExplorationFinger(10, _curAbduction);
 
    //_robotHand->relaxTolerence();
     _robotHand->getPose(armPos, orient);

@@ -50,7 +50,7 @@ public:
     bool setWayPoint(Vector pos, Vector orient);
     bool setWayPointGP(Vector pos, Vector orient);
     bool getWayPoint(Vector& pos, Vector& orient, bool invalidateWayPoint = true);
-    bool goToStartingPose();
+    bool goToStartingPose(Finger *explorationFinger);
     bool goToEndPose();
     bool setHeight(double height);
     bool multiContact(double angle);

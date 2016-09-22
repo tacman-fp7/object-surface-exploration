@@ -64,7 +64,10 @@ bool ExploreObject::openHand(){
 }
 
 bool ExploreObject::prepHand(){
-    return _robotHand->prepare();
+    bool ret = true;
+    ret &= _robotHand->prepare();
+    ret &= _explorationFinger->setSynchroProximalAngle(0);
+
     //cout << "Force: " << _explorationFinger->getContactForce() << endl;
     //Vector cop;
     //_explorationFinger->getContactCoP(cop);
@@ -181,7 +184,7 @@ ExploreObject::~ExploreObject()
 }
 
 bool ExploreObject::goToStartingPose(){
-    return _robotHand->goToStartingPose();
+    return _robotHand->goToStartingPose(_explorationFinger);
 }
 
 
@@ -634,7 +637,8 @@ bool ExploreObject::configure(yarp::os::ResourceFinder& rf ){
         return false;
     }
 
-    _explorationFinger = _robotHand->getIndexFinger();
+    //_explorationFinger = _robotHand->getIndexFinger();
+    _explorationFinger = _robotHand->getMiddleFinger();
 
     // Check if exploration finger has force and CoP data
     // We need these two data to be able to explore a surface

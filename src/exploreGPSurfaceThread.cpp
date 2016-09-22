@@ -346,7 +346,7 @@ void ExploreGPSurfaceThread::maintainContact()
 
     _curProximal = 10;
     _curAbduction = 0;
-    moveIndexFinger(_curProximal, _curAbduction);
+    moveExplorationFinger(_curProximal, _curAbduction);
    // _objectFeatures->setProximalAngle(10); // Needed by apporach object method
 
 
@@ -406,7 +406,7 @@ void ExploreGPSurfaceThread::setWayPoint_GP()
     _curProximal = 10;
     //_curDistal = 90 - _curProximal;
     _curAbduction = 0;
-    moveIndexFingerBlocking(_curProximal, _curAbduction, 40);
+    moveExplorationFingerBlocking(_curProximal, _curAbduction, 40);
     // It also publishes it
    /* _objectFeatures->setProximalAngle(_curProximal);
     while(!_objectFeatures->checkOpenHandDone() && !isStopping())

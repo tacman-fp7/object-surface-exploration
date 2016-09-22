@@ -138,7 +138,7 @@ void GPExplorationThread::setWayPoint_GP_validate()
     _curProximal = 10;
     _curAbduction = 0;
 
-    moveIndexFingerBlocking(_curProximal, _curAbduction, 40);
+    moveExplorationFingerBlocking(_curProximal, _curAbduction, 40);
     // Get the valid point from object features
     _robotHand->getWayPoint(armPos, orient, false);
 
@@ -183,7 +183,7 @@ void GPExplorationThread::setWayPoint_GP_Refine()
     _curProximal = 10;
     _curAbduction = 0;
 
-    moveIndexFingerBlocking(_curProximal, _curAbduction, 40);
+    moveExplorationFingerBlocking(_curProximal, _curAbduction, 40);
     // Get the valid point from object features
     _robotHand->getWayPoint(armPos, orient, false);
 
@@ -307,7 +307,7 @@ void GPExplorationThread::maintainContact()
 
     while (_zPoints.size() < 1) {
 
-        moveIndexFingerBlocking(0, _curAbduction, 40);
+        moveExplorationFingerBlocking(0, _curAbduction, 40);
 
         if(TappingExplorationThread::confrimContact(30))
         {
@@ -455,7 +455,7 @@ void GPExplorationThread::sampleSurface_wiggleFingers()
     _curProximal = 0;
     _curAbduction = 0;
     double curDistal = 0;
-    moveIndexFingerBlocking(_curProximal, curDistal, _curAbduction, 40);
+    moveExplorationFingerBlocking(_curProximal, curDistal, _curAbduction, 40);
     //_objectFeatures->fingerMovePosition(11, 0, 40);
     //_objectFeatures->fingerMovePosition(12, 0, 40);
     //while (!_objectFeatures->checkOpenHandDone())
@@ -468,7 +468,7 @@ void GPExplorationThread::sampleSurface_wiggleFingers()
     _curProximal = 0;
     curDistal = 15;
     _curAbduction = 0;
-    moveIndexFingerBlocking(_curProximal, curDistal, _curAbduction, 40);
+    moveExplorationFingerBlocking(_curProximal, curDistal, _curAbduction, 40);
     //_objectFeatures->fingerMovePosition(11, 0, 40);
     //_objectFeatures->fingerMovePosition(12, 15, 40);
     //while (!_objectFeatures->checkOpenHandDone())
@@ -499,7 +499,7 @@ void GPExplorationThread::sampleSurface_wiggleFingers()
         _curProximal = 0;
         curDistal = 0;
         _curAbduction = 0;
-        moveIndexFingerBlocking(_curProximal, curDistal, _curAbduction, 50);
+        moveExplorationFingerBlocking(_curProximal, curDistal, _curAbduction, 50);
 
         // _objectFeatures->fingerMovePosition(11, 0, 50);
         // _objectFeatures->fingerMovePosition(12, 0, 50);
@@ -548,15 +548,15 @@ void GPExplorationThread::sampleSurface_wiggleFingers()
         curDistal = 0;
         _curAbduction = 40;
 
-        moveIndexFingerBlocking(_curProximal, curDistal, _curAbduction, 40);
+        moveExplorationFingerBlocking(_curProximal, curDistal, _curAbduction, 40);
         yarp::os::Time::delay(1);
         _curAbduction = 0;
-        moveIndexFingerBlocking(_curProximal, curDistal, _curAbduction, 40);
+        moveExplorationFingerBlocking(_curProximal, curDistal, _curAbduction, 40);
         _objectFeatures->updateContactState(_contactState);
 
         //_objectFeatures->updateContactState(_contactState);
         _curProximal = 0;
-        moveIndexFingerBlocking(_curProximal, curDistal, _curAbduction, 40);
+        moveExplorationFingerBlocking(_curProximal, curDistal, _curAbduction, 40);
 
 
 
@@ -581,7 +581,7 @@ void GPExplorationThread::sampleSurface_wiggleFingers()
     //_objectFeatures->openHand();
 
     _curProximal = 0; curDistal = 0; _curAbduction = 0;
-    moveIndexFingerBlocking(_curProximal, curDistal, _curAbduction, 40);
+    moveExplorationFingerBlocking(_curProximal, curDistal, _curAbduction, 40);
 
     Vector startingPos, startingOrient;
     _robotHand->getStartingPose(startingPos, startingOrient);
@@ -599,7 +599,7 @@ void GPExplorationThread::sampleSurface_wiggleFingers()
 
 
     _curProximal = 0; curDistal = 0; _curAbduction = 0;
-    moveIndexFingerBlocking(_curProximal, curDistal, _curAbduction, 40);
+    moveExplorationFingerBlocking(_curProximal, curDistal, _curAbduction, 40);
 
     //_robotCartesianController->waitMotionDone(0.1, 20);
 
@@ -1031,7 +1031,7 @@ void GPExplorationThread::setWayPoint_GP()
     _curProximal = 10;
     _curAbduction = 0;
 
-    moveIndexFingerBlocking(_curProximal, _curAbduction, 40);
+    moveExplorationFingerBlocking(_curProximal, _curAbduction, 40);
     // Get the valid point from object features
     _robotHand->getWayPoint(armPos, orient, false);
 

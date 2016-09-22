@@ -70,12 +70,16 @@ bool Hand::prepare(){
 bool Hand::calibrate(){
 
     Vector position;
+    position.clear();
     _indexFinger->getPosition(position);
-    cout << position.toString() << endl;
+    cout << "I: " << position.toString() << endl;
+    position.clear();
+    _middleFinger->getPosition(position);
+    cout << "M: " << position.toString() << endl;
 
-    cout << "Little" << endl;
-    _littleFinger->getPosition(position);
-    cout << position.toString() << endl;
+//    cout << "Little" << endl;
+//    _littleFinger->getPosition(position);
+//    cout << position.toString() << endl;
 
     //double min, max;
 
@@ -254,7 +258,7 @@ bool Hand::setHeight(double height){
     return true;
 }
 
-bool Hand::goToStartingPose(){
+bool Hand::goToStartingPose(Finger * explorationFinger){
 
     Vector desiredFingerPos;
     Vector desiredArmPos, desiredArmOrient;
@@ -265,7 +269,7 @@ bool Hand::goToStartingPose(){
     {
 
         // Move the arm up before moving sideways
-        _indexFinger->toArmPosition(desiredFingerPos, desiredArmPos);
+        explorationFinger->toArmPosition(desiredFingerPos, desiredArmPos);
 
         // Get the current arm pose
         getPose(currentArmPos, currentArmOrient);

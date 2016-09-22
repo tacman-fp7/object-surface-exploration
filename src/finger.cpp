@@ -755,9 +755,21 @@ bool IndexFinger::prepare(){
 
     bool ret = true;
 
-    setSynchroProximalAngle(0);
-    //    ret = ret && setAngle(_distalJointIndex, 20);
-    //    ret = ret && setAngle(_proximalJointIndex, 20);
+    //setSynchroProximalAngle(0);
+    ret = ret && setAngle(_distalJointIndex, 0);
+    ret = ret && setAngle(_proximalJointIndex, 0);
+
+    return ret;
+
+}
+
+bool MiddleFinger::prepare(){
+
+    bool ret = true;
+
+    //setSynchroProximalAngle(0);
+    ret = ret && setAngle(_distalJointIndex, 0);
+    ret = ret && setAngle(_proximalJointIndex, 0);
 
     return ret;
 

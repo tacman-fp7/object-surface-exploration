@@ -25,7 +25,7 @@ void GridExplorationThread::run()
     // put the finger in known position
     _curProximal = 0;
     _curAbduction = 0;
-    moveIndexFingerBlocking(_curProximal, _curAbduction, 40);
+    moveExplorationFingerBlocking(_curProximal, _curAbduction, 40);
 
     while(!isStopping() && !(_contactState == STOP)) // Keep running this
     {
@@ -95,7 +95,7 @@ void GridExplorationThread::moveToNewLocation()
 
     _curProximal = 10;
     _curAbduction = 0;
-    moveIndexFingerBlocking(_curProximal, _curAbduction, 40);
+    moveExplorationFingerBlocking(_curProximal, _curAbduction, 40);
 
     // Get the next point
     Vector wayPoint, desiredArmPos;
