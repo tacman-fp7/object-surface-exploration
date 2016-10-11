@@ -69,6 +69,18 @@ bool Hand::prepare(){
 
 bool Hand::calibrate(){
 
+   // double min, max;
+   // for (int iJoint = 0; iJoint < 16; iJoint++){
+   // _armControlLimits->getLimits(iJoint, &min, &max );
+   // cout << "J " << iJoint << " min: " << min << ", max: " << max << endl;
+   // }
+   // return true;
+    open();
+    _indexFinger->calibrate();
+    open();
+    _middleFinger->calibrate();
+
+
     Vector position;
     position.clear();
     _indexFinger->getPosition(position);
@@ -120,7 +132,7 @@ bool Hand::checkOpenMotionDone(){
 
 bool Hand::open(){
 
-    setAbduction(20);
+    setAbduction(0);
 
     // Ask all fingers to open
     _indexFinger->open();
@@ -710,6 +722,7 @@ bool SimHand::configure(yarp::os::ResourceFinder& rf){
 
     _thumb = fingerCreator.createFinger("thumb", "icubSim", ctrlData);
     _indexFinger = fingerCreator.createFinger("index", "icubSim", ctrlData);
+    _middleFinger = fingerCreator.createFinger("middle", "icubSim", ctrlData);
 }
 
 icubHand::icubHand(yarp::os::ResourceFinder &rf):Hand(rf){

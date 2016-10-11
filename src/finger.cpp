@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <deque>
 
+#define DEG2RAD (M_PI/180)
 
 namespace objectExploration {
 
@@ -113,7 +114,7 @@ bool Finger::toArmPosition(Vector &fingertipPosition, Vector &retArmpPosition){
 
     //Convert the joints to radians.
     for (int j = 0; j < joints.size(); j++)
-        joints[j] *= M_PI/180;
+        joints[j] *= DEG2RAD;
 
     yarp::sig::Matrix tipFrame = _iCubFinger->getH(joints);
     Vector tip_x = tipFrame.getCol(3);
@@ -176,15 +177,24 @@ bool icubFinger::toArmPosition(Vector &fingertipPosition, Vector &retArmpPositio
     return ret;
 }
 
+bool Finger::getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders){
+
+
+    // Not using the fingerEncoders, it is there to make it compatible with the icubFinger class.
+    return getPosition(position);
+
+
+}
+
+
 bool Finger::getPosition(yarp::sig::Vector &position){
 
-    // I am using an hybrid fingertip position forward kinematics. Fristly, I use the the actual encoder
-    // data for the last three joints. Secondly, the behaviour of the icubFinger position estimation
+    // The behaviour of the icubFinger position estimation
     // is a little unpredictable, so I am transforming the fingertip position into the robot coordingates
     // myself.
+
     bool ret = true;
     Vector joints;
-
     int nEncs;
 
     position.clear();
@@ -198,31 +208,19 @@ bool Finger::getPosition(yarp::sig::Vector &position){
         cerr << _dbgtag << "Failed to read arm encoder data" << endl;
     }
 
-    cout << encs.toString() << endl;
+    //cout << encs.toString() << endl;
     ret = ret && _iCubFinger->getChainJoints(encs, joints);
-
-    //cout << fingerEncoders.toString() << endl;
-
-    // TODO: This should be moved to readEncoders method
-    //adjustMinMax(fingerEncoders[0], _minProximal, _maxProximal);
-    //adjustMinMax(fingerEncoders[1], _minMiddle, _maxMiddle);
-    //adjustMinMax(fingerEncoders[2], _minDistal, _maxDistal);
-
-
-
-    // Replace the joins with the encoder readings
-
-    //joints[1] = 90 * (1 - (fingerEncoders[0] - _minProximal) / (_maxProximal - _minProximal) );
-    //joints[2] = 90 * (1 - (fingerEncoders[1] - _minMiddle) / (_maxMiddle - _minMiddle) );
-    //joints[3] = 90 * (1 - (fingerEncoders[2] - _minDistal) / (_maxDistal - _minDistal) );
 
     //Convert the joints to radians.
     for (int j = 0; j < joints.size(); j++)
         joints[j] *= M_PI/180;
 
+
+    cout << "J: " << _iCubFinger->setAng(joints).toString() << endl;
+    //_iCubFinger->setAng(joints);
     yarp::sig::Matrix tipFrame = _iCubFinger->getH(joints);
     Vector tip_x = tipFrame.getCol(3); // Tip's position in the hand coordinate
-    //cout << "TipX: " << tip_x.toString() << endl;
+    cout << "TipX: " << tip_x.toString() << endl;
     Vector armPos, armOrient;
     _armCartesianCtrl->getPose(armPos, armOrient);
 
@@ -249,17 +247,13 @@ bool icubFinger::getPosition(yarp::sig::Vector &position){
 
 }
 
-bool Finger::getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders){
-
-
-    // Not using the fingerEncoders, it is there to make it compatible with the icubFinger class.
-    return getPosition(position);
-
-
-}
-
 
 bool icubFinger::getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders){
+    cerr << _dbgtag << "get position has not been implemented for this finger." << endl;
+    return false;
+}
+
+bool IndexFinger::getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders){
 
 
     // I am using an hybrid fingertip position forward kinematics. Fristly, I use the the actual encoder
@@ -296,7 +290,7 @@ bool icubFinger::getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fin
 
 
     // Replace the joins with the encoder readings
-
+    joints[0] = 0;
     joints[1] = 90 * (1 - (fingerEncoders[0] - _minProximal) / (_maxProximal - _minProximal) );
     joints[2] = 90 * (1 - (fingerEncoders[1] - _minMiddle) / (_maxMiddle - _minMiddle) );
     joints[3] = 90 * (1 - (fingerEncoders[2] - _minDistal) / (_maxDistal - _minDistal) );
@@ -304,11 +298,12 @@ bool icubFinger::getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fin
     //cout << joints.size() << endl;
     //Convert the joints to radians.
     for (int j = 0; j < joints.size(); j++)
-        joints[j] *= M_PI/180;
+        joints[j] *= DEG2RAD;
+
 
     yarp::sig::Matrix tipFrame = _iCubFinger->getH(joints);
     Vector tip_x = tipFrame.getCol(3); // Tip's position in the hand coordinate
-    //cout << "TipX: " << tip_x.toString() << endl;
+    cout << "TipX: " << tip_x.toString() << endl;
     Vector armPos, armOrient;
     _armCartesianCtrl->getPose(armPos, armOrient);
 
@@ -447,9 +442,9 @@ double Finger::getContactForce(){
     }
 }
 
-void Finger::calibrate(){
+bool Finger::calibrate(){
 
-
+return true;
 
 
 }
@@ -531,7 +526,7 @@ bool Finger::setAngle(int jointIndex, double angle, double speed){
     msg.addDouble(_curDistalAngle);
     _fingerControlPort_out.writeStrict();
 
-    ret =  _armJointModeCtrl->setPositionMode(jointIndex);;
+    //ret =  _armJointModeCtrl->setPositionMode(jointIndex);;
     ret =  _armJointPositionCtrl->setRefSpeed(jointIndex, speed);
     ret =  _armJointPositionCtrl->positionMove(jointIndex, angle);
 
@@ -597,9 +592,10 @@ bool icubFinger::readEncoders(yarp::sig::Vector &encoderValues){
     return ret;
 }
 
-void icubFinger::calibrate(){
+/*bool icubFinger::calibrate(){
 
-}
+    return true;
+}*/
 
 void IndexFinger::getRawTactileData(yarp::sig::Vector& rawTactileData){
 
@@ -636,12 +632,12 @@ IndexFinger::IndexFinger(t_controllerData ctrlData):
     _distalEncoderIndex = INDEX_DISTAL_ENCODER;
 
     // TODO: Put it in a config file!
-    _maxProximal = 235;
-    _minProximal = 14;
-    _maxMiddle = 215;
-    _minMiddle = 20;
-    _maxDistal = 250;
-    _minDistal = 24;
+    _maxProximal = 240;
+    _minProximal = 15;
+    _maxMiddle = 225;
+    _minMiddle = 50;
+    _maxDistal = 239;
+    _minDistal = 0;
 
 
 
@@ -652,7 +648,7 @@ SimIndexFinger::SimIndexFinger(t_controllerData ctrlData):
 
 
     _iCubFinger = new iCub::iKin::iCubFinger(ctrlData.whichHand + "_index");
-    alignJointsBounds();
+    //alignJointsBounds();
     // Joint indexes as defined in iCub
     _proximalJointIndex = INDEX_PROXIMAL;
     _distalJointIndex = INDEX_DISTAL;
@@ -662,6 +658,18 @@ SimIndexFinger::SimIndexFinger(t_controllerData ctrlData):
     _distalEncoderIndex = INDEX_DISTAL_ENCODER;
 
 
+}
+
+SimMiddleFinger::SimMiddleFinger(t_controllerData ctrlData): Finger(ctrlData){
+    _iCubFinger = new iCub::iKin::iCubFinger(ctrlData.whichHand + "_middle");
+
+    // Joint indexes as defined in iCub
+    _proximalJointIndex = MIDDLE_PROXIMAL;
+    _distalJointIndex = MIDDLE_DISTAL;
+
+    _proximalEncoderIndex = MIDDLE_PROXIMAL_ENCODER;
+    _middleEncoderIndex = MIDDLE_MIDDLE_ENCODER;
+    _distalEncoderIndex = MIDDLE_DISTAL_ENCODER;
 }
 
 bool IndexFinger::setSynchroProximalAngle(double angle){
@@ -682,7 +690,17 @@ bool SimIndexFinger::setSynchroProximalAngle(double angle){
     return setAngles(angle, distal, 40);
 }
 
-void IndexFinger::calibrate(){
+bool SimMiddleFinger::setSynchroProximalAngle(double angle){
+    double distal = 90-angle;
+    return setAngles(angle, distal, 40);
+}
+
+bool icubFinger::calibrate(){
+    cerr << _dbgtag << "this finger has no calibration implemented" << endl;
+    return true;
+}
+
+bool icubFinger::calibrateIndexMiddle(){
 
     // Open the finger
     Finger::open();
@@ -739,6 +757,9 @@ void IndexFinger::calibrate(){
         ;
     }
 
+    checkMinMax(_minDistal, _maxDistal);
+    checkMinMax(_minMiddle, _minMiddle);
+    checkMinMax(_minProximal, _minProximal);
 
     cout << "Calibration mins:" <<
             _minProximal << "\t" <<
@@ -751,6 +772,21 @@ void IndexFinger::calibrate(){
             _maxDistal << "\t" << endl;
 }
 
+void Finger::checkMinMax(double &min, double &max){
+    double temp;
+    // Chec if we need to swap
+    if(min > max){
+        temp = min;
+        min = max;
+        max = temp;
+        cerr << _dbgtag << "MinMax swapped!" << endl;
+    }
+}
+
+bool IndexFinger::calibrate(){
+    return icubFinger::calibrateIndexMiddle();
+}
+
 bool IndexFinger::prepare(){
 
     bool ret = true;
@@ -761,6 +797,11 @@ bool IndexFinger::prepare(){
 
     return ret;
 
+}
+
+
+bool MiddleFinger::calibrate(){
+    return icubFinger::calibrateIndexMiddle();
 }
 
 bool MiddleFinger::prepare(){
@@ -789,6 +830,19 @@ bool SimIndexFinger::prepare(){
 
 }
 
+bool SimMiddleFinger::prepare(){
+
+    bool ret = true;
+
+    _curProximalAngle = 0;
+    _curDistalAngle = 90;
+
+    ret = ret && setAngle(_proximalJointIndex, _curProximalAngle);
+    ret = ret && setAngle(_distalJointIndex, _curDistalAngle);
+
+    return ret;
+
+}
 
 ///////////////////////Middle Fingr///////////////////
 
@@ -806,12 +860,12 @@ MiddleFinger::MiddleFinger(t_controllerData ctrlData):
     _distalEncoderIndex = MIDDLE_DISTAL_ENCODER;
 
     // TODO: Put it in a config file!
-    _maxProximal = 235;
-    _minProximal = 14;
-    _maxMiddle = 215;
-    _minMiddle = 20;
-    _maxDistal = 250;
-    _minDistal = 24;
+    _maxProximal = 236;
+    _minProximal = 0;
+    _maxMiddle = 234;
+    _minMiddle = 3;
+    _maxDistal = 255;
+    _minDistal = 19;
 
 }
 
@@ -867,7 +921,7 @@ bool MiddleFinger::getPosition(yarp::sig::Vector &position, yarp::sig::Vector &f
 
     yarp::sig::Matrix tipFrame = _iCubFinger->getH(joints);
     Vector tip_x = tipFrame.getCol(3); // Tip's position in the hand coordinate
-    //cout << "TipX: " << tip_x.toString() << endl;
+    cout << "TipX: " << tip_x.toString() << endl;
     Vector armPos, armOrient;
     _armCartesianCtrl->getPose(armPos, armOrient);
 
@@ -921,7 +975,7 @@ RingFinger::RingFinger(t_controllerData ctrlData): RingAndLittleFingers(ctrlData
 
     _proximalJointIndex = PINKY;
     _distalJointIndex = PINKY;
-    // TODO: check if I can get them from the IControlLimits
+    // TODO: check if I can get them from the
 
     _maxProximal = 235;
     _minProximal = 14;
@@ -1016,7 +1070,7 @@ SimThumb::SimThumb(t_controllerData ctrlData):
 
 
     _iCubFinger = new iCub::iKin::iCubFinger(ctrlData.whichHand + "_thumb");
-    alignJointsBounds();
+    //alignJointsBounds();
     // Joint indexes as defined in iCub
     _proximalJointIndex = THUMB_PROXIMAL;
     _distalJointIndex = THUMB_DISTAL;

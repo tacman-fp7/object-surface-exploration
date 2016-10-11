@@ -20,6 +20,7 @@ typedef struct clenchResults clenchResults_t;
 
 class MiddleFingerContactThread: public yarp::os::Thread{
 public:
+
     virtual void run();
     //virtual bool threadInit(){_middleFinger = NULL; _maxAngle = 0; _contactState = false; return true;}
     virtual void threadRelease(){_middleFinger = NULL, _maxAngle = 0;}
@@ -27,11 +28,14 @@ public:
     void initThread(Finger *finger, double maxAngle, double forceThreshold);//{_middleFinger = finger; _maxAngle = maxAngle; _forceThreshold = forceThreshold;}
     void getResults(bool *contactState){*contactState = _contactState;}
 
+
 private:
     Finger *_middleFinger;
     double _maxAngle;
     bool _contactState;
     double _forceThreshold;
+
+
 };
 
 
@@ -78,11 +82,15 @@ public:
 protected:
     bool clenchFinger(Finger *finger, double maxAngle);
     bool clenchRingLittleFinger(Finger *ringFinger, Finger *littleFinger, double maxAngle, clenchResults_t *clenchResults);
-
+    void logData();
 private:
     MiddleFingerContactThread _contactMiddleFinger;
     RingAndLittleFingersContactThread _contactRingAndLittleFingers;
 
+
+
+    std::ofstream _indexFingerLog;
+    std::ofstream _middleFingerLog;
 
 }; // end of class
 

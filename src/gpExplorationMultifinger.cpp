@@ -71,6 +71,7 @@ void GPExplorationMultifingerThread::run()
             }
             else{
                 GPExplorationThread::maintainContact();
+                logData();
                 multifingerContact();
             }
             //_stateMutex.unlock();
@@ -118,6 +119,21 @@ void GPExplorationMultifingerThread::run()
     }
 
     yarp::os::Time::delay(1);
+
+
+}
+
+void GPExplorationMultifingerThread::logData(){
+
+    Vector fingerPosition;
+    Finger *indexFinger = _robotHand->getIndexFinger();
+    Finger *middleFinger = _robotHand->getMiddleFinger();
+
+    indexFinger->getPosition(fingerPosition);
+  _indexFingerLog << fingerPosition[0] << "," << fingerPosition[1] << "," << fingerPosition[2] << endl;
+  fingerPosition.clear();
+  middleFinger->getPosition(fingerPosition);
+  _middleFingerLog << fingerPosition[0] << "," << fingerPosition[1] << "," << fingerPosition[2] << endl;
 
 
 }
@@ -264,11 +280,16 @@ void GPExplorationMultifingerThread::multifingerContact(){
     // Step three register the location
     // Can I move all of them in parallel
 
-  return;
-    Finger *middleFinger = _robotHand->getMiddleFinger();
-    Finger *ringFinger = _robotHand->getRingerFinger();
-    Finger *littleFinger = _robotHand->getLittleFinger();
 
+
+
+    Finger *ringFinger = _robotHand->getRingerFinger();
+    Finger *middleFinger = _robotHand->getMiddleFinger();
+    //Finger *ringFinger = _robotHand->getRingerFinger();
+    //Finger *littleFinger = _robotHand->getLittleFinger();
+
+
+    return;
     clenchResults_t clenchResults;
     bool middleFingerHasContact;
 
@@ -333,6 +354,10 @@ bool GPExplorationMultifingerThread::threadInit()
 {
     bool ret;
 
+
+    _indexFingerLog.open("indexFingerLog.csv");
+    _middleFingerLog.open("middleFingerLog.csv");
+
     ret = GPExplorationThread::threadInit();
     GPExplorationThread::disableSurfaceSampling();
 
@@ -342,6 +367,8 @@ bool GPExplorationMultifingerThread::threadInit()
 
 void GPExplorationMultifingerThread::threadRelease()
 {
+     _indexFingerLog.close();
+     _middleFingerLog.close();
     GPExplorationThread::threadRelease();
 
 }
@@ -436,7 +463,9 @@ void RingAndLittleFingersContactThread::run(){
 void MiddleFingerContactThread::initThread(Finger *finger, double maxAngle, double forceThreshold){
     _middleFinger = finger;
     _maxAngle = maxAngle;
-    _forceThreshold = forceThreshold;}
+    _forceThreshold = forceThreshold;
+
+}
 
 void MiddleFingerContactThread::run(){
     cout << "Checking the contact...";

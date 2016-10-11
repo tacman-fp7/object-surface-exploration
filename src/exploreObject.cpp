@@ -82,8 +82,37 @@ bool ExploreObject::calibrateHand(){
 }
 
 bool ExploreObject::fingerSetAngle(const double angle){
-    Vector finger_pos;
-    bool ret;
+    Vector indexFinger_pos, middleFinger_pos;
+
+
+    Finger *finger = _robotHand->getIndexFinger();
+    finger->getPosition(indexFinger_pos);
+    cout << "I: " << indexFinger_pos.toString() << endl;
+
+
+    finger = _robotHand->getMiddleFinger();
+
+    //finger->setProximalAngle(0);
+    //finger->setAngles(0,0, 60);
+    // while(!finger->checkMotionDone())
+    //    ;
+    finger->getPosition(middleFinger_pos);
+    cout << "M: " << middleFinger_pos.toString() << endl;
+
+
+    //finger->setDistalAngle(90,60);
+    //while(!finger->checkMotionDone())
+    //    ;
+    //finger->getPosition(finger_pos);
+    //cout << "M: " << finger_pos.toString() << endl;
+    //m = finger_pos[2];
+
+    cout << "Dx: " << indexFinger_pos[0] - middleFinger_pos[0] << endl;
+    cout << "Dy: " << indexFinger_pos[1] - middleFinger_pos[1] << endl;
+    cout << "Dz: " << indexFinger_pos[2] - middleFinger_pos[2] << endl;
+    return true;
+
+ /*   bool ret;
 
     ret = _explorationFinger->setSynchroProximalAngle(angle);
     while(!_explorationFinger->checkMotionDone())
@@ -96,7 +125,7 @@ bool ExploreObject::fingerSetAngle(const double angle){
 
 
     return ret;
-
+*/
 }
 
 ExploreObject::ExploreObject(yarp::os::ResourceFinder& rf)

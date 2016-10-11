@@ -13,6 +13,8 @@
 //#include <gurls++/gmat2d.h>
 //#include "hand.h" //Testing only
 //#include "objectModelGrid.h"
+
+
 #include <surfaceModelGPActive.h>
 #include <gurls++/gmat2d.h>
 
@@ -31,6 +33,7 @@ int main(int argc, char *argv[])
         cout << "Could not contact the Yarp server, quitting." << endl;
         return false;
     }
+
 
 
 
