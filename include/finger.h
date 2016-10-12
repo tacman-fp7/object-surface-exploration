@@ -7,6 +7,7 @@
 #include <yarp/os/ResourceFinder.h>
 #include <yarp/dev/CartesianControl.h>
 #include <yarp/os/BufferedPort.h>
+#include <stdexcept>
 #include <deque>
 
 
@@ -88,8 +89,12 @@ public:
     bool checkMotionDone();
     virtual bool getAngels(Vector &angles);
     bool getPositionCoPAdjusted(yarp::sig::Vector &position);
+
+    virtual bool getPositionHandFrame(yarp::sig::Vector &position);
+
     virtual bool getPosition(yarp::sig::Vector &position);
     virtual bool getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders);
+
     virtual bool readEncoders(Vector &encoderValues);
     double getContactForce();
     bool getContactCoP(yarp::sig::Vector& contactCoP);
@@ -98,6 +103,8 @@ public:
     //virtual bool calibrate2(){}
     virtual void printJointLimits(){}
 
+protected:
+    virtual bool getPositionHandFrame(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders);
 
 protected:
     Finger(t_controllerData);
@@ -152,6 +159,8 @@ protected:
     simFinger(t_controllerData ctrlData);
 };
 
+
+
 class icubFinger:public Finger{
 public:
     bool readEncoders(Vector &encoderValues);
@@ -159,6 +168,9 @@ public:
 
     bool getAngels(Vector &angles);
     bool toArmPosition(Vector &fingertipPosition, Vector &retArmpPosition);
+    virtual bool getPositionHandFrame(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders);
+    virtual bool getPositionHandFrame(yarp::sig::Vector &position);
+
     virtual bool getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders);
     virtual bool getPosition(yarp::sig::Vector &position);
     void printJointLimits();
@@ -216,6 +228,8 @@ public:
     IndexFinger(t_controllerData);
     bool calibrate();
     bool prepare();
+    bool getPositionHandFrame(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders);
+    //virtual bool getPositionHandFrame(yarp::sig::Vector &position);
     bool getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders);
     virtual bool setSynchroProximalAngle(double proximal);
     void getRawTactileData(Vector& rawTactileData);
@@ -228,6 +242,7 @@ class MiddleFinger: public icubFinger{
 
 public:
     MiddleFinger(t_controllerData ctrlData);
+    bool getPositionHandFrame(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders);
     bool getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders);
     virtual bool setSynchroProximalAngle(double proximal);
     bool prepare();
@@ -303,6 +318,16 @@ public:
             }
             else if(whichFinger.compare("thumb") == 0){
                 return new SimThumb(ctrlData);
+
+            }
+            else if(whichFinger.compare("little") == 0){
+                return new SimThumb(ctrlData);
+            }
+            else if(whichFinger.compare("ring") == 0){
+                return new SimThumb(ctrlData);
+            }
+            else{
+                throw std::runtime_error("Finger factory: cannot create icubSim: " + whichFinger );
             }
         }
     }

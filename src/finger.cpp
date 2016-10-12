@@ -60,6 +60,14 @@ bool Finger::getAngels(yarp::sig::Vector &angles){
 
 }
 
+
+
+bool Finger::getPositionHandFrame(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders){
+    cerr << _dbgtag << "get position has not been implemented for this finger." << endl;
+    return false;
+
+}
+
 bool icubFinger::getAngels(Vector &angles){
 
     Vector fingerEncoders;
@@ -186,12 +194,7 @@ bool Finger::getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerE
 
 }
 
-
-bool Finger::getPosition(yarp::sig::Vector &position){
-
-    // The behaviour of the icubFinger position estimation
-    // is a little unpredictable, so I am transforming the fingertip position into the robot coordingates
-    // myself.
+bool Finger::getPositionHandFrame(yarp::sig::Vector &position){
 
     bool ret = true;
     Vector joints;
@@ -216,11 +219,32 @@ bool Finger::getPosition(yarp::sig::Vector &position){
         joints[j] *= M_PI/180;
 
 
-    cout << "J: " << _iCubFinger->setAng(joints).toString() << endl;
+    //cout << "J: " << _iCubFinger->setAng(joints).toString() << endl;
     //_iCubFinger->setAng(joints);
     yarp::sig::Matrix tipFrame = _iCubFinger->getH(joints);
-    Vector tip_x = tipFrame.getCol(3); // Tip's position in the hand coordinate
+    position = tipFrame.getCol(3); // Tip's position in the hand coordinate
+
+}
+
+bool Finger::getPosition(yarp::sig::Vector &position){
+
+    // The behaviour of the icubFinger position estimation
+    // is a little unpredictable, so I am transforming the fingertip position into the robot coordingates
+    // myself.
+
+
+
+    // I am using an hybrid fingertip position forward kinematics. Fristly, I use the the actual encoder
+    // data for the last three joints. Secondly, the behaviour of the icubFinger position estimation
+    // is a little unpredictable, so I am transforming the fingertip position into the robot coordingates
+    // myself.
+    bool ret = true;
+    Vector tip_x;
+
+    getPositionHandFrame(tip_x);
+
     cout << "TipX: " << tip_x.toString() << endl;
+
     Vector armPos, armOrient;
     _armCartesianCtrl->getPose(armPos, armOrient);
 
@@ -231,6 +255,26 @@ bool Finger::getPosition(yarp::sig::Vector &position){
     Vector retMat = yarp::math::operator *(T_rotoTrans, tip_x);
     position = retMat.subVector(0,2);
     //cout << "Finger position: " << position.toString()  << endl;
+
+    return ret;
+
+
+ /*   position.clear();
+    position.resize(3); //x,y, z position
+    Vector tip_x;
+    getPositionHandFrame(tip_x);
+
+    cout << "TipX: " << tip_x.toString() << endl;
+    Vector armPos, armOrient;
+    _armCartesianCtrl->getPose(armPos, armOrient);
+
+    // My own transformation
+    yarp::sig::Matrix T_rotoTrans(4,4);
+    T_rotoTrans = yarp::math::axis2dcm(armOrient);
+    T_rotoTrans.setSubcol(armPos, 0,3);
+    Vector retMat = yarp::math::operator *(T_rotoTrans, tip_x);
+    position = retMat.subVector(0,2);
+    //cout << "Finger position: " << position.toString()  << endl;*/
 
 }
 
@@ -253,13 +297,19 @@ bool icubFinger::getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fin
     return false;
 }
 
-bool IndexFinger::getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders){
+bool icubFinger::getPositionHandFrame(yarp::sig::Vector &position){
+    cerr << _dbgtag << "get position has not been implemented for this finger." << endl;
 
+return false;
 
-    // I am using an hybrid fingertip position forward kinematics. Fristly, I use the the actual encoder
-    // data for the last three joints. Secondly, the behaviour of the icubFinger position estimation
-    // is a little unpredictable, so I am transforming the fingertip position into the robot coordingates
-    // myself.
+}
+
+bool icubFinger::getPositionHandFrame(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders){
+    cerr << _dbgtag << "get position has not been implemented for this finger." << endl;
+    return false;
+}
+
+bool IndexFinger::getPositionHandFrame(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders){
 
     bool ret = true;
     Vector joints;
@@ -302,8 +352,26 @@ bool IndexFinger::getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fi
 
 
     yarp::sig::Matrix tipFrame = _iCubFinger->getH(joints);
-    Vector tip_x = tipFrame.getCol(3); // Tip's position in the hand coordinate
+    position = tipFrame.getCol(3); // Tip's position in the hand coordinate
+
+
+return ret;
+}
+
+bool IndexFinger::getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders){
+
+
+    // I am using an hybrid fingertip position forward kinematics. Fristly, I use the the actual encoder
+    // data for the last three joints. Secondly, the behaviour of the icubFinger position estimation
+    // is a little unpredictable, so I am transforming the fingertip position into the robot coordingates
+    // myself.
+    bool ret = true;
+    Vector tip_x;
+
+    getPositionHandFrame(tip_x, fingerEncoders);
+
     cout << "TipX: " << tip_x.toString() << endl;
+
     Vector armPos, armOrient;
     _armCartesianCtrl->getPose(armPos, armOrient);
 
@@ -314,6 +382,8 @@ bool IndexFinger::getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fi
     Vector retMat = yarp::math::operator *(T_rotoTrans, tip_x);
     position = retMat.subVector(0,2);
     //cout << "Finger position: " << position.toString()  << endl;
+
+    return ret;
 }
 
 Finger::Finger(t_controllerData ctrlData){
@@ -869,16 +939,9 @@ MiddleFinger::MiddleFinger(t_controllerData ctrlData):
 
 }
 
-// Slightly different from the index finger. It is not affected by the abduction
-bool MiddleFinger::getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders){
-
-
-    // I am using an hybrid fingertip position forward kinematics. Fristly, I use the the actual encoder
-    // data for the last three joints. Secondly, the behaviour of the icubFinger position estimation
-    // is a little unpredictable, so I am transforming the fingertip position into the robot coordingates
-    // myself.
-
+bool MiddleFinger::getPositionHandFrame(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders){
     bool ret = true;
+
     Vector joints;
 
     int nEncs;
@@ -920,7 +983,24 @@ bool MiddleFinger::getPosition(yarp::sig::Vector &position, yarp::sig::Vector &f
         joints[j] *= M_PI/180;
 
     yarp::sig::Matrix tipFrame = _iCubFinger->getH(joints);
-    Vector tip_x = tipFrame.getCol(3); // Tip's position in the hand coordinate
+    position = tipFrame.getCol(3); // Tip's position in the hand coordinate
+
+}
+
+// Slightly different from the index finger. It is not affected by the abduction
+bool MiddleFinger::getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders){
+
+
+    // I am using an hybrid fingertip position forward kinematics. Fristly, I use the the actual encoder
+    // data for the last three joints. Secondly, the behaviour of the icubFinger position estimation
+    // is a little unpredictable, so I am transforming the fingertip position into the robot coordingates
+    // myself.
+
+    bool ret = true;
+
+    Vector tip_x;
+    getPositionHandFrame(tip_x, fingerEncoders);
+
     cout << "TipX: " << tip_x.toString() << endl;
     Vector armPos, armOrient;
     _armCartesianCtrl->getPose(armPos, armOrient);
@@ -932,6 +1012,8 @@ bool MiddleFinger::getPosition(yarp::sig::Vector &position, yarp::sig::Vector &f
     Vector retMat = yarp::math::operator *(T_rotoTrans, tip_x);
     position = retMat.subVector(0,2);
     //cout << "Finger position: " << position.toString()  << endl;
+
+
 }
 
 /// Ring and Little Finger joint class ////

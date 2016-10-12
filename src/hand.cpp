@@ -723,6 +723,8 @@ bool SimHand::configure(yarp::os::ResourceFinder& rf){
     _thumb = fingerCreator.createFinger("thumb", "icubSim", ctrlData);
     _indexFinger = fingerCreator.createFinger("index", "icubSim", ctrlData);
     _middleFinger = fingerCreator.createFinger("middle", "icubSim", ctrlData);
+    _ringFinger = fingerCreator.createFinger("ring", "icubSim", ctrlData);
+    _littleFinger = fingerCreator.createFinger("little", "icubSim", ctrlData);
 }
 
 icubHand::icubHand(yarp::os::ResourceFinder &rf):Hand(rf){

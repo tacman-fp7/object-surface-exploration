@@ -614,7 +614,7 @@ void SurfaceModelGPActive::getMaxProbSurface(const gMat2D<double> &classProb, gM
     for (int i = 0; i < classProb.rows(); i++){
         maxProbSurface(i,0) = 0.0;
     }
-    maxProbSurface.saveCSV("text.csv");
+    //maxProbSurface.saveCSV("text.csv");
     if(classProb.cols() < 2){
         for (unsigned long i = 0; i < classProb.rows(); i++){
             if(classProb(i,0) > 0){
@@ -649,7 +649,7 @@ void SurfaceModelGPActive::getSurfaceUncertainty(const gMat2D<double> &classProb
 
     unsigned long nSamples = classProb.rows();
     unsigned int nClasses = classProb.cols();
-    classProb.saveCSV("classProb.csv");
+    //classProb.saveCSV("classProb.csv");
     tempClassProb.resize(nSamples, nClasses);
 
     for (unsigned long sample = 0; sample < nSamples; sample++){
@@ -658,7 +658,7 @@ void SurfaceModelGPActive::getSurfaceUncertainty(const gMat2D<double> &classProb
         }
     }
 
-    tempClassProb.saveCSV("classProbAbs.csv");
+    //tempClassProb.saveCSV("classProbAbs.csv");
 
     // Second step, normalise each precition and convert it to uncertainty
     gVec<double> *max = tempClassProb.max(gurls::COLUMNWISE);
@@ -671,13 +671,13 @@ void SurfaceModelGPActive::getSurfaceUncertainty(const gMat2D<double> &classProb
         }
     }
 
-    tempClassProb.saveCSV("classProbAbsNorm.csv");
+   // tempClassProb.saveCSV("classProbAbsNorm.csv");
 
     // The third step is to combine all of them into one
     vars.resize(nSamples, 1); // Only one row
     vars.setColumn(*tempClassProb.max(gurls::ROWWISE), 0);
 
-    vars.saveCSV("classProbAbsNormMax.csv");
+    //vars.saveCSV("classProbAbsNormMax.csv");
 
 }
 
