@@ -3,6 +3,7 @@
 #include <yarp/os/Value.h>
 #include <stdexcept>
 #include <deque>
+#include "fingerFactory.h"
 
 namespace objectExploration {
 using std::cerr;

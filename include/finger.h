@@ -154,10 +154,6 @@ private:
 
 };
 
-class simFinger:public Finger{
-protected:
-    simFinger(t_controllerData ctrlData);
-};
 
 
 
@@ -198,29 +194,7 @@ protected:
 
 };
 
-class SimIndexFinger: public Finger{
-public:
-    SimIndexFinger(t_controllerData ctrlData);
-    bool calibrate(){ return true;}
-    bool prepare();
-    virtual bool setSynchroProximalAngle(double proximal);
-    //void getRawTactileData(Vector rawTactileData);
-};
 
-class SimMiddleFinger: public Finger{
-public:
-    SimMiddleFinger(t_controllerData ctrlData);
-    bool calibrate(){return true;}
-    bool prepare();
-    bool  setSynchroProximalAngle(double proximal);
-    //void getTawTactileData(Vector rawTactileData);
-};
-
-class SimThumb: public Finger{
-public:
-    SimThumb(t_controllerData ctrlData);
-    bool prepare();
-};
 
 class IndexFinger: public icubFinger{
 
@@ -282,55 +256,6 @@ public:
 };
 
 
-class FingerFactory{
-public:
-    Finger* createFinger(string whichFinger, string whichRobot, t_controllerData ctrlData
-                         ){
 
-        ctrlData.whichFinger = whichFinger;
-
-
-        if(whichRobot.compare("icub") == 0){
-            if(whichFinger.compare("index") == 0){
-                return new IndexFinger(ctrlData);
-
-            }
-            if(whichFinger.compare("middle") == 0){
-                return new MiddleFinger(ctrlData);
-            }
-            if(whichFinger.compare("ring") == 0){
-                return new RingFinger(ctrlData);
-            }
-            if(whichFinger.compare("little") == 0){
-                return new LittleFinger(ctrlData);
-            }
-            else if(whichFinger.compare("thumb") == 0){
-                return new Thumb(ctrlData);
-            }
-        }
-        else if(whichRobot.compare("icubSim") == 0){
-            if(whichFinger.compare("index") == 0){
-                return new SimIndexFinger(ctrlData);
-            }
-            if(whichFinger.compare("middle") == 0){
-                return new SimMiddleFinger(ctrlData);
-
-            }
-            else if(whichFinger.compare("thumb") == 0){
-                return new SimThumb(ctrlData);
-
-            }
-            else if(whichFinger.compare("little") == 0){
-                return new SimThumb(ctrlData);
-            }
-            else if(whichFinger.compare("ring") == 0){
-                return new SimThumb(ctrlData);
-            }
-            else{
-                throw std::runtime_error("Finger factory: cannot create icubSim: " + whichFinger );
-            }
-        }
-    }
-};
 
 }//end of namespace
