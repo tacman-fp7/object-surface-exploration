@@ -49,3 +49,21 @@ icubcontrib-config-uninstall.cmake
 install_manifest.txt
 object-surface-exploration.cbp
 
+
+app/applications/simCartesian.xml
+app/contexts/contactSafety.ini
+data/
+include/badControllerException.h
+latentRep/cirPrism/
+latentRep/docopt.pyc
+latentRep/fish/
+latentRep/fishSQ/
+latentRep/hut/
+latentRep/hutWave/
+latentRep/triangPrism/
+matlabScripts/active_gurls.m
+matlabScripts/checkModel.m
+robotControl_thrift.cmake
+robotControl_thrift.cmake.old
+umlNew.xmi
+

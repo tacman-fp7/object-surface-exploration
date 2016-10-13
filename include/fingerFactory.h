@@ -2,6 +2,7 @@
 
 #include "finger.h"
 #include "simFinger.h"
+#include "icubFinger.h"
 
 namespace objectExploration {
 
