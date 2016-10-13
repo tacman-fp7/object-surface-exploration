@@ -79,25 +79,29 @@ class Finger{
 
 
 public:
-    virtual bool prepare(){}
     bool open();
+    virtual bool prepare();
+    virtual bool calibrate();
+
     virtual bool toArmPosition(Vector &fingertipPosition, Vector &retArmpPosition);
+
+
     virtual bool setAngles(double proximal, double distal, double speed);
     virtual bool setAngles(double proximal, double speed); //consider changing the name to something meaningful both distal and proximal are moves
     virtual bool setProximalAngle(double angle, double speed = 30);
     virtual bool setDistalAngle(double angle, double speed = 30);
     virtual bool setSynchroProximalAngle(double proximal){}
-    virtual bool calibrate();
+
     bool checkMotionDone();
     virtual bool getAngels(Vector &angles);
-    bool getPositionCoPAdjusted(yarp::sig::Vector &position);
+    bool getPositionCoPAdjusted(Vector &position);
+    bool getPosition(yarp::sig::Vector &position);
+    bool getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders);
 
-    virtual bool getPositionHandFrame(yarp::sig::Vector &position);
-
-    virtual bool getPosition(yarp::sig::Vector &position);
-    virtual bool getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders);
-
+    virtual bool getPositionHandFrame(Vector &position);
     virtual bool readEncoders(Vector &encoderValues);
+
+
     double getContactForce();
     bool getContactCoP(yarp::sig::Vector& contactCoP);
     bool hasForceCoP();
@@ -113,7 +117,7 @@ protected:
     bool setAngle(int joint, double angle, double speed = 30);
 
     void alignJointsBounds();
-      void checkMinMax(double &min, double &max);
+    void checkMinMax(double &min, double &max);
 
 private:
     static void initController(ResourceFinder& rf);

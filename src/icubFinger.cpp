@@ -75,7 +75,7 @@ bool icubFinger::toArmPosition(Vector &fingertipPosition, Vector &retArmpPositio
     return ret;
 }
 
-bool icubFinger::getPosition(yarp::sig::Vector &position){
+/*bool icubFinger::getPosition(yarp::sig::Vector &position){
     bool ret;
 
     Vector fingerEncoders;
@@ -86,13 +86,13 @@ bool icubFinger::getPosition(yarp::sig::Vector &position){
 
     return ret;
 
-}
+}*/
 
 
-bool icubFinger::getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders){
+/*bool icubFinger::getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders){
     cerr << _dbgtag << "get position has not been implemented for this finger." << endl;
     return false;
-}
+}*/
 
 bool icubFinger::getPositionHandFrame(yarp::sig::Vector &position){
     cerr << _dbgtag << "get position has not been implemented for this finger." << endl;
@@ -105,6 +105,8 @@ bool icubFinger::getPositionHandFrame(yarp::sig::Vector &position, yarp::sig::Ve
     cerr << _dbgtag << "get position has not been implemented for this finger." << endl;
     return false;
 }
+
+
 
 bool IndexFinger::getPositionHandFrame(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders){
 
@@ -155,7 +157,7 @@ bool IndexFinger::getPositionHandFrame(yarp::sig::Vector &position, yarp::sig::V
 return ret;
 }
 
-bool IndexFinger::getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders){
+/*bool IndexFinger::getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders){
 
 
     // I am using an hybrid fingertip position forward kinematics. Fristly, I use the the actual encoder
@@ -181,7 +183,7 @@ bool IndexFinger::getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fi
     //cout << "Finger position: " << position.toString()  << endl;
 
     return ret;
-}
+}*/
 
 icubFinger::icubFinger(t_controllerData ctrlData):Finger(ctrlData){
     _fingerEncoders = ctrlData.fingerEncoders;

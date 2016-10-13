@@ -12,8 +12,8 @@ public:
     virtual bool getPositionHandFrame(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders);
     virtual bool getPositionHandFrame(yarp::sig::Vector &position);
 
-    virtual bool getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders);
-    virtual bool getPosition(yarp::sig::Vector &position);
+    //virtual bool getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders);
+    //virtual bool getPosition(yarp::sig::Vector &position);
     void printJointLimits();
 protected:
     icubFinger(t_controllerData ctrlData);
@@ -49,7 +49,7 @@ public:
     bool prepare();
     bool getPositionHandFrame(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders);
     //virtual bool getPositionHandFrame(yarp::sig::Vector &position);
-    bool getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders);
+    //bool getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders);
     virtual bool setSynchroProximalAngle(double proximal);
     void getRawTactileData(Vector& rawTactileData);
 };
