@@ -36,7 +36,8 @@ include/objectModelGrid.h
 include/gpExplorationMultifinger.h
 include/surfaceModelGPActive.h
 include/simFinger.h
-include/fingerFactory.h)
+include/fingerFactory.h
+include/icubFinger.h)
 
 set(SOURCES src/main.cpp src/robotControl.cpp src/exploreObject.cpp
 src/objectFeaturesThread.cpp
@@ -49,6 +50,7 @@ src/objectModelGrid.cpp
 src/gpExplorationMultifinger.cpp
 src/surfaceModelGPActive.cpp
 src/simFinger.cpp
+src/icubFinger.cpp
  ${HEADERS})
 
 #set(CONTEXT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/bin/context" CACHE PATH "Path to the context files")
