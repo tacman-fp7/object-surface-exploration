@@ -96,11 +96,14 @@ public:
     virtual bool getAngels(Vector &angles);
     bool getPositionCoPAdjusted(Vector &position);
     bool getPosition(yarp::sig::Vector &position);
+
     bool getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders);
 
-    virtual bool getPositionHandFrame(Vector &position);
+    bool getPositionHandFrame(Vector &position);
+
     virtual bool readEncoders(Vector &encoderValues);
 
+    virtual bool getPositionHandFrameCorrected(yarp::sig::Vector &position);
 
     double getContactForce();
     bool getContactCoP(yarp::sig::Vector& contactCoP);

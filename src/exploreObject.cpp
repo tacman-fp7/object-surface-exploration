@@ -4,7 +4,7 @@
 #include <yarp/os/Bottle.h>
 #include <tappingExplorationThread.h>
 #include <gridExplorationThread.h>
-
+#include <fstream>
 
 namespace objectExploration {
 
@@ -18,12 +18,82 @@ using yarp::os::Value;
 bool ExploreObject::multiFinger(const double angle){
     //_robotHand->multiContact(angle);
 
+
+
     Finger *indexFinger = _robotHand->getIndexFinger();
-    Finger *MiddleFinger = _robotHand->getMiddleFinger();
+    Finger *middleFinger = _robotHand->getMiddleFinger();
 
-    yarp::sig::Vector position;
+    for (int i = 10; i <= 60; i++){
+        middleFinger->setSynchroProximalAngle(i);
 
-    indexFinger->setSynchroProximalAngle(angle);
+        while(!middleFinger->checkMotionDone())
+            ;
+
+        yarp::sig::Vector position;
+        position.clear();
+        indexFinger->getPosition(position);
+        _indexFingertipLog << position[0] << ", " << position[1] << ", " << position[2] << endl;
+        position.clear();
+        indexFinger->getPositionHandFrame(position);
+        _indexFingerHandLog << position[0] << ", " << position[1] << ", " << position[2] << endl;
+
+        position.clear();
+        indexFinger->getPositionHandFrameCorrected(position);
+        _indexCorrectedLog <<  position[0] << ", " << position[1] << ", " << position[2] << endl;
+
+        position.clear();
+        middleFinger->getPosition(position);
+        _middleFingertipLog << position[0] << ", " << position[1] << ", " << position[2] << endl;
+
+        position.clear();
+        middleFinger->getPositionHandFrame(position);
+        _middleFingerHandLog << position[0] << ", " << position[1] << ", " << position[2] << endl;
+
+        Vector orient;
+        position.clear();
+        _robotHand->getPose(position, orient);
+        _handPoseLog << position[0] << ", " << position[1] << ", " << position[2] << ", ";
+        _handPoseLog << orient[0] << ", " << orient[1] << ", " << orient[2] << ", " << orient[3] << endl;
+
+    }
+
+    for (int i = 60; i >= 10; i--){
+        middleFinger->setSynchroProximalAngle(i);
+
+        while(!middleFinger->checkMotionDone())
+            ;
+
+        yarp::sig::Vector position;
+        position.clear();
+        indexFinger->getPosition(position);
+        _indexFingertipLog << position[0] << ", " << position[1] << ", " << position[2] << endl;
+        position.clear();
+        indexFinger->getPositionHandFrame(position);
+        _indexFingerHandLog << position[0] << ", " << position[1] << ", " << position[2] << endl;
+
+        position.clear();
+        indexFinger->getPositionHandFrameCorrected(position);
+        _indexCorrectedLog <<  position[0] << ", " << position[1] << ", " << position[2] << endl;
+
+
+        position.clear();
+        middleFinger->getPosition(position);
+        _middleFingertipLog << position[0] << ", " << position[1] << ", " << position[2] << endl;
+
+        position.clear();
+        middleFinger->getPositionHandFrame(position);
+        _middleFingerHandLog << position[0] << ", " << position[1] << ", " << position[2] << endl;
+
+        Vector orient;
+        position.clear();
+        _robotHand->getPose(position, orient);
+        _handPoseLog << position[0] << ", " << position[1] << ", " << position[2] << ", ";
+        _handPoseLog << orient[0] << ", " << orient[1] << ", " << orient[2] << ", " << orient[3] << endl;
+
+
+    }
+
+    /*indexFinger->setSynchroProximalAngle(angle);
     indexFinger->getPosition(position);
     cout << "I Finger: " << position.toString() << endl;
 
@@ -31,6 +101,9 @@ bool ExploreObject::multiFinger(const double angle){
     MiddleFinger->setSynchroProximalAngle(angle);
     MiddleFinger->getPosition(position);
     cout << "M Finger: " << position.toString() << endl << endl;
+
+    */
+    return true;
 
 }
 
@@ -112,7 +185,7 @@ bool ExploreObject::fingerSetAngle(const double angle){
     cout << "Dz: " << indexFinger_pos[2] - middleFinger_pos[2] << endl;
     return true;
 
- /*   bool ret;
+    /*   bool ret;
 
     ret = _explorationFinger->setSynchroProximalAngle(angle);
     while(!_explorationFinger->checkMotionDone())
@@ -130,6 +203,14 @@ bool ExploreObject::fingerSetAngle(const double angle){
 
 ExploreObject::ExploreObject(yarp::os::ResourceFinder& rf)
 {
+
+
+    _middleFingertipLog.open("middleFingertipLog.csv");
+    _indexFingertipLog.open("indexFingertipLog.csv");
+    _middleFingerHandLog.open("middleFingerHandLog.csv");
+    _indexFingerHandLog.open("indexFingerHandLog.csv");
+    _handPoseLog.open("handPoseLog.csv");
+    _indexCorrectedLog.open("indexFingerCorrectedLog.csv");
 
     _dbgtag = "ExploreObject: ";
     // bool failed = false;
@@ -161,6 +242,13 @@ ExploreObject::ExploreObject(yarp::os::ResourceFinder& rf)
 
 ExploreObject::~ExploreObject()
 {
+
+    _middleFingertipLog.close();
+    _indexFingertipLog.close();
+    _middleFingerHandLog.close();
+    _indexFingerHandLog.close();
+    _handPoseLog.close();
+    _indexCorrectedLog.close();
 
     //cout << "Here" << endl;
 
@@ -358,8 +446,8 @@ bool ExploreObject::startExploringMultifinger(const string& objectName)
 
         // Ge the current position of the arm.
         Vector pos, orient;
-       // pos.resize(3);
-       // orient.resize(4);
+        // pos.resize(3);
+        // orient.resize(4);
         if(!_robotHand->getPose(pos, orient))
         {
             cerr << _dbgtag << "Could not read the arm position, cannot start exploration" << endl;
@@ -377,7 +465,7 @@ bool ExploreObject::startExploringMultifinger(const string& objectName)
 
         _exploreObjectMultifinger_thread =
                 new GPExplorationMultifingerThread(_explorationThreadPeriod,
-                                        _robotHand, _explorationFinger, objectName, _objectFeaturesThread);
+                                                   _robotHand, _explorationFinger, objectName, _objectFeaturesThread);
 
 
         if(!_exploreObjectMultifinger_thread->start()){
@@ -434,8 +522,8 @@ bool ExploreObject::startExploringGP(const string& objectName)
 
         // Ge the current position of the arm.
         Vector pos, orient;
-       // pos.resize(3);
-       // orient.resize(4);
+        // pos.resize(3);
+        // orient.resize(4);
         if(!_robotHand->getPose(pos, orient))
         {
             cerr << _dbgtag << "Could not read the arm position, cannot start exploration" << endl;
@@ -548,7 +636,7 @@ bool ExploreObject::startExploringGrid(const string objectName)
 
         _exploreObjectThread =
                 new GridExplorationThread(_explorationThreadPeriod ,
-                                             _robotHand, _explorationFinger, objectName, _objectFeaturesThread);
+                                          _robotHand, _explorationFinger, objectName, _objectFeaturesThread);
 
         if(!_exploreObjectThread->start())
             ret = false;

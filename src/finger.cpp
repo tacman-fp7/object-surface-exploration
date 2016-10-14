@@ -130,6 +130,18 @@ bool Finger::toArmPosition(Vector &fingertipPosition, Vector &retArmpPosition){
 
 bool Finger::getPositionHandFrame(yarp::sig::Vector &position){
 
+
+    bool ret;
+
+    Vector fingerEncoders;
+    fingerEncoders.resize(3);
+    ret = readEncoders(fingerEncoders);
+
+    ret = ret && getPositionHandFrame(position, fingerEncoders);
+
+    return ret;
+
+    /*
     bool ret = true;
     Vector joints;
     int nEncs;
@@ -157,7 +169,11 @@ bool Finger::getPositionHandFrame(yarp::sig::Vector &position){
     //_iCubFinger->setAng(joints);
     yarp::sig::Matrix tipFrame = _iCubFinger->getH(joints);
     position = tipFrame.getCol(3); // Tip's position in the hand coordinate
+*/
+}
 
+bool Finger::getPositionHandFrameCorrected(yarp::sig::Vector &position){
+    cout << "not implemented" << endl;
 }
 
 bool Finger::getPosition(yarp::sig::Vector &position){

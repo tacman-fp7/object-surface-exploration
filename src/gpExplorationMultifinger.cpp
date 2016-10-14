@@ -355,8 +355,8 @@ bool GPExplorationMultifingerThread::threadInit()
     bool ret;
 
 
-    _indexFingerLog.open("indexFingerLog.csv");
-    _middleFingerLog.open("middleFingerLog.csv");
+    _indexFingerLog.open("indexFingertipLog.csv");
+    _middleFingerLog.open("middleFingertipLog.csv");
 
     ret = GPExplorationThread::threadInit();
     GPExplorationThread::disableSurfaceSampling();

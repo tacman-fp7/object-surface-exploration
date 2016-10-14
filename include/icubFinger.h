@@ -10,7 +10,7 @@ public:
     bool getAngels(Vector &angles);
     bool toArmPosition(Vector &fingertipPosition, Vector &retArmpPosition);
     virtual bool getPositionHandFrame(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders);
-    virtual bool getPositionHandFrame(yarp::sig::Vector &position);
+    //virtual bool getPositionHandFrame(yarp::sig::Vector &position);
 
     //virtual bool getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders);
     //virtual bool getPosition(yarp::sig::Vector &position);
@@ -19,6 +19,9 @@ protected:
     icubFinger(t_controllerData ctrlData);
     BufferedPort<Bottle>* _fingerEncoders;
     bool calibrateIndexMiddle();
+public:
+
+    virtual bool getPositionHandFrameCorrected(yarp::sig::Vector &position);
 
 protected:
     double _maxProximal;
@@ -47,11 +50,16 @@ public:
     IndexFinger(t_controllerData);
     bool calibrate();
     bool prepare();
+    //bool getPositionHandFrame(yarp::sig::Vector &position);
     bool getPositionHandFrame(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders);
     //virtual bool getPositionHandFrame(yarp::sig::Vector &position);
     //bool getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders);
     virtual bool setSynchroProximalAngle(double proximal);
     void getRawTactileData(Vector& rawTactileData);
+
+public:
+    bool getPositionHandFrameCorrected(yarp::sig::Vector &position);
+
 };
 
 

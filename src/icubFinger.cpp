@@ -94,11 +94,16 @@ bool icubFinger::toArmPosition(Vector &fingertipPosition, Vector &retArmpPositio
     return false;
 }*/
 
-bool icubFinger::getPositionHandFrame(yarp::sig::Vector &position){
+/*bool icubFinger::getPositionHandFrame(yarp::sig::Vector &position){
     cerr << _dbgtag << "get position has not been implemented for this finger." << endl;
+
 
 return false;
 
+}*/
+
+bool icubFinger::getPositionHandFrameCorrected(yarp::sig::Vector &position){
+    Finger::getPositionHandFrame(position);
 }
 
 bool icubFinger::getPositionHandFrame(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders){
@@ -107,6 +112,30 @@ bool icubFinger::getPositionHandFrame(yarp::sig::Vector &position, yarp::sig::Ve
 }
 
 
+bool IndexFinger::getPositionHandFrameCorrected(yarp::sig::Vector &position){
+
+    Finger::getPositionHandFrame(position);
+    // Transfer it to the new frame
+
+    yarp::sig::Matrix H0(4,4);
+
+
+
+
+
+    H0(0,0)=0.8988;  H0(0,1)=-0.4350; H0(0,2)=-0.0548; H0(0,3)=-0.0121;
+    H0(1,0)=0.4382;  H0(1,1)=0.8954;  H0(1,2)=-0.0794; H0(1,3)=0.0125;
+    H0(2,0)=0.0146;  H0(2,1)=-0.0953; H0(2,2)=0.9953;  H0(2,3)=-0.0095;
+    H0(3,0)=0.0;     H0(3,1)=0.0;     H0(3,2)=0.0;     H0(3,3)=1.0;
+
+    //T_rotoTrans = yarp::math::axis2dcm(armOrient);
+    //T_rotoTrans.setSubcol(armPos, 0,3);
+
+    //cout << position.toString() << endl;
+    Vector retMat = yarp::math::operator *(H0, position);
+    position = retMat.subVector(0,2);
+
+}
 
 bool IndexFinger::getPositionHandFrame(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders){
 
@@ -139,7 +168,7 @@ bool IndexFinger::getPositionHandFrame(yarp::sig::Vector &position, yarp::sig::V
 
 
     // Replace the joins with the encoder readings
-    joints[0] = 0;
+    //joints[0] = 0;
     joints[1] = 90 * (1 - (fingerEncoders[0] - _minProximal) / (_maxProximal - _minProximal) );
     joints[2] = 90 * (1 - (fingerEncoders[1] - _minMiddle) / (_maxMiddle - _minMiddle) );
     joints[3] = 90 * (1 - (fingerEncoders[2] - _minDistal) / (_maxDistal - _minDistal) );
@@ -154,7 +183,7 @@ bool IndexFinger::getPositionHandFrame(yarp::sig::Vector &position, yarp::sig::V
     position = tipFrame.getCol(3); // Tip's position in the hand coordinate
 
 
-return ret;
+    return ret;
 }
 
 /*bool IndexFinger::getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders){

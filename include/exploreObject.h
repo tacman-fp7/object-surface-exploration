@@ -14,6 +14,7 @@
 #include <exploreGPSurfaceThread.h>
 #include "gpExplorationMultifinger.h"
 #include "hand.h"
+#include <fstream>
 
 using yarp::os::RFModule;
 
@@ -70,6 +71,12 @@ private:
     // The port for the robot control server
     yarp::os::Port _robotControl_port;
 
+    std::ofstream _indexFingertipLog;
+    std::ofstream _middleFingertipLog;
+    std::ofstream _indexFingerHandLog;
+    std::ofstream _middleFingerHandLog;
+    std::ofstream _handPoseLog;
+    std::ofstream _indexCorrectedLog;
     
     // Different exploration strategies
     ExplorationStrategyThread *_exploreObjectThread; // run appropriate exploration strategy
