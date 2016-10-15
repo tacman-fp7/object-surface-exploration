@@ -68,12 +68,16 @@ bool Finger::getAngels(yarp::sig::Vector &angles){
 
 
 bool Finger::getPositionHandFrame(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders){
+
     cerr << _dbgtag << "get position has not been implemented for this finger." << endl;
     return false;
 
 }
 
-
+bool Finger::getPositionHandFrameCorrected(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders){
+    cerr << _dbgtag << "get position in hand frame has not been implemented for this finger." << endl;
+    return false;
+}
 
 bool Finger::toArmPosition(Vector &fingertipPosition, Vector &retArmpPosition){
 
@@ -176,46 +180,64 @@ bool Finger::getPositionHandFrameCorrected(yarp::sig::Vector &position){
     cout << "not implemented" << endl;
 }
 
-bool Finger::getPosition(yarp::sig::Vector &position){
 
 
-    bool ret;
 
-    Vector fingerEncoders;
-    fingerEncoders.resize(3);
-    ret = readEncoders(fingerEncoders);
+bool Finger::getPositionCorrected(yarp::sig::Vector &position){
 
-    ret = ret && getPosition(position, fingerEncoders);
-
-    return ret;
-
-    /*
-    // I am using an hybrid fingertip position forward kinematics. Fristly, I use the the actual encoder
-    // data for the last three joints. Secondly, the behaviour of the icubFinger position estimation
-    // is a little unpredictable, so I am transforming the fingertip position into the robot coordingates
-    // myself.
     bool ret = true;
     Vector tip_x;
 
-    // Get the position of the finger in the hand framce
-    getPositionHandFrame(tip_x);
-
+    getPositionHandFrameCorrected(tip_x);
+    tip_x.resize(4);
+    tip_x[3] = 1.0;
     cout << "TipX: " << tip_x.toString() << endl;
 
-    // Get the arm position and orintation
     Vector armPos, armOrient;
     _armCartesianCtrl->getPose(armPos, armOrient);
 
-    // Create the rototranslation matrix
+    // My own transformation
     yarp::sig::Matrix T_rotoTrans(4,4);
     T_rotoTrans = yarp::math::axis2dcm(armOrient);
     T_rotoTrans.setSubcol(armPos, 0,3);
     Vector retMat = yarp::math::operator *(T_rotoTrans, tip_x);
-    position = retMat.subVector(0,2);    
+    position = retMat.subVector(0,2);
+
     return ret;
 
-    */
+}
 
+bool Finger::getPositionCorrected(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders){
+
+    bool ret = true;
+    Vector tip_x;
+
+    getPositionHandFrameCorrected(tip_x, fingerEncoders);
+
+    //cout << "TipX: " << tip_x.toString() << endl;
+
+    Vector armPos, armOrient;
+    _armCartesianCtrl->getPose(armPos, armOrient);
+
+    // My own transformation
+    yarp::sig::Matrix T_rotoTrans(4,4);
+    T_rotoTrans = yarp::math::axis2dcm(armOrient);
+    T_rotoTrans.setSubcol(armPos, 0,3);
+    Vector retMat = yarp::math::operator *(T_rotoTrans, tip_x);
+    position = retMat.subVector(0,2);
+    //cout << "Finger position: " << position.toString()  << endl;
+
+    return ret;
+
+}
+
+bool Finger::getPosition(yarp::sig::Vector &position){
+    bool ret;
+    Vector fingerEncoders;
+    fingerEncoders.resize(3);
+    ret = readEncoders(fingerEncoders);
+    ret = ret && getPosition(position, fingerEncoders);
+    return ret;
 }
 
 bool Finger::getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders){
@@ -231,7 +253,7 @@ bool Finger::getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerE
 
     getPositionHandFrame(tip_x, fingerEncoders);
 
-    cout << "TipX: " << tip_x.toString() << endl;
+    //cout << "TipX: " << tip_x.toString() << endl;
 
     Vector armPos, armOrient;
     _armCartesianCtrl->getPose(armPos, armOrient);

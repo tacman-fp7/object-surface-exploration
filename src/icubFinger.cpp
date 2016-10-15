@@ -103,7 +103,11 @@ return false;
 }*/
 
 bool icubFinger::getPositionHandFrameCorrected(yarp::sig::Vector &position){
-    Finger::getPositionHandFrame(position);
+   return Finger::getPositionHandFrame(position);
+}
+
+bool icubFinger::getPositionHandFrameCorrected(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders){
+    return getPositionHandFrame(position, fingerEncoders);
 }
 
 bool icubFinger::getPositionHandFrame(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders){
@@ -118,14 +122,24 @@ bool IndexFinger::getPositionHandFrameCorrected(yarp::sig::Vector &position){
     // Transfer it to the new frame
 
     yarp::sig::Matrix H0(4,4);
+/*
+R_hand =
+
+    0.9928   -0.1104    0.0474
+    0.1060    0.9906    0.0867
+   -0.0565   -0.0810    0.9951
 
 
+TT_hand =
 
+   -0.0020
+    0.0156
+   -0.0035
+*/
 
-
-    H0(0,0)=0.8988;  H0(0,1)=-0.4350; H0(0,2)=-0.0548; H0(0,3)=-0.0121;
-    H0(1,0)=0.4382;  H0(1,1)=0.8954;  H0(1,2)=-0.0794; H0(1,3)=0.0125;
-    H0(2,0)=0.0146;  H0(2,1)=-0.0953; H0(2,2)=0.9953;  H0(2,3)=-0.0095;
+    H0(0,0)=0.9928;  H0(0,1)=-0.1104; H0(0,2)=0.0474;  H0(0,3)=-0.0020;
+    H0(1,0)=0.1060;  H0(1,1)=0.9906;  H0(1,2)=0.0867;  H0(1,3)=0.0156;
+    H0(2,0)=-0.0565; H0(2,1)=-0.0810; H0(2,2)=0.9951;  H0(2,3)=-0.0035;
     H0(3,0)=0.0;     H0(3,1)=0.0;     H0(3,2)=0.0;     H0(3,3)=1.0;
 
     //T_rotoTrans = yarp::math::axis2dcm(armOrient);
@@ -168,7 +182,7 @@ bool IndexFinger::getPositionHandFrame(yarp::sig::Vector &position, yarp::sig::V
 
 
     // Replace the joins with the encoder readings
-    //joints[0] = 0;
+    joints[0] = 20;
     joints[1] = 90 * (1 - (fingerEncoders[0] - _minProximal) / (_maxProximal - _minProximal) );
     joints[2] = 90 * (1 - (fingerEncoders[1] - _minMiddle) / (_maxMiddle - _minMiddle) );
     joints[3] = 90 * (1 - (fingerEncoders[2] - _minDistal) / (_maxDistal - _minDistal) );

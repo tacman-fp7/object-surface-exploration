@@ -96,8 +96,10 @@ public:
     virtual bool getAngels(Vector &angles);
     bool getPositionCoPAdjusted(Vector &position);
     bool getPosition(yarp::sig::Vector &position);
+    bool getPositionCorrected(yarp::sig::Vector &position);
 
     bool getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders);
+    bool getPositionCorrected(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders);
 
     bool getPositionHandFrame(Vector &position);
 
@@ -114,6 +116,7 @@ public:
 
 protected:
     virtual bool getPositionHandFrame(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders);
+    virtual bool getPositionHandFrameCorrected(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders);
 
 protected:
     Finger(t_controllerData);

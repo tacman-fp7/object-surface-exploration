@@ -9,13 +9,15 @@ public:
 
     bool getAngels(Vector &angles);
     bool toArmPosition(Vector &fingertipPosition, Vector &retArmpPosition);
-    virtual bool getPositionHandFrame(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders);
+
     //virtual bool getPositionHandFrame(yarp::sig::Vector &position);
 
     //virtual bool getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders);
     //virtual bool getPosition(yarp::sig::Vector &position);
     void printJointLimits();
 protected:
+    virtual bool getPositionHandFrame(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders);
+    virtual bool getPositionHandFrameCorrected(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders);
     icubFinger(t_controllerData ctrlData);
     BufferedPort<Bottle>* _fingerEncoders;
     bool calibrateIndexMiddle();

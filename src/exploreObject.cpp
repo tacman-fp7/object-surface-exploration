@@ -5,6 +5,7 @@
 #include <tappingExplorationThread.h>
 #include <gridExplorationThread.h>
 #include <fstream>
+#include <yarp/os/Time.h>
 
 namespace objectExploration {
 
@@ -16,6 +17,45 @@ using std::endl;
 using yarp::os::Value;
 
 bool ExploreObject::multiFinger(const double angle){
+
+
+    Finger *indexFinger = _robotHand->getIndexFinger();
+    Finger *middleFinger = _robotHand->getMiddleFinger();
+
+    yarp::sig::Vector position;
+    for (int i = 1; i < 200; i++ ){
+    position.clear();
+    indexFinger->getPosition(position);
+    _indexFingertipLog << position[0] << ", " << position[1] << ", " << position[2] << endl;
+    position.clear();
+    indexFinger->getPositionHandFrame(position);
+    _indexFingerHandLog << position[0] << ", " << position[1] << ", " << position[2] << endl;
+
+    position.clear();
+    //indexFinger->getPositionHandFrameCorrected(position);
+    indexFinger->getPositionCorrected(position);
+    _indexCorrectedLog <<  position[0] << ", " << position[1] << ", " << position[2] << endl;
+
+    position.clear();
+    middleFinger->getPosition(position);
+    _middleFingertipLog << position[0] << ", " << position[1] << ", " << position[2] << endl;
+
+    position.clear();
+    middleFinger->getPositionHandFrame(position);
+    _middleFingerHandLog << position[0] << ", " << position[1] << ", " << position[2] << endl;
+
+    Vector orient;
+    position.clear();
+    _robotHand->getPose(position, orient);
+    _handPoseLog << position[0] << ", " << position[1] << ", " << position[2] << ", ";
+    _handPoseLog << orient[0] << ", " << orient[1] << ", " << orient[2] << ", " << orient[3] << endl;
+    yarp::os::Time::delay(0.1);
+    }
+return true;
+
+}
+
+/*bool ExploreObject::multiFinger(const double angle){
     //_robotHand->multiContact(angle);
 
 
@@ -23,11 +63,16 @@ bool ExploreObject::multiFinger(const double angle){
     Finger *indexFinger = _robotHand->getIndexFinger();
     Finger *middleFinger = _robotHand->getMiddleFinger();
 
-    for (int i = 10; i <= 60; i++){
+    for (int i = 20; i <= 50; i++){
         middleFinger->setSynchroProximalAngle(i);
-
         while(!middleFinger->checkMotionDone())
             ;
+
+
+        //indexFinger->setSynchroProximalAngle(i);
+        //while(!indexFinger->checkMotionDone())
+        //    ;
+
 
         yarp::sig::Vector position;
         position.clear();
@@ -38,7 +83,8 @@ bool ExploreObject::multiFinger(const double angle){
         _indexFingerHandLog << position[0] << ", " << position[1] << ", " << position[2] << endl;
 
         position.clear();
-        indexFinger->getPositionHandFrameCorrected(position);
+        //indexFinger->getPositionHandFrameCorrected(position);
+        indexFinger->getPositionCorrected(position);
         _indexCorrectedLog <<  position[0] << ", " << position[1] << ", " << position[2] << endl;
 
         position.clear();
@@ -57,11 +103,16 @@ bool ExploreObject::multiFinger(const double angle){
 
     }
 
-    for (int i = 60; i >= 10; i--){
+    for (int i = 50; i >= 20; i--){
         middleFinger->setSynchroProximalAngle(i);
-
         while(!middleFinger->checkMotionDone())
             ;
+
+
+        //indexFinger->setSynchroProximalAngle(i);
+        //while(!indexFinger->checkMotionDone())
+        //    ;
+
 
         yarp::sig::Vector position;
         position.clear();
@@ -72,7 +123,8 @@ bool ExploreObject::multiFinger(const double angle){
         _indexFingerHandLog << position[0] << ", " << position[1] << ", " << position[2] << endl;
 
         position.clear();
-        indexFinger->getPositionHandFrameCorrected(position);
+        //indexFinger->getPositionHandFrameCorrected(position);
+        indexFinger->getPositionCorrected(position);
         _indexCorrectedLog <<  position[0] << ", " << position[1] << ", " << position[2] << endl;
 
 
@@ -93,7 +145,14 @@ bool ExploreObject::multiFinger(const double angle){
 
     }
 
-    /*indexFinger->setSynchroProximalAngle(angle);
+
+return true;
+
+}*/
+
+/*
+bool ExploreObject::multiFinger(const double angle){
+    indexFinger->setSynchroProximalAngle(angle);
     indexFinger->getPosition(position);
     cout << "I Finger: " << position.toString() << endl;
 
@@ -102,10 +161,10 @@ bool ExploreObject::multiFinger(const double angle){
     MiddleFinger->getPosition(position);
     cout << "M Finger: " << position.toString() << endl << endl;
 
-    */
+
     return true;
 
-}
+}*/
 
 bool ExploreObject::validatePositionsEnable(){
     _exploreObjectGP_thread->enableValidatePositions();
