@@ -10,9 +10,9 @@ namespace objectExploration
 class GridExplorationThread: public TappingExplorationThread{
 
 public:
-    GridExplorationThread(int period, Hand* robotHand, Finger* explorationFinger, string objectName,
+    GridExplorationThread(int period, Hand* robotHand, Finger* explorationFinger, Finger* auxiliaryFinger, string objectName,
                             ObjectFeaturesThread* objectFeatures):
-            TappingExplorationThread(period, robotHand, explorationFinger, objectName,
+            TappingExplorationThread(period, robotHand, explorationFinger, auxiliaryFinger, objectName,
                                      objectFeatures){
 
         _dbgtag = "GridExplorationThread: ";

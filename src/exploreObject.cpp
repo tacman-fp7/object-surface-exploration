@@ -454,7 +454,7 @@ bool ExploreObject::exploreGPSurface(const std::string& objectName)
         }
 
         _exploreGPSurface_thread = new ExploreGPSurfaceThread(_explorationThreadPeriod ,
-                                                              _robotHand, _explorationFinger, "fix", _objectFeaturesThread);
+                                                              _robotHand, _explorationFinger, _auxiliaryFinger, "fix", _objectFeaturesThread);
 
 
 
@@ -524,7 +524,7 @@ bool ExploreObject::startExploringMultifinger(const string& objectName)
 
         _exploreObjectMultifinger_thread =
                 new GPExplorationMultifingerThread(_explorationThreadPeriod,
-                                                   _robotHand, _explorationFinger, objectName, _objectFeaturesThread);
+                                                   _robotHand, _explorationFinger, _auxiliaryFinger, objectName, _objectFeaturesThread);
 
 
         if(!_exploreObjectMultifinger_thread->start()){
@@ -600,7 +600,7 @@ bool ExploreObject::startExploringGP(const string& objectName)
 
         _exploreObjectGP_thread =
                 new GPExplorationThread(_explorationThreadPeriod,
-                                        _robotHand, _explorationFinger, objectName, _objectFeaturesThread);
+                                        _robotHand, _explorationFinger, _auxiliaryFinger, objectName, _objectFeaturesThread);
 
 
         if(!_exploreObjectGP_thread->start()){
@@ -695,7 +695,7 @@ bool ExploreObject::startExploringGrid(const string objectName)
 
         _exploreObjectThread =
                 new GridExplorationThread(_explorationThreadPeriod ,
-                                          _robotHand, _explorationFinger, objectName, _objectFeaturesThread);
+                                          _robotHand, _explorationFinger, _auxiliaryFinger, objectName, _objectFeaturesThread);
 
         if(!_exploreObjectThread->start())
             ret = false;
@@ -814,7 +814,10 @@ bool ExploreObject::configure(yarp::os::ResourceFinder& rf ){
     }
 
     //_explorationFinger = _robotHand->getIndexFinger();
+    //TODO: use config file to select
     _explorationFinger = _robotHand->getMiddleFinger();
+    _auxiliaryFinger = _robotHand->getIndexFinger();
+
 
     // Check if exploration finger has force and CoP data
     // We need these two data to be able to explore a surface

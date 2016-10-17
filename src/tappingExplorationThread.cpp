@@ -104,8 +104,8 @@ void TappingExplorationThread::run()
 
 
 TappingExplorationThread::TappingExplorationThread(int period, Hand* robotHand, Finger* explorationFinger,
-                                                   string objectName, ObjectFeaturesThread* objectFeatures):
-    ExplorationStrategyThread(period, robotHand, explorationFinger, objectName,
+                                                 Finger* auxiliaryFinger,  string objectName, ObjectFeaturesThread* objectFeatures):
+    ExplorationStrategyThread(period, robotHand, explorationFinger, auxiliaryFinger, objectName,
                               objectFeatures){
     _nGrid = 0;
     _forceThreshold = FORCE_TH;

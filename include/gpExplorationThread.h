@@ -17,9 +17,9 @@ class GPExplorationThread: public TappingExplorationThread
 {
 
 public:
-    GPExplorationThread(int period, Hand* robotHand, Finger* explorationFinger, string objectName,
+    GPExplorationThread(int period, Hand* robotHand, Finger* explorationFinger, Finger* auxiliaryFinger, string objectName,
                         ObjectFeaturesThread* objectFeatures):
-        TappingExplorationThread(period, robotHand, explorationFinger, objectName,
+        TappingExplorationThread(period, robotHand, explorationFinger, auxiliaryFinger, objectName,
                                  objectFeatures){
         _surfaceModel = new SurfaceModelGPActive(objectName);
         _forceThreshold = FORCE_TH;

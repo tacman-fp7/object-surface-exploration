@@ -96,6 +96,7 @@ private:
 
     Hand* _robotHand;
     Finger* _explorationFinger;
+    Finger* _auxiliaryFinger;
 
     std::string _dbgtag;
 };

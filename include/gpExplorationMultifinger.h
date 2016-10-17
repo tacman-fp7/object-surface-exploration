@@ -18,25 +18,27 @@ struct clenchResults{
 typedef struct clenchResults clenchResults_t;
 
 
-class MiddleFingerContactThread: public yarp::os::Thread{
+class ActuatedFingerContactThread: public yarp::os::Thread{
 public:
 
     virtual void run();
     //virtual bool threadInit(){_middleFinger = NULL; _maxAngle = 0; _contactState = false; return true;}
-    virtual void threadRelease(){_middleFinger = NULL, _maxAngle = 0;}
+    virtual void threadRelease(){_finger = NULL, _maxAngle = 0;}
 
     void initThread(Finger *finger, double maxAngle, double forceThreshold);//{_middleFinger = finger; _maxAngle = maxAngle; _forceThreshold = forceThreshold;}
     void getResults(bool *contactState){*contactState = _contactState;}
 
 
-private:
-    Finger *_middleFinger;
+protected:
+    Finger *_finger;
     double _maxAngle;
     bool _contactState;
     double _forceThreshold;
 
 
 };
+
+
 
 
 class RingAndLittleFingersContactThread: public yarp::os::Thread{
@@ -68,9 +70,9 @@ class GPExplorationMultifingerThread: public GPExplorationThread
 {
 
 public:
-    GPExplorationMultifingerThread(int period, Hand* robotHand, Finger* explorationFinger, string objectName,
+    GPExplorationMultifingerThread(int period, Hand* robotHand, Finger* explorationFinger, Finger* auxiliaryFinger, string objectName,
                         ObjectFeaturesThread* objectFeatures):
-        GPExplorationThread(period, robotHand, explorationFinger, objectName,
+        GPExplorationThread(period, robotHand, explorationFinger, auxiliaryFinger, objectName,
                                  objectFeatures){
     }
 
@@ -84,7 +86,7 @@ protected:
     bool clenchRingLittleFinger(Finger *ringFinger, Finger *littleFinger, double maxAngle, clenchResults_t *clenchResults);
     void logData();
 private:
-    MiddleFingerContactThread _contactMiddleFinger;
+    ActuatedFingerContactThread _contactAuxiliaryFinger;
     RingAndLittleFingersContactThread _contactRingAndLittleFingers;
 
 
