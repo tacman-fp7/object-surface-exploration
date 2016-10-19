@@ -70,10 +70,11 @@ void GPExplorationMultifingerThread::run()
                 _stateMutex.unlock();
             }
             else{
+
                 GPExplorationThread::maintainContact();
 
                 multifingerContact();
-                logData();
+                //logData();
             }
             //_stateMutex.unlock();
             break;
@@ -124,20 +125,20 @@ void GPExplorationMultifingerThread::run()
 
 }
 
-void GPExplorationMultifingerThread::logData(){
+/*void GPExplorationMultifingerThread::logData(){
 
     Vector fingerPosition;
     Finger *indexFinger = _robotHand->getIndexFinger();
     Finger *middleFinger = _robotHand->getMiddleFinger();
 
     indexFinger->getPosition(fingerPosition);
-  _indexFingerLog << fingerPosition[0] << "," << fingerPosition[1] << "," << fingerPosition[2] << endl;
+  _indexFingerLog << fingerPosition[0] << ", " << fingerPosition[1] << ", " << fingerPosition[2] << endl;
   fingerPosition.clear();
   middleFinger->getPosition(fingerPosition);
   _middleFingerLog << fingerPosition[0] << "," << fingerPosition[1] << "," << fingerPosition[2] << endl;
 
 
-}
+}*/
 
 bool GPExplorationMultifingerThread::clenchRingLittleFinger(Finger *ringFinger, Finger *littleFinger, double maxAngle, clenchResults_t *clenchResults)
 {
@@ -282,10 +283,7 @@ void GPExplorationMultifingerThread::multifingerContact(){
     // Can I move all of them in parallel
 
 
-
-
-
-    clenchResults_t clenchResults;
+    //clenchResults_t clenchResults;
     bool auxiliaryFingerHasContact;
 
 
@@ -309,9 +307,10 @@ void GPExplorationMultifingerThread::multifingerContact(){
 
     if(auxiliaryFingerHasContact){
         Vector fingertipPosition;
-        _auxiliaryFinger->getPosition(fingertipPosition);
+        _auxiliaryFinger->getPositionCorrected(fingertipPosition);
         std::cout << "Aux finger pos: " << fingertipPosition.toString() << std::endl;
         _surfaceModel->addContactPoint(fingertipPosition);
+        _auxiliaryFingerLog << fingertipPosition[0] << ", " << fingertipPosition[1] << ", " << fingertipPosition[2] << endl;
     }
 
 
@@ -355,8 +354,11 @@ bool GPExplorationMultifingerThread::threadInit()
     bool ret;
 
 
-    _indexFingerLog.open("indexFingertipLog.csv");
-    _middleFingerLog.open("middleFingertipLog.csv");
+
+    string fileName = _explorationFinger->getFingerName() + "FingertipLogGP.csv";
+    _explorationFingerLog.open(fileName.c_str());
+    fileName = _auxiliaryFinger->getFingerName() + "FingertipLogGP.csv";
+    _auxiliaryFingerLog.open(fileName.c_str());
 
     ret = GPExplorationThread::threadInit();
     GPExplorationThread::disableSurfaceSampling();
@@ -367,8 +369,8 @@ bool GPExplorationMultifingerThread::threadInit()
 
 void GPExplorationMultifingerThread::threadRelease()
 {
-     _indexFingerLog.close();
-     _middleFingerLog.close();
+     _explorationFingerLog.close();
+     _auxiliaryFingerLog.close();
     GPExplorationThread::threadRelease();
 
 }

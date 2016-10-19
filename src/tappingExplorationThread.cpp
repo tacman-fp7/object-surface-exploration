@@ -216,7 +216,7 @@ void TappingExplorationThread::calculateNewWaypoint()
 
 
         // Get the finger postion
-        _explorationFinger->getPosition(fingertipPosition, _indexFingerEncoders);
+        _explorationFinger->getPositionCorrected(fingertipPosition, _explorationFingerEncoders);
 
         //_explorationFinger->getPosition()
         //Open the finger
@@ -226,7 +226,7 @@ void TappingExplorationThread::calculateNewWaypoint()
 
         Vector prepDeltaPosition;
         //_robotHand->getIndexFingertipPosition(prepDeltaPosition);
-        _explorationFinger->getPosition(prepDeltaPosition);
+        _explorationFinger->getPositionCorrected(prepDeltaPosition);
         fingertipPosition[2] -= prepDeltaPosition[2];// + 0.003; // Take the current delta z out
 
         if(fingertipPosition[2] > 0.04)
@@ -249,7 +249,7 @@ void TappingExplorationThread::calculateNewWaypoint()
 
 void TappingExplorationThread::moveArmToWayPoint(yarp::sig::Vector pos, yarp::sig::Vector orient)
 {
-    Vector indexFingerAngles;
+    Vector explorationFingerAngles;
     if( _robotHand->goToPoseSync(pos, orient))//_robotCartesianController->goToPoseSync(pos, orient))
     {
         bool motionDone = false;
@@ -263,16 +263,16 @@ void TappingExplorationThread::moveArmToWayPoint(yarp::sig::Vector pos, yarp::si
                 break;
             }
 
-            _explorationFinger->getAngels(indexFingerAngles);
+            _explorationFinger->getAngels(explorationFingerAngles);
 
             //_robotHand->getIndexFingerAngles(indexFingerAngles);
 
-            if(indexFingerAngles[1] < 20 )
+            if(explorationFingerAngles[1] < 5 )
             {
                 cout << "Abandoned motion due to angles" << endl;
                 _robotHand->stopControl();
                 //_robotCartesianController->stopControl();
-                cout << "Angles: " << indexFingerAngles.toString() << endl;
+                cout << "Angles: " << explorationFingerAngles.toString() << endl;
 
                 break;
             }
@@ -406,12 +406,12 @@ void TappingExplorationThread::approachObject()
 
 void TappingExplorationThread::detectContact(double maxAngle)
 {
-    Vector indexFingerAngles;
+    Vector explorationFingerAngles;
     std::clock_t time = std::clock();
     while((_explorationFinger->getContactForce()) < _forceThreshold)
     {
         // Get the angles
-        _explorationFinger->getAngels(indexFingerAngles);
+        _explorationFinger->getAngels(explorationFingerAngles);
 
         //cout << "Finger angles: " << indexFingerAngles.toString() << endl;
         //_robotHand->getIndexFingerAngles(indexFingerAngles);
@@ -421,7 +421,7 @@ void TappingExplorationThread::detectContact(double maxAngle)
         {
             break;
         }
-        else if(indexFingerAngles[0] > maxAngle * 0.95) //Proximal angle
+        else if(explorationFingerAngles[0] > maxAngle * 0.95) //Proximal angle
         {
 
             cout << "No contact detected." << endl;
@@ -434,7 +434,7 @@ void TappingExplorationThread::detectContact(double maxAngle)
             _contactState = CALCULATE_NEWWAYPONT;
             break;
         }
-        else if(indexFingerAngles[1] < 3) // Middle angle
+        else if(explorationFingerAngles[1] < 3) // Middle angle
         {
             // We have contact without force
             cout << "No froce but middle angle exceeded the limit " << endl;
@@ -445,7 +445,7 @@ void TappingExplorationThread::detectContact(double maxAngle)
 
     // This is used later to move the relative to the contact
     // and prep position.
-    _explorationFinger->readEncoders(_indexFingerEncoders);
+    _explorationFinger->readEncoders(_explorationFingerEncoders);
     //_robotHand->getIndexFingerEncoder(_indexFingerEncoders);
 }
 

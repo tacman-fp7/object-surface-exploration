@@ -133,7 +133,7 @@ void GridExplorationThread::maintainContact()
     Vector contactCoP;
     Vector contactForce;
 
-    _explorationFinger->getPosition(fingertipPosition);
+    _explorationFinger->getPositionCorrected(fingertipPosition);
     _explorationFinger->getContactCoP(contactCoP);
     _explorationFinger->getRawTactileData(contactForce);
 

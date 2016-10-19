@@ -273,6 +273,9 @@ bool Finger::getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerE
 }
 
 
+string Finger::getFingerName(){
+    return _whichFinger;
+}
 
 Finger::Finger(t_controllerData ctrlData){
     _armEncoder = ctrlData.armEncoder;

@@ -67,7 +67,7 @@ void ExploreGPSurfaceThread::run()
 
 
             //_objectFeatures->getIndexFingertipPosition(fingertipPositon);
-            _explorationFinger->getPosition(fingertipPositon);
+            _explorationFinger->getPositionCorrected(fingertipPositon);
             // Check if it is high enough
             if(!(fabs(fingertipPositon[2]  + 0.15) > 10.0/1000))
             {
@@ -245,7 +245,7 @@ void ExploreGPSurfaceThread::maintainContact()
     // Get the fingertip position
     Vector indexFingerAngles;
     Vector fingertipPosition;
-    _explorationFinger->getPosition(fingertipPosition);
+    _explorationFinger->getPositionCorrected(fingertipPosition);
 
     // set the current fingertip position as the next waypoint;
     Vector desiredArmPos, desiredArmOrient;
@@ -294,7 +294,7 @@ void ExploreGPSurfaceThread::maintainContact()
             _robotHand->checkMotionDone(&motionDone);
         }
 
-        _explorationFinger->getPosition(fingertipPosition);
+        _explorationFinger->getPositionCorrected(fingertipPosition);
         cout << "AF: " << fingertipPosition.toString() << endl;
 
 

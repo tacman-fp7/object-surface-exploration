@@ -815,9 +815,13 @@ bool ExploreObject::configure(yarp::os::ResourceFinder& rf ){
 
     //_explorationFinger = _robotHand->getIndexFinger();
     //TODO: use config file to select
-    _explorationFinger = _robotHand->getMiddleFinger();
-    _auxiliaryFinger = _robotHand->getIndexFinger();
+    //_explorationFinger = _robotHand->getMiddleFinger();
+    //_auxiliaryFinger = _robotHand->getIndexFinger();
 
+
+
+    _explorationFinger = _robotHand->getIndexFinger();
+    _auxiliaryFinger = _robotHand->getMiddleFinger();
 
     // Check if exploration finger has force and CoP data
     // We need these two data to be able to explore a surface

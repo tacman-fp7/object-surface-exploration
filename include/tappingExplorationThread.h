@@ -54,7 +54,7 @@ protected:
     int _nGrid; // should be moved to grid exploration
 
 private:
-    Vector _indexFingerEncoders;
+    Vector _explorationFingerEncoders;
 
 
 

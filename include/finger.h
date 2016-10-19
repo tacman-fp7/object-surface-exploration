@@ -113,6 +113,8 @@ public:
     virtual void getRawTactileData(Vector& rawTactileData){rawTactileData.resize(12); rawTactileData.zero();}
     //virtual bool calibrate2(){}
     virtual void printJointLimits(){}
+    string getFingerName();
+
 
 protected:
     virtual bool getPositionHandFrame(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders);

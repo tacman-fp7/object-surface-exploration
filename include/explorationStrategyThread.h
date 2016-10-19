@@ -22,6 +22,9 @@ protected:
 
     SurfaceModel* _surfaceModel;
 
+    std::ofstream _explorationFingerLog;
+    std::ofstream _auxiliaryFingerLog;
+
 };
 
 } // namespace objectExploration

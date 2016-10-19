@@ -84,15 +84,14 @@ public:
 protected:
     bool clenchFinger(Finger *finger, double maxAngle);
     bool clenchRingLittleFinger(Finger *ringFinger, Finger *littleFinger, double maxAngle, clenchResults_t *clenchResults);
-    void logData();
+    //void logData();
 private:
     ActuatedFingerContactThread _contactAuxiliaryFinger;
     RingAndLittleFingersContactThread _contactRingAndLittleFingers;
 
 
 
-    std::ofstream _indexFingerLog;
-    std::ofstream _middleFingerLog;
+
 
 }; // end of class
 

@@ -233,7 +233,7 @@ void GPExplorationThread::maintainContact_GP_validatePosition(){
     // Store the contact location
 
     Vector fingertipPosition;
-    _explorationFinger->getPosition(fingertipPosition);
+    _explorationFinger->getPositionCorrected(fingertipPosition);
 
     if(_surfaceModel->validatePosition(fingertipPosition)){
         _surfaceModel->trainModel();
@@ -301,7 +301,7 @@ void GPExplorationThread::maintainContact()
 
 
     Vector fingertipPosition;
-    _explorationFinger->getPosition(fingertipPosition);
+    _explorationFinger->getPositionCorrected(fingertipPosition);
 
     _zPoints.push_back(fingertipPosition[2]);
 
@@ -311,7 +311,7 @@ void GPExplorationThread::maintainContact()
 
         if(TappingExplorationThread::confrimContact(30))
         {
-            _explorationFinger->getPosition(fingertipPosition);
+            _explorationFinger->getPositionCorrected(fingertipPosition);
             _zPoints.push_back(fingertipPosition[2]);
         }
         else
@@ -326,6 +326,8 @@ void GPExplorationThread::maintainContact()
     double median = getMedian(_zPoints);
     fingertipPosition[2] = median;
     _surfaceModel->addContactPoint(fingertipPosition);
+    //logging the data
+    _explorationFingerLog << fingertipPosition[0] << ", " << fingertipPosition[1] << ", " << fingertipPosition[2] << endl;
 
     _zPoints.clear();
 
@@ -355,7 +357,7 @@ void GPExplorationThread::maintainContact()
 
     // Wiggle wiggle
     if(_sampleSurface){
-        _explorationFinger->getPosition(fingertipPosition);
+        _explorationFinger->getPositionCorrected(fingertipPosition);
         cout << "Finger position: " << fingertipPosition[2] + 0.15 << endl;
         if((fabs(fingertipPosition[2]  + 0.15) > 15.0/1000)){
             cout << "wiggle wiggle" << endl;
@@ -444,7 +446,7 @@ void GPExplorationThread::sampleSurface_wiggleFingers()
     // Get the fingertip position
     Vector indexFingerAngles;
     Vector fingertipPosition;
-    _explorationFinger->getPosition(fingertipPosition);
+    _explorationFinger->getPositionCorrected(fingertipPosition);
 
 
     Vector desiredArmPos, desiredArmOrient;
