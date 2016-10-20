@@ -33,7 +33,7 @@ bool icubFinger::toArmPosition(Vector &fingertipPosition, Vector &retArmpPositio
     bool ret = true;
 
 
-    Vector joints;
+  /*  Vector joints;
     int nEncs;
 
     ret = ret && _armEncoder->getAxes(&nEncs);
@@ -64,7 +64,10 @@ bool icubFinger::toArmPosition(Vector &fingertipPosition, Vector &retArmpPositio
         joints[j] *= DEG2RAD;
 
     yarp::sig::Matrix tipFrame = _iCubFinger->getH(joints);
-    Vector tip_x = tipFrame.getCol(3);
+    Vector tip_x = tipFrame.getCol(3);*/
+
+    Vector tip_x;
+    getPositionHandFrameCorrected(tip_x);
 
     retArmpPosition.resize(3);
     retArmpPosition[0] = fingertipPosition[0] + tip_x[0];
@@ -168,7 +171,7 @@ TT_hand =
 */
 
     H0(0,0)=0.9934;   H0(0,1)=-0.1093; H0(0,2)=0.0345;  H0(0,3)=-0.0014;
-    H0(1,0)=0.1060;   H0(1,1)=0.9906;  H0(1,2)=0.0867;  H0(1,3)=0.0156;
+    H0(1,0)=0.1060;   H0(1,1)=0.9906;  H0(1,2)=0.0867;  H0(1,3)=0;//0.0156;
     H0(2,0)=-0.0437;  H0(2,1)=-0.0824; H0(2,2)=0.9956;  H0(2,3)=-0.0033;
     H0(3,0)=0.0;      H0(3,1)=0.0;     H0(3,2)=0.0;     H0(3,3)=1.0;
 

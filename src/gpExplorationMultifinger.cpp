@@ -283,6 +283,7 @@ void GPExplorationMultifingerThread::multifingerContact(){
     // Can I move all of them in parallel
 
 
+
     //clenchResults_t clenchResults;
     bool auxiliaryFingerHasContact;
 
