@@ -26,7 +26,7 @@ SurfaceModelGP::SurfaceModelGP(const std::string objectName){
     _isValidModel = false;
     _isValidMaxVar = false;
     _inputTraining.resize(0,2);
-    _paddingPoints = 0;
+    //_nPaddingPoints = 0;
     _maxX = _minX = _maxY = _minY = 0;
     _repeatVar = false;
     _nextSamplingIndex = 0;
@@ -61,20 +61,22 @@ void SurfaceModelGP::loadContactData(const std::string type)
     _outputTraining.readCSV(outputTrainingFileName);
 
 
-    _paddingPoints = _inputTraining.rows();
+    //TODO: fix this later
+    //_nPaddingPoints = _inputTraining.rows();
     // Updtate the internal vectors
     for(int i = 0; i < _inputTraining.rows(); i++)
     {
-        _xPoints.push_back(_inputTraining[i].at(0));
-        _yPoints.push_back(_inputTraining[i].at(1));
-        _zPoints.push_back(_outputTraining[i].at(0));
+
+        //        _xPoints[fingerID].push_back(_inputTraining[i].at(0));
+        //        _yPoints[fingerID].push_back(_inputTraining[i].at(1));
+        //        _zPoints.push_back(_outputTraining[i].at(0));
     }
 
     //setBoundingBox();
 
 }
 
-void SurfaceModelGP::addContactPoint(const Vector fingertipPosition)
+void SurfaceModelGP::addContactPoint(const Vector fingertipPosition, const int fingerID)
 {
     gVec<double> posXY;
     gVec<double> posZ;
@@ -86,11 +88,11 @@ void SurfaceModelGP::addContactPoint(const Vector fingertipPosition)
     posXY.at(1) = fingertipPosition[1];
     posZ.at(0) = fingertipPosition[2];
 
-    addContactPoint(posXY, posZ);
+    addContactPoint(posXY, posZ, fingerID);
 
 }
 
-void SurfaceModelGP::addContactPoint(gVec<double> posXY, gVec<double> posZ)
+void SurfaceModelGP::addContactPoint(gVec<double> posXY, gVec<double> posZ, const int fingerID)
 {
     if(posXY.at(0) <= _minX || posXY.at(0) >= _maxX || posXY.at(1) <= _minY || posXY.at(1) >= _maxY)
     {
@@ -98,25 +100,40 @@ void SurfaceModelGP::addContactPoint(gVec<double> posXY, gVec<double> posZ)
         return;
     }
     // Add the new point to the matrix
-    cout << "Adding a new contact point: " << _inputTraining.rows() - _paddingPoints + 1 << endl;
-    //cout << posXY.at(0) << ", " << posXY.at(1) << " " << posZ.at(0) << endl;
-    //cout << "Size: " << posXY.getSize() << endl;
-    //cout << "Data: " << *(posXY.getData()) << "," << *(posXY.getData()+1) << endl;
+    cout << "Adding a new contact point: " << _inputTraining.rows() - _paddingPoints.size() + 1 << endl;
 
-    _inputTraining.resize(_inputTraining.rows() + 1, 2);
-    _outputTraining.resize(_outputTraining.rows() + 1, 1);//_outputTraining.cols());
-    _inputTraining.setRow(posXY, _inputTraining.rows()-1);
-    _outputTraining.setRow(posZ, _outputTraining.rows()-1);
-    //_inputTraining[_inputTraining.rows() -1].at(0) = posXY.at(0);
-    // _inputTraining[_inputTraining.rows() -1].at(0) = posXY.at(1);
-    //cout << "T: " << _inputTraining[_inputTraining.rows() -1].at(0) << ", "
-    //     << _inputTraining[_inputTraining.rows() -1].at(1) << endl;
+    //    _inputTraining.resize(_inputTraining.rows() + 1, 2);
+    //    _outputTraining.resize(_outputTraining.rows() + 1, 1);//_outputTraining.cols());
+    //    _inputTraining.setRow(posXY, _inputTraining.rows()-1);
+    //    _outputTraining.setRow(posZ, _outputTraining.rows()-1);
 
-    _xPoints.push_back(posXY.at(0));
-    _yPoints.push_back(posXY.at(1));
-    _zPoints.push_back(posZ.at(0));
+    //if(_contactLocations.size() >)
 
-    printTrainingData();
+    if(_contactLocations.size() > fingerID){
+        //
+        _contactLocations.at(fingerID).push_back(point3d(posXY.at(0), posXY.at(1), posZ.at(0)));
+    }
+    else{
+        fingertipData_t newFinger;
+        newFinger.push_back(point3d(posXY.at(0), posXY.at(1), posZ.at(0)));
+        _contactLocations.push_back(newFinger);
+    }
+
+    /*if(_xPoints.size() > fingerID){
+        // We have the finger in the vector get the subvector
+       _xPoints.at(fingerID).push_back(posXY.at(0));
+       _yPoints.at(fingerID).push_back(posXY.at(1));
+       _zPoints.at(fingerID).push_back(posZ.at(0));
+
+    }
+    else{
+        _xPoints.push_back(vector<double>(posXY.at(0)));
+        _yPoints.push_back(vector<double>(posXY.at(1)));
+        _zPoints.push_back(vector<double>(posZ.at(0)));
+    }
+*/
+
+    mergeFingerData();
 
 
 }
@@ -238,18 +255,55 @@ bool SurfaceModelGP::trainModel(){
     return ret;
 }
 
-void SurfaceModelGP::printTrainingData()
+void SurfaceModelGP::mergeFingerData()
 {
+    unsigned int nContactLocations = 0;
+    for(contactLocationItr finger = _contactLocations.begin(); finger != _contactLocations.end(); finger++){
+        nContactLocations += finger->size();
+    }
+
+    _inputTraining.resize(_paddingPoints.size() + nContactLocations, 2);
+    _outputTraining.resize(_paddingPoints.size() + nContactLocations, 1);
+    // No processing merging directly
+
+    unsigned int index = 0;
+    for(fingertipDataItr padding = _paddingPoints.begin(); padding != _paddingPoints.end(); padding++){
+        _inputTraining(index, 0) = padding->x;
+        _inputTraining(index, 1) = padding->y;
+        _outputTraining(index, 0) = padding->z;
+        index++;
+    }
+    index = _paddingPoints.size();
+    for(contactLocationItr finger = _contactLocations.begin(); finger != _contactLocations.end(); finger++){
+        for(fingertipDataItr location = finger->begin(); location != finger->end(); location++){
+            _inputTraining(index, 0) = location->x;
+            _inputTraining(index, 1) = location->y;
+            _outputTraining(index,0) = location->z;
+
+            index++;
+        }
+
+    }
+
+    //typedef vector< vector<double> >::iterator fingerItr;
+    //typedef vector<double>::iterator posItr;
+
+
+
+
+
+
+
 
     //_inputTraining =  gMat2D<double>::zeros(_inputTesting.rows(), 2);
-    for(int i =0; i < _inputTraining.rows(); i++ )
+    /*    for(int i =0; i < _inputTraining.rows(); i++ )
     {
         _inputTraining(i, 1) =  _yPoints.at(i);
         //cout << "G: " << _inputTraining[i].at(0) << ", "   << _inputTraining[i].at(1) << ", "  << _outputTraining[i].at(0) << endl;
 
         //cout << "V: " << _xPoints.at(i)  << ", " << _yPoints.at(i)  << ", " << _zPoints.at(i) << endl;
     }
-
+*/
 
 }
 
@@ -356,76 +410,91 @@ void SurfaceModelGP::padBoundingBox(double xMin, double xMax, double yMin, doubl
     double yValue = yMin;
     while (yValue <= yMax )
     {
-        _xPoints.push_back(xMin);
-        _yPoints.push_back(yValue);
-        _zPoints.push_back(zMin);
+        _paddingPoints.push_back(point3d(xMin, yValue, zMin));
+       // _xPoints.push_back(xMin);
+       // _yPoints.push_back(yValue);
+       // _zPoints.push_back(zMin);
         yValue += ySteps;
-        _paddingPoints ++;
+        //_nPaddingPoints ++;
     }
 
     // Check if the last point added is at maximum
     // Othrewise add at maximum
     if(fabs(yValue - yMax) < fabs(ySteps))
     {
-        _xPoints.push_back(xMin);
-        _yPoints.push_back(yValue);
-        _zPoints.push_back(zMin);
-        _paddingPoints ++;
+        _paddingPoints.push_back(point3d(xMin, yValue, zMin));
+        //_xPoints.push_back(xMin);
+        //_yPoints.push_back(yValue);
+        //_zPoints.push_back(zMin);
+        //_nPaddingPoints ++;
     }
 
     yValue = yMin;
     while (yValue <= yMax )
     {
-        _xPoints.push_back(xMax);
-        _yPoints.push_back(yValue);
-        _zPoints.push_back(zMin);
+        _paddingPoints.push_back(point3d(xMax, yValue, zMin));
+        //_xPoints.push_back(xMax);
+        //_yPoints.push_back(yValue);
+        //_zPoints.push_back(zMin);
         yValue += ySteps;
-        _paddingPoints ++;
+        //_nPaddingPoints ++;
     }
 
     // Check if the last point added is at maximum
     // Othrewise add at maximum
     if(fabs(yValue - yMax) < fabs(ySteps))
     {
-        _xPoints.push_back(xMax);
-        _yPoints.push_back(yValue);
-        _zPoints.push_back(zMin);
-        _paddingPoints ++;
+        _paddingPoints.push_back(point3d(xMax, yValue, zMin));
+       //_xPoints.push_back(xMax);
+       //_yPoints.push_back(yValue);
+       //_zPoints.push_back(zMin);
+       //_nPaddingPoints ++;
     }
 
     double xValue = xMin + xSteps;
     while(xValue < xMax)
     {
-        _xPoints.push_back(xValue);
-        _yPoints.push_back(yMin);
-        _zPoints.push_back(zMin);
+        _paddingPoints.push_back(point3d(xValue, yMin, zMin));
+       // _xPoints.push_back(xValue);
+       // _yPoints.push_back(yMin);
+       // _zPoints.push_back(zMin);
         xValue += xSteps;
-        _paddingPoints ++;
+       // _nPaddingPoints ++;
     }
 
     xValue = xMin + xSteps;
     while(xValue < xMax)
     {
-        _xPoints.push_back(xValue);
-        _yPoints.push_back(yMax);
-        _zPoints.push_back(zMin);
+        _paddingPoints.push_back(point3d(xValue, yMax, zMin));
+        //_xPoints.push_back(xValue);
+        //_yPoints.push_back(yMax);
+        //_zPoints.push_back(zMin);
         xValue += xSteps;
-        _paddingPoints ++;
+        //_nPaddingPoints ++;
     }
 
 
     //cout << "Here" << endl;
     // Update the gvectors
-    _inputTraining.resize(_xPoints.size(),2);
-    _outputTraining.resize(_zPoints.size(),1);
+   // _inputTraining.resize(_xPoints.size(),2);
+   // _outputTraining.resize(_zPoints.size(),1);
 
+    _inputTraining.resize(_paddingPoints.size(), 2);
+    _outputTraining.resize(_paddingPoints.size(), 1);
 
-    for(int i =0; i < _xPoints.size(); i++ )
+    unsigned int locIndex = 0;
+    for(fingertipDataItr location = _paddingPoints.begin(); location != _paddingPoints.end(); location++){
+        _inputTraining(locIndex, 0) = location->x;
+        _inputTraining(locIndex, 1) = location->y;
+        _outputTraining(locIndex, 0) = location->z;
+        locIndex ++;
+    }
+  /*  for(int i =0; i < _xPoints.size(); i++ )
     {
         _inputTraining(i, 1) =  _yPoints.at(i);
         _inputTraining(i, 0) = _xPoints.at(i);
         _outputTraining(i,0) = _zPoints.at(i);
-    }
+    }*/
     //cout << "Here 2" << endl;
 }
 
@@ -563,16 +632,16 @@ bool SurfaceModelGP::getMaxVariancePose(yarp::sig::Vector &maxVariancePos)
 
 bool SurfaceModelGP::getNextValidationPosition(yarp::sig::Vector &validationPosition)
 {
-    if(!_validationEnable)
+  /*  if(!_validationEnable)
     {
-       // _validationIndex = _paddingPoints;
+        // _validationIndex = _nPaddingPoints;
         _validationIndex = _zPoints.size();
         _validationEnable = true;
     }
 
     _validationIndex--;
     //if(_validationIndex < _zPoints.size())
-    if((_validationIndex >= _paddingPoints)){// && (_zPoints.size() - _validationIndex) <= 3){
+    if((_validationIndex >= _nPaddingPoints)){// && (_zPoints.size() - _validationIndex) <= 3){
         validationPosition.resize(3);
         validationPosition[0] = _xPoints.at(_validationIndex);
         validationPosition[1] = _yPoints.at(_validationIndex);
@@ -583,12 +652,13 @@ bool SurfaceModelGP::getNextValidationPosition(yarp::sig::Vector &validationPosi
         _validationEnable = false;
     }
 
-    return _validationEnable;
+    return _validationEnable;*/
 
 }
 
 bool SurfaceModelGP::validatePosition(yarp::sig::Vector &validationPosition)
 {
+    /*
     bool ret = false;
     if(fabs(_zPoints.at(_validationIndex - 1) - validationPosition[2]) > 1.0/1000)
     {
@@ -603,16 +673,16 @@ bool SurfaceModelGP::validatePosition(yarp::sig::Vector &validationPosition)
         ret = true;
     }
 
-    return true;
+    return true;*/
 }
 
 bool SurfaceModelGP::getNextRefinementPosition(yarp::sig::Vector &nextSamplingPosition)
 {
     // Get the next point to refine
     // Check if the value is too far from the model
-    if(!_refinementEnabled)
+ /*   if(!_refinementEnabled)
     {
-        _nextRefinementIndex = _paddingPoints;
+        _nextRefinementIndex = _nPaddingPoints;
         _maxRefinementIndex = _zPoints.size();
         _refinementEnabled = true;
     }
@@ -649,7 +719,7 @@ bool SurfaceModelGP::getNextRefinementPosition(yarp::sig::Vector &nextSamplingPo
     return false;
     // Check if the this point is very different from the model
 
-
+*/
 
 }
 

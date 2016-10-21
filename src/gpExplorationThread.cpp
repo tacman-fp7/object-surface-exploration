@@ -325,7 +325,7 @@ void GPExplorationThread::maintainContact()
 
     double median = getMedian(_zPoints);
     fingertipPosition[2] = median;
-    _surfaceModel->addContactPoint(fingertipPosition);
+    _surfaceModel->addContactPoint(fingertipPosition, _explorationFinger->getFingerID());
     //logging the data
     _explorationFingerLog << fingertipPosition[0] << ", " << fingertipPosition[1] << ", " << fingertipPosition[2] << endl;
 

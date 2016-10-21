@@ -11,6 +11,8 @@
 
 
 
+
+
 namespace objectExploration
 {
 
@@ -19,6 +21,21 @@ using std::string;
 using gurls::gMat2D;
 using gurls::gVec;
 using yarp::sig::Vector;
+using std::vector;
+
+struct point3d{
+
+    point3d(double x, double y, double z):x(x), y(y), z(z){}
+    double x;
+    double y;
+    double z;
+};
+
+
+typedef vector< point3d > fingertipData_t;
+typedef fingertipData_t::iterator fingertipDataItr;
+typedef vector< fingertipData_t> contactLocation_t;
+typedef contactLocation_t::iterator contactLocationItr;
 
 class SurfaceModel{
 public:
@@ -27,8 +44,8 @@ public:
     virtual bool updateModel() = 0;
     virtual bool updateSurfaceEstimate(const unsigned int nGrid = 120, const double offset = 0.0/1000) = 0;
     virtual void loadContactData(const std::string type) = 0;
-    virtual void addContactPoint(const Vector fingertipPosition) = 0;
-    virtual void addContactPoint(gVec<double> posXY, gVec<double> posZ) = 0;
+    virtual void addContactPoint(const Vector fingertipPosition, const int fingerID=0) = 0;
+    virtual void addContactPoint(gVec<double> posXY, gVec<double> posZ, const int fingerID) = 0;
     virtual void saveContactPoints() = 0;
     virtual void padBoundingBox() = 0;
     virtual void padBoundingBox(double xMin, double xMax, double yMin, double yMax, double zMin,
@@ -59,8 +76,8 @@ public:
     virtual bool updateModel();
     virtual bool updateSurfaceEstimate(const unsigned int nGrid = 120, const double offset = 0.0/1000);
     void loadContactData(const std::string type);
-    void addContactPoint(const Vector fingertipPosition);
-    void addContactPoint(gVec<double> posXY, gVec<double> posZ);
+    void addContactPoint(const Vector fingertipPosition, const int fingerID=0);
+    void addContactPoint(gVec<double> posXY, gVec<double> posZ, const int fingerID=0);
     void saveContactPoints();
     void padBoundingBox();
     void padBoundingBox(double xMin, double xMax, double yMin, double yMax, double zMin, int nSteps = 5, double offset = 0.0/1000);
@@ -73,9 +90,9 @@ public:
     bool getNextSamplingPosition(Vector &nextSamplingPosition, bool nextRow = false);
     bool getNextRefinementPosition(Vector &nextSamplingPosition);
     bool getNextValidationPosition(Vector &validationPosition);
-    void enableRefinement(){_refinementEnabled = true; _nextRefinementIndex = _paddingPoints;}
+    void enableRefinement(){_refinementEnabled = true; _nextRefinementIndex = _paddingPoints.size();}
     void disableRefinement(){_refinementEnabled = false;}
-    void enableValidation(){_validationEnable = true; _validationIndex = _paddingPoints;}
+    void enableValidation(){_validationEnable = true; _validationIndex = _paddingPoints.size();}
     void disableValidation(){_validationEnable = false;}
     bool validatePosition(Vector &validationPosition);
 
@@ -91,7 +108,7 @@ private:
     double readOption(const string& main, const string& sub,  gurls::GurlsOptionsList *opt);
 
 
-    void printTrainingData();
+    void mergeFingerData();
     //void addPaddingPoints(double startPoint, double endPoint, double constAxis, double targetValue);
 protected:
     std::string _objectName;
@@ -103,7 +120,9 @@ protected:
     gMat2D < double > _outputTesting;
     Vector _maxVariancePos;
     bool _repeatVar;
-    int _paddingPoints;
+    //int _nPaddingPoints;
+    fingertipData_t _paddingPoints;
+
 
 private:
 
@@ -111,9 +130,15 @@ private:
     string _dbgtg;
     bool _isValidModel;
 
-    std::vector <double> _xPoints;
-    std::vector <double> _yPoints;
-    std::vector <double> _zPoints;
+
+
+
+    contactLocation_t _contactLocations;
+
+
+    //vector< vector <double> > _xPoints;
+    //vector< vector <double> > _yPoints;
+    //vector< vector <double> > _zPoints;
 
 
     unsigned long _nextSamplingIndex;

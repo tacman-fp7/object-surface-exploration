@@ -15,6 +15,11 @@ namespace objectExploration {
 
 #define DEG2RAD (M_PI/180)
 
+enum fingerID{
+    INDEX_FINGER_ID = 0,
+    MIDDLE_FINGER_ID = 1
+};
+
 enum fingerJoints{
     ABDUCTION = 7,
     THUMB_PROXIMAL = 9,
@@ -91,6 +96,12 @@ public:
     virtual bool setProximalAngle(double angle, double speed = 30);
     virtual bool setDistalAngle(double angle, double speed = 30);
     virtual bool setSynchroProximalAngle(double proximal){}
+    int getFingerID(){
+       if(_whichFinger.compare("index") == 0)
+           return INDEX_FINGER_ID;
+       else if(_whichFinger.compare( "middle") == 0)
+           return MIDDLE_FINGER_ID;
+    }
 
     bool checkMotionDone();
     virtual bool getAngels(Vector &angles);
@@ -149,6 +160,7 @@ protected:
     BufferedPort<Bottle> _fingerControlPort_out;
     BufferedPort<Bottle>* _rawTactileData_in;
 
+    int _finerID;
     int _proximalJointIndex;
     int _distalJointIndex;
 

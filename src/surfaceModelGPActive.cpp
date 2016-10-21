@@ -213,7 +213,7 @@ bool SurfaceModelGPActive::trainModel(){
     // decide how many bins should we have
     updateNBins();
 
-    unsigned long trainingPoints = _inputTraining.rows() - _paddingPoints;
+    unsigned long trainingPoints = _inputTraining.rows() - _paddingPoints.size();
     if(trainingPoints > 0){
         binContacts();
         // run sufrace classificatin
@@ -234,7 +234,7 @@ bool SurfaceModelGPActive::trainModel(){
 
 void SurfaceModelGPActive::updateNBins(){
 
-    unsigned long trainingPoints = _inputTraining.rows() - _paddingPoints;
+    unsigned long trainingPoints = _inputTraining.rows() - _paddingPoints.size();
 
     if(trainingPoints > (_firstBinThreshold * 5)){
         _nBins = 12;
@@ -466,7 +466,7 @@ bool SurfaceModelGPActive::updateSurfaceEstimate(const unsigned int nPoints, con
         normalise(varsRegression);
 
         // If we have enough points, run classification
-        trainingPoints = _inputTraining.rows() - _paddingPoints;
+        trainingPoints = _inputTraining.rows() - _paddingPoints.size();
         if(trainingPoints > 0){
 
    /*         if(_classificationWraper != NULL){

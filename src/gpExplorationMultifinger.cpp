@@ -310,7 +310,7 @@ void GPExplorationMultifingerThread::multifingerContact(){
         Vector fingertipPosition;
         _auxiliaryFinger->getPositionCorrected(fingertipPosition);
         std::cout << "Aux finger pos: " << fingertipPosition.toString() << std::endl;
-        _surfaceModel->addContactPoint(fingertipPosition);
+        _surfaceModel->addContactPoint(fingertipPosition, _auxiliaryFinger->getFingerID());
         _auxiliaryFingerLog << fingertipPosition[0] << ", " << fingertipPosition[1] << ", " << fingertipPosition[2] << endl;
     }
 
