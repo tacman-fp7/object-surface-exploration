@@ -92,6 +92,21 @@ void SurfaceModelGP::addContactPoint(const Vector fingertipPosition, const int f
 
 }
 
+void SurfaceModelGP::updatePaddingZ(double zVal){
+
+    if(_paddingPoints.empty()){
+        return;
+    }
+
+    fingertipDataItr paddingItr = _paddingPoints.begin();
+    if(paddingItr->z > zVal ){
+        for(; paddingItr != _paddingPoints.end(); paddingItr++){
+            paddingItr->z = zVal;
+        }
+    }
+    //if(_paddingPoints.at(1).z > )
+}
+
 void SurfaceModelGP::addContactPoint(gVec<double> posXY, gVec<double> posZ, const int fingerID)
 {
     if(posXY.at(0) <= _minX || posXY.at(0) >= _maxX || posXY.at(1) <= _minY || posXY.at(1) >= _maxY)
@@ -108,6 +123,9 @@ void SurfaceModelGP::addContactPoint(gVec<double> posXY, gVec<double> posZ, cons
     //    _outputTraining.setRow(posZ, _outputTraining.rows()-1);
 
     //if(_contactLocations.size() >)
+
+    // Update padding z
+    updatePaddingZ(posZ.at(0));
 
     if(_contactLocations.size() > fingerID){
         //

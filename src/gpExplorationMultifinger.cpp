@@ -284,6 +284,7 @@ void GPExplorationMultifingerThread::multifingerContact(){
 
 
 
+
     //clenchResults_t clenchResults;
     bool auxiliaryFingerHasContact;
 

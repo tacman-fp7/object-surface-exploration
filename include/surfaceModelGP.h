@@ -97,6 +97,7 @@ public:
     bool validatePosition(Vector &validationPosition);
 
 protected:
+    void  updatePaddingZ(double zVal);
     bool getMaxVariancePose(const gMat2D <double> &positions, gMat2D <double> &variance,
                             const gMat2D <double> &means, Vector &maxVariancePos);
     gMat2D<double>* eval(const gMat2D<double> &X, gMat2D<double> &vars, gurls::GurlsOptionsList *opt);
