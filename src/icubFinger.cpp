@@ -215,7 +215,7 @@ bool IndexFinger::getPositionHandFrame(yarp::sig::Vector &position, yarp::sig::V
 
 
     // Replace the joins with the encoder readings
-    joints[0] = 20;
+    joints[0] = 20; // The index fingertip calibration procedure used this value.
     joints[1] = 90 * (1 - (fingerEncoders[0] - _minProximal) / (_maxProximal - _minProximal) );
     joints[2] = 90 * (1 - (fingerEncoders[1] - _minMiddle) / (_maxMiddle - _minMiddle) );
     joints[3] = 90 * (1 - (fingerEncoders[2] - _minDistal) / (_maxDistal - _minDistal) );
