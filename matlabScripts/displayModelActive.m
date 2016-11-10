@@ -1,9 +1,9 @@
 %cd('/home/nawidj/software/src/object-surface-exploration/build');
-cd('/home/nawidj/gpdata')
+%cd('/home/nawidj/gpdata')
 %cd('/home/nawidj/gpDataTrial06')
 %cd('/home/nawidj/tacman/GaussianSurfaceExplorationData/data/hut/set02/trial05/gpPoints');
-
-objectName = 'hut';
+cd('/home/nawidj/gpdata');
+objectName = 'largeObjectIndex';
 nextPointFileName = [objectName '_model_nextPoint.csv'];
 modelInputFileName = [objectName '_model_input.csv'];
 modelOutputRegressionFileName = [objectName '_model_output_GPRegression.csv'];
@@ -32,7 +32,7 @@ while(true)
     mmFactor = 1000;
     
     maxVarPoint = dlmread(nextPointFileName);
-    
+   
     
     
     
@@ -268,31 +268,31 @@ while(true)
     
     
     
-    subplot(2,2,4)
-    
-    ngroups=5;
-    x = trainingInput(81:end,1);
-    y = trainingInput(81:end,2);
-    z = latentVariables* 10;
-    
-    
-    
-    z1=zeros(size(z,1),1);    % initial 'zldata'
-    for i1=1:ngroups
-        z2=z1;
-        z1=z1+squeeze(z(:,i1));
-        h(i1)=CREATESTACKEDMULTIBAR3d(x, y, z2, z1, i1.*ones(numel(z1(:)),1), 2, ngroups);
-        hold on
-    end
-    hold off;
-    set(gca, 'fontname', 'Bitstream Charter','fontsize', 15);
-    xlabel('Width [mm]','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'bottom');
-    ylabel('Length [mm]','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'top');
-    title('Latent Variables', 'fontsize', 20, 'interpreter', 'tex');
-    %legend(h, 'L 1','L 2','L 3','L 5','L 5');
-    axis  tight equal;
-    view([50, 35]);
-    grid off; box off;
+% % %     subplot(2,2,4)
+% % %     
+% % %     ngroups=5;
+% % %     x = trainingInput(81:end,1);
+% % %     y = trainingInput(81:end,2);
+% % %     z = latentVariables* 10;
+% % %     
+% % %     
+% % %     
+% % %     z1=zeros(size(z,1),1);    % initial 'zldata'
+% % %     for i1=1:ngroups
+% % %         z2=z1;
+% % %         z1=z1+squeeze(z(:,i1));
+% % %         h(i1)=CREATESTACKEDMULTIBAR3d(x, y, z2, z1, i1.*ones(numel(z1(:)),1), 2, ngroups);
+% % %         hold on
+% % %     end
+% % %     hold off;
+% % %     set(gca, 'fontname', 'Bitstream Charter','fontsize', 15);
+% % %     xlabel('Width [mm]','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'bottom');
+% % %     ylabel('Length [mm]','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'top');
+% % %     title('Latent Variables', 'fontsize', 20, 'interpreter', 'tex');
+% % %     %legend(h, 'L 1','L 2','L 3','L 5','L 5');
+% % %     axis  tight equal;
+% % %     view([50, 35]);
+% % %     grid off; box off;
     
     drawnow;
     

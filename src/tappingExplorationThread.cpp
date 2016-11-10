@@ -7,7 +7,7 @@
 #include <yarp/os/Value.h>
 
 #define DEBUG_LEVEL 1
-#define FORCE_TH 0.8
+//#define FORCE_TH 0.8
 namespace objectExploration
 {
 
@@ -109,8 +109,8 @@ TappingExplorationThread::TappingExplorationThread(int period, Hand* robotHand, 
                               objectFeatures){
     _nGrid = 0;
     _forceThreshold = FORCE_TH;
-    _curAbduction = -10;
-    _curAbduction = -10;
+    _curAbduction = 0;
+    _curAbduction = 0;
     _nRepeats = 0;
 
     _skinManagerCommand.open("/object-exploration/skinManager/rpc:o");
@@ -624,9 +624,10 @@ void TappingExplorationThread::moveArmUp()
     // TODO: rename vairables as needed.
     _robotHand->getWayPoint(wayPointPos, wayPointOrient, false);
 
-    //Vector desiredArmPos;
-    //_explorationFinger->toArmPosition(wayPointPos, desiredArmPos);
-    armPos[2] = wayPointPos[2]; // Move the fingertip up to avoid collisiont
+    Vector desiredArmPos;
+    _explorationFinger->toArmPosition(wayPointPos, desiredArmPos);
+    armPos[2] = desiredArmPos[2];
+    //armPos[2] = wayPointPos[2]; // Move the fingertip up to avoid collisiont
     //_objectFeatures->moveArmToPosition(armPos, orient);
     _robotHand->goToPoseSync(armPos, orient, 10);
 

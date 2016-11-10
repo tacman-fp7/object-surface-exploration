@@ -38,6 +38,8 @@ Hand::Hand(ResourceFinder rf){
     _littleFinger = NULL;
     _thumb = NULL;
 
+    _wayPoint_isValid = false;
+
     configure(rf);
 
 }
@@ -167,7 +169,7 @@ void Hand::updateSafeWorkspace()
     {
         _safeWorkspace.minX = _desiredStartingPosition[0] - 0.30; //Maximum width 13 cm + 2 cm leeway
         _safeWorkspace.maxX = _desiredStartingPosition[0] + 0.10;
-        _safeWorkspace.minZ = _desiredStartingPosition[2] - 0.04; //TODO: set it to fixed value in the config file
+        _safeWorkspace.minZ = _desiredStartingPosition[2] - 0.10; //TODO: set it to fixed value in the config file
         _safeWorkspace.maxZ = _desiredStartingPosition[2] + 0.15; //TODO: set them to fixed values in the config files
 
     }
@@ -429,6 +431,7 @@ bool Hand::setWayPointGP(yarp::sig::Vector pos, yarp::sig::Vector orient)
     }
 
 
+    cout << "Desired position" << _desiredStartingPosition.toString() << endl;
     pos[2] = _desiredStartingPosition[2];
     setWayPoint (pos, orient );
     _wayPoint_isValid = true;
