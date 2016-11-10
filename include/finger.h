@@ -121,7 +121,8 @@ public:
     double getContactForce();
     bool getContactCoP(yarp::sig::Vector& contactCoP);
     bool hasForceCoP();
-    virtual void getRawTactileData(Vector& rawTactileData){rawTactileData.resize(12); rawTactileData.zero();}
+    virtual void getTactileDataRaw(Vector& rawTactileData){rawTactileData.resize(12); rawTactileData.zero();}
+    virtual void getTactileDataComp(Vector& tactileData){tactileData.resize(12); tactileData.zero();}
     //virtual bool calibrate2(){}
     virtual void printJointLimits(){}
     string getFingerName();

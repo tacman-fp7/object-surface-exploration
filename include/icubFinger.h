@@ -57,7 +57,7 @@ public:
     //virtual bool getPositionHandFrame(yarp::sig::Vector &position);
     //bool getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders);
     virtual bool setSynchroProximalAngle(double proximal);
-    void getRawTactileData(Vector& rawTactileData);
+    void getTactileDataRaw(Vector& rawTactileData);
 
 public:
     bool getPositionHandFrameCorrected(yarp::sig::Vector &position);

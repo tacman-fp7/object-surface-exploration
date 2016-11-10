@@ -135,7 +135,7 @@ void GridExplorationThread::maintainContact()
 
     _explorationFinger->getPositionCorrected(fingertipPosition);
     _explorationFinger->getContactCoP(contactCoP);
-    _explorationFinger->getRawTactileData(contactForce);
+    _explorationFinger->getTactileDataRaw(contactForce);
 
     //cout << contactForce.toString() << endl;
     _objectModel->addContactPoint(fingertipPosition);

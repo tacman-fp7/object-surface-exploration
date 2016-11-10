@@ -314,7 +314,7 @@ bool icubFinger::readEncoders(yarp::sig::Vector &encoderValues){
     return true;
 }*/
 
-void IndexFinger::getRawTactileData(yarp::sig::Vector& rawTactileData){
+void IndexFinger::getTactileDataRaw(yarp::sig::Vector& rawTactileData){
 
     // Read from the port
     rawTactileData.resize(12);
