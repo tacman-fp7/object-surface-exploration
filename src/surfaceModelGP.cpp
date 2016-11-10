@@ -2,6 +2,7 @@
 #include <gurls++/gvec.h>
 #include <cmath>
 #include <fstream>
+#include <string>
 
 
 namespace objectExploration
@@ -162,10 +163,32 @@ void SurfaceModelGP::saveContactPoints()
     string inputFileName = _objectName + "_training_input_GP";
     string outputFilename = _objectName + "_training_target_GP";
     _inputTraining.saveCSV(inputFileName + ".csv");
-    _inputTraining.save(inputFileName + ".bin");
+    //_inputTraining.save(inputFileName + ".bin");
 
     _outputTraining.saveCSV(outputFilename + ".csv");
-    _outputTraining.save(outputFilename + ".bin");
+    //_outputTraining.save(outputFilename + ".bin");
+
+    // Save finger specific data
+    int fingerID = 1;
+
+    for(contactLocationItr finger = _contactLocations.begin(); finger != _contactLocations.end(); finger++){
+        // Open file to store finger specific data
+
+        std::ostringstream fingerFileName;
+        fingerFileName << _objectName << "_finger_" << fingerID << "_GP.csv";
+
+        //string fingerFileName = _objectName + "_finger_" + std::string(itoa fingerID) << "_GP.csv";
+
+        std::ofstream fingerFile;
+        fingerFile.open(fingerFileName.str().c_str());
+
+        for(fingertipDataItr location = finger->begin(); location != finger->end(); ++location){
+            fingerFile << location->x << ", " << location->y << ", " << location->z << std::endl;
+        }
+        fingerFile.close();
+        ++fingerID;
+    }
+
 }
 
 bool SurfaceModelGP::updateModel()
@@ -615,7 +638,7 @@ bool SurfaceModelGP::updateSurfaceEstimate(const unsigned int nPoints, const dou
     }
 
 
-    _outputTesting.saveCSV("test.csv");
+   //_outputTesting.saveCSV("test.csv");
     // Save the data for matlab visualisation
     //_inputTraining.saveCSV("newTraining.csv");
     _inputTesting.saveCSV(_objectName + "_model_input.csv");

@@ -453,7 +453,7 @@ bool SurfaceModelGPActive::updateSurfaceEstimate(const unsigned int nPoints, con
 
     gMat2D<double> varsRegression;
     gMat2D<double>* meansRegression;
-    gMat2D<double> *urgh;
+    //gMat2D<double> *urgh;
     gMat2D<double> combinedVar;
 
     unsigned long trainingPoints;
