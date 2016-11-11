@@ -302,6 +302,7 @@ void GPExplorationThread::maintainContact()
 
     Vector fingertipPosition;
     _explorationFinger->getPositionCorrected(fingertipPosition);
+    _explorationFinger->logTactileCoP();
 
     _zPoints.push_back(fingertipPosition[2]);
 

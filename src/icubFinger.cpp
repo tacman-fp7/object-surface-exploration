@@ -314,7 +314,7 @@ bool icubFinger::readEncoders(yarp::sig::Vector &encoderValues){
     return true;
 }*/
 
-void IndexFinger::getTactileDataRaw(yarp::sig::Vector& rawTactileData){
+void IndexFinger::getTactileDataRaw(yarp::sig::Vector &rawTactileData){
 
     // Read from the port
     rawTactileData.resize(12);
@@ -326,11 +326,26 @@ void IndexFinger::getTactileDataRaw(yarp::sig::Vector& rawTactileData){
     //cout << tactileData->toString() << endl;
     int startIndex = 0;
     if(tactileData != NULL){
-        for (int i = startIndex; i < 12; i++)
+        for (int i = startIndex; i < 12; ++i)
         {
             rawTactileData[i - startIndex] = tactileData->get(i).asDouble();
         }
     }
+}
+
+void IndexFinger::getTactileDataComp(yarp::sig::Vector &tactileData){
+    tactileData.resize(12);
+    tactileData.zero();
+
+    Bottle *tactileDataPort = _tactileDataComp_in->read();
+
+    int startIndex = 0;
+    if(tactileDataPort != NULL){
+        for(int i = startIndex; i < startIndex + 12; ++i){
+            tactileData[i - startIndex] = tactileDataPort->get(i).asDouble();
+        }
+    }
+
 }
 
 IndexFinger::IndexFinger(t_controllerData ctrlData):
@@ -588,6 +603,41 @@ bool MiddleFinger::getPosition(yarp::sig::Vector &position, yarp::sig::Vector &f
     position = retMat.subVector(0,2);
     //cout << "Finger position: " << position.toString()  << endl;
 
+
+}
+
+
+void MiddleFinger::getTactileDataRaw(yarp::sig::Vector &rawTactileData){
+
+    // Read from the port
+    rawTactileData.resize(12);
+    rawTactileData.zero();
+
+    Bottle* tactileData;
+    tactileData = _rawTactileData_in->read();
+
+    //cout << tactileData->toString() << endl;
+    int startIndex = 12;
+    if(tactileData != NULL){
+        for (int i = startIndex; i < 12; ++i)
+        {
+            rawTactileData[i - startIndex] = tactileData->get(i).asDouble();
+        }
+    }
+}
+
+void MiddleFinger::getTactileDataComp(yarp::sig::Vector &tactileData){
+    tactileData.resize(12);
+    tactileData.zero();
+
+    Bottle *tactileDataPort = _tactileDataComp_in->read();
+
+    int startIndex = 12;
+    if(tactileDataPort != NULL){
+        for(int i = startIndex; i < startIndex + 12; ++i){
+            tactileData[i - startIndex] = tactileDataPort->get(i).asDouble();
+        }
+    }
 
 }
 

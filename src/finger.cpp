@@ -16,6 +16,26 @@ using yarp::os::Network;
 using yarp::dev::IControlLimits;
 using std::deque;
 
+void Finger::logTactileCoP(){
+
+    Vector data;
+    getContactCoP(data);
+    _copFile << data[0] << ", " << data[1] << ", " << data[2] << std::endl;
+
+    getTactileDataComp(data);
+    for (int i = 0; i < 11; i++){
+        _tactileDataCompFile << data[i] << ", ";
+    }
+    _tactileDataCompFile << data[11] << std::endl;
+
+    getTactileDataRaw(data);
+    for (int i = 0; i < 11; i++){
+        _tactileDataRawFile << data[i] << ", ";
+    }
+    _tactileDataRawFile << data[11] << std::endl;
+
+}
+
 bool Finger::prepare(){
     cerr << "Prepare not implemented for this finger: " << _whichFinger << endl;
     return false;
@@ -277,6 +297,12 @@ string Finger::getFingerName(){
     return _whichFinger;
 }
 
+Finger::~Finger(){
+    _copFile.close();
+    _tactileDataCompFile.close();
+    _tactileDataRawFile.close();
+}
+
 Finger::Finger(t_controllerData ctrlData){
     _armEncoder = ctrlData.armEncoder;
     _armJointModeCtrl = ctrlData.armJointModeCtrl;
@@ -288,6 +314,7 @@ Finger::Finger(t_controllerData ctrlData){
     _isActiveTaxelValid = false;
     _whichFinger = ctrlData.whichFinger;
     _rawTactileData_in = ctrlData.rawTactileData_in;
+    _tactileDataComp_in = ctrlData.tactileDataComp_in;
     _armControlLimits = ctrlData.armControlLimits;
 
     //_fingerEncoders = ctrlData.fingerEncoders;
@@ -305,7 +332,15 @@ Finger::Finger(t_controllerData ctrlData){
             ctrlData.whichFinger + "/cop:i";
 
 
+    std::string fileName;
+    fileName = _whichFinger + "_tactileComp.csv";
+    _tactileDataCompFile.open(fileName.c_str());
 
+    fileName = _whichFinger + "_tactileRaw.csv";
+    _tactileDataRawFile.open(fileName.c_str());
+
+    fileName = _whichFinger + "_cop.csv";
+    _copFile.open(fileName.c_str());
 
 
 
@@ -401,7 +436,7 @@ double Finger::getContactForce(){
 
 bool Finger::calibrate(){
 
-return true;
+    return true;
 
 
 }

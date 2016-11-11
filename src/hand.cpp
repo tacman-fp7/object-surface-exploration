@@ -685,8 +685,13 @@ void Hand::configure(yarp::os::ResourceFinder rf){
 
 
     // ToDo: clean it up
-    _rawTactileData_in.open("/object-exploration/rawTactile:i");
-    yarp::os::Network::connect("/icub/skin/left_hand", "/object-exploration/rawTactile:i");
+    _rawTactileData_in.open("/" + _moduleName + "/skin/" + _whichHand + "hand:i");
+    yarp::os::Network::connect("/" + _robotName + "skin/" + _whichHand + "_hand",
+                               "/" + _moduleName + "/skin/" + _whichHand + "hand:i");
+
+    _tactileDataComp_in.open("/" + _moduleName + "/skin/" + _whichHand + "hand_comp:i");
+    yarp::os::Network::connect("/" + _robotName + "skin/" + _whichHand + "_hand_comp",
+                               "/" + _moduleName + "/skin/" + _whichHand + "hand_comp:i");
 }
 
 Hand::~Hand(){
@@ -760,6 +765,7 @@ bool icubHand::configure(yarp::os::ResourceFinder rf){
     ctrlData.fingerEncoders = &_fingerEncoders;
     ctrlData.armCartesianCtrl = _armCartesianCtrl;
     ctrlData.rawTactileData_in = &_rawTactileData_in;
+    ctrlData.tactileDataComp_in = &_tactileDataComp_in;
     ctrlData.armControlLimits = _armControlLimits;
 
     FingerFactory fingerCreator;

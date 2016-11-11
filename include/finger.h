@@ -10,6 +10,7 @@
 #include <stdexcept>
 #include <deque>
 #include <math.h>
+#include <fstream>
 
 namespace objectExploration {
 
@@ -68,6 +69,7 @@ struct fingerControllerData{
     yarp::dev::IControlLimits *armControlLimits;
     yarp::os::BufferedPort<yarp::os::Bottle>* fingerEncoders;
     yarp::os::BufferedPort<yarp::os::Bottle>* rawTactileData_in;
+    yarp::os::BufferedPort<yarp::os::Bottle> * tactileDataComp_in;
 
 
 };
@@ -84,9 +86,11 @@ class Finger{
 
 
 public:
+    ~Finger();
     bool open();
     virtual bool prepare();
     virtual bool calibrate();
+    void logTactileCoP();
 
     virtual bool toArmPosition(Vector &fingertipPosition, Vector &retArmpPosition);
 
@@ -121,8 +125,12 @@ public:
     double getContactForce();
     bool getContactCoP(yarp::sig::Vector& contactCoP);
     bool hasForceCoP();
-    virtual void getTactileDataRaw(Vector& rawTactileData){rawTactileData.resize(12); rawTactileData.zero();}
-    virtual void getTactileDataComp(Vector& tactileData){tactileData.resize(12); tactileData.zero();}
+    virtual void getTactileDataRaw(Vector& rawTactileData){
+        std::cerr << "Cannot get raw tactile data. Not implmented for this finger" << std::endl;
+        rawTactileData.resize(12); rawTactileData.zero();}
+    virtual void getTactileDataComp(Vector& tactileData){
+        std::cerr << "Cannot get comp tactile data. Not implmented for this finger" << std::endl;
+                     tactileData.resize(12); tactileData.zero();}
     //virtual bool calibrate2(){}
     virtual void printJointLimits(){}
     string getFingerName();
@@ -144,6 +152,11 @@ private:
 
 
 protected:
+
+    std::ofstream _tactileDataCompFile;
+    std::ofstream _tactileDataRawFile;
+    std::ofstream _copFile;
+
     double _prevContactForce;
 
     yarp::dev::IControlMode2 *_armJointModeCtrl;
@@ -160,6 +173,7 @@ protected:
 
     BufferedPort<Bottle> _fingerControlPort_out;
     BufferedPort<Bottle>* _rawTactileData_in;
+    BufferedPort<Bottle>* _tactileDataComp_in;
 
     int _finerID;
     int _proximalJointIndex;

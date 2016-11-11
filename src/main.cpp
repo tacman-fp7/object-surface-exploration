@@ -8,12 +8,12 @@
 #include <yarp/os/Network.h>
 #include <yarp/os/ResourceFinder.h>
 #include <exploreObject.h>
-//#include <surfaceModelGP.h>
+#include <surfaceModelGPActive.h>
 //#include <yarp/os/Time.h>
 //#include <gurls++/gmat2d.h>
 //#include "hand.h" //Testing only
 //#include "objectModelGrid.h"
-
+#include <yarp/sig/Vector.h>
 
 #include <surfaceModelGPActive.h>
 #include <gurls++/gmat2d.h>
@@ -35,6 +35,31 @@ int main(int argc, char *argv[])
     }
 
 
+ /*   objectExploration::SurfaceModelGPActive surf("TestObject");
+    surf.setBoundingBox(-10, 210, -10, 210,20);
+    yarp::sig::Vector fingertipPosition;
+    fingertipPosition.resize(3);
+
+    for (int i = 0; i < 100; i += 3){
+        fingertipPosition[0] = i;
+        fingertipPosition[1] = i+1;
+        fingertipPosition[2] = i+2;
+        surf.addContactPoint(fingertipPosition, 0);
+        surf.trainModel();
+        surf.updateSurfaceEstimate();
+    }
+
+    for (int i = 101; i < 200; i += 3){
+        fingertipPosition[0] = i;
+        fingertipPosition[1] = i+1;
+        fingertipPosition[2] = i+2;
+        surf.addContactPoint(fingertipPosition, 1);
+        surf.trainModel();
+        surf.updateSurfaceEstimate();
+
+    }
+
+    return 1; */
 
 
  /*   objectExploration::SurfaceModelGPActive surfaceModel("hut");

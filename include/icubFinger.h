@@ -58,6 +58,7 @@ public:
     //bool getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders);
     virtual bool setSynchroProximalAngle(double proximal);
     void getTactileDataRaw(Vector& rawTactileData);
+    void getTactileDataComp(Vector& tactileData);
 
 public:
     bool getPositionHandFrameCorrected(yarp::sig::Vector &position);
@@ -76,6 +77,8 @@ public:
     virtual bool setSynchroProximalAngle(double proximal);
     bool prepare();
     bool calibrate();
+    void getTactileDataRaw(Vector& rawTactileData);
+    void getTactileDataComp(Vector& tactileData);
 };
 
 class RingAndLittleFingers: public icubFinger{

@@ -122,6 +122,7 @@ private:
    BufferedPort<Bottle> _abuductionPort_out;
 protected:
    BufferedPort<Bottle> _rawTactileData_in;
+   BufferedPort<Bottle> _tactileDataComp_in; // Compensated tactile data
 
 private:
 
