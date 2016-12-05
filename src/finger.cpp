@@ -18,6 +18,29 @@ using std::deque;
 
 void Finger::logTactileCoP(){
 
+/*
+ *  std::string fileName;
+    fileName = _whichFinger + "_tactileComp.csv";
+    _tactileDataCompFile.open(fileName.c_str());
+
+    fileName = _whichFinger + "_tactileRaw.csv";
+    _tactileDataRawFile.open(fileName.c_str());
+
+    fileName = _whichFinger + "_cop.csv";
+    _copFile.open(fileName.c_str());
+ */
+    if(!_tactileDataCompFile.is_open()){
+        // I am assuming if one is not open all are not open
+        std::string fileName;
+        fileName = _whichFinger + "_tactileComp.csv";
+        _tactileDataCompFile.open(fileName.c_str());
+
+        fileName = _whichFinger + "_tactileRaw.csv";
+        _tactileDataRawFile.open(fileName.c_str());
+        fileName = _whichFinger + "_cop.csv";
+        _copFile.open(fileName.c_str());
+    }
+
     Vector data;
     getContactCoP(data);
     _copFile << data[0] << ", " << data[1] << ", " << data[2] << std::endl;
@@ -332,7 +355,7 @@ Finger::Finger(t_controllerData ctrlData){
             ctrlData.whichFinger + "/cop:i";
 
 
-    std::string fileName;
+/*    std::string fileName;
     fileName = _whichFinger + "_tactileComp.csv";
     _tactileDataCompFile.open(fileName.c_str());
 
@@ -341,7 +364,7 @@ Finger::Finger(t_controllerData ctrlData){
 
     fileName = _whichFinger + "_cop.csv";
     _copFile.open(fileName.c_str());
-
+*/
 
 
 

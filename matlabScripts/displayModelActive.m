@@ -3,7 +3,7 @@
 %cd('/home/nawidj/gpDataTrial06')
 %cd('/home/nawidj/tacman/GaussianSurfaceExplorationData/data/hut/set02/trial05/gpPoints');
 cd('/home/nawidj/gpdata');
-objectName = 'largeObjectIndex';
+objectName = 'largeObjectIndex03';
 nextPointFileName = [objectName '_model_nextPoint.csv'];
 modelInputFileName = [objectName '_model_input.csv'];
 modelOutputRegressionFileName = [objectName '_model_output_GPRegression.csv'];
@@ -16,6 +16,9 @@ trainingInputFileName = [objectName '_training_input_GP.csv'];
 trainingTargetFileName = [objectName '_training_target_GP.csv'];
 nextSamplePointFileName = [objectName '_nextPoint.csv'];
 
+indexFingerFileName = [objectName '_finger_1_GP.csv'];
+middleFingerFileName = [objectName '_finger_2_GP.csv'];
+
 %%
 %viewVars = [45, 55];
 %viewVars = [90, 90];
@@ -27,12 +30,12 @@ while(true)
         pause(0.05);
     end
     
- 
+    
     
     mmFactor = 1000;
     
     maxVarPoint = dlmread(nextPointFileName);
-   
+    
     
     
     
@@ -59,6 +62,18 @@ while(true)
     trainingTarget = dlmread(trainingTargetFileName);
     latentVariables = dlmread('latent.csv');
     
+    if(exist(indexFingerFileName, 'file') == 2)
+        indexFingerLocations = dlmread(indexFingerFileName, ',');
+        indexFingerLocations(:, 1:2) = (indexFingerLocations(:, 1:2) - repmat(min(trainingInput), size(indexFingerLocations,1), 1)) * mmFactor;
+        indexFingerLocations(:, 3) = (indexFingerLocations(:, 3) - repmat(min(trainingTarget), size(indexFingerLocations,1), 1)) * mmFactor;
+    end
+    
+    if(exist(middleFingerFileName, 'file') == 2)
+        middleFingerLocations = dlmread(middleFingerFileName, ',');
+        middleFingerLocations(:, 1:2) = (middleFingerLocations(:, 1:2) - repmat(min(trainingInput), size(middleFingerLocations,1), 1)) * mmFactor;
+        middleFingerLocations(:, 3) = (middleFingerLocations(:, 3) - repmat(min(trainingTarget), size(middleFingerLocations,1), 1)) * mmFactor;
+        
+    end
     
     maxVarPoint(1) = maxVarPoint(1) - min(modelInput(:,1));
     maxVarPoint(2) = maxVarPoint(2) - min(modelInput(:,2));
@@ -74,10 +89,13 @@ while(true)
     %modelVarianceClassification = modelVarianceClassification * mmFactor;
     %modelVarianceCombined =  modelVarianceCombined * mmFactor;
     
+    
+    
     trainingInput = (trainingInput - repmat(min(trainingInput), length(trainingInput), 1)) * mmFactor;
     trainingTarget = (trainingTarget - min(trainingTarget)) * mmFactor;
     
     
+    %indexFingerLocation = (indexFingerLocation - repmat(min(trainingInput), length(indexFingerLocation), 1))
     
     x = modelInput(:, 1);
     y = modelInput(:, 2);
@@ -252,9 +270,20 @@ while(true)
     title('Object Surface [natural neighbour] ', 'fontsize', 20, 'interpreter', 'tex');
     axis('equal');
     axis tight;
+    
+    %hold on
+    %scatter3(x, y, z,...
+    %    'fill', 'markerFaceColor', 'blue', 'sizeData', [90]);
+    %hold off
+    
     hold on
-    scatter3(x, y, z,...
-        'fill', 'markerFaceColor', 'blue', 'sizeData', [90]);
+    scatter3(indexFingerLocations(:,1), indexFingerLocations(:,2), indexFingerLocations(:,3),...
+        'fill', 'markerFaceColor', 'red', 'sizeData', [90]);
+   
+    if(exist(middleFingerFileName, 'file') == 2)
+        scatter3(middleFingerLocations(:,1), middleFingerLocations(:,2), middleFingerLocations(:,3),...
+            'fill', 'markerFaceColor', 'blue', 'sizeData', [90]);
+    end
     hold off
     view(viewVars);
     
@@ -268,31 +297,31 @@ while(true)
     
     
     
-% % %     subplot(2,2,4)
-% % %     
-% % %     ngroups=5;
-% % %     x = trainingInput(81:end,1);
-% % %     y = trainingInput(81:end,2);
-% % %     z = latentVariables* 10;
-% % %     
-% % %     
-% % %     
-% % %     z1=zeros(size(z,1),1);    % initial 'zldata'
-% % %     for i1=1:ngroups
-% % %         z2=z1;
-% % %         z1=z1+squeeze(z(:,i1));
-% % %         h(i1)=CREATESTACKEDMULTIBAR3d(x, y, z2, z1, i1.*ones(numel(z1(:)),1), 2, ngroups);
-% % %         hold on
-% % %     end
-% % %     hold off;
-% % %     set(gca, 'fontname', 'Bitstream Charter','fontsize', 15);
-% % %     xlabel('Width [mm]','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'bottom');
-% % %     ylabel('Length [mm]','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'top');
-% % %     title('Latent Variables', 'fontsize', 20, 'interpreter', 'tex');
-% % %     %legend(h, 'L 1','L 2','L 3','L 5','L 5');
-% % %     axis  tight equal;
-% % %     view([50, 35]);
-% % %     grid off; box off;
+    % % %     subplot(2,2,4)
+    % % %
+    % % %     ngroups=5;
+    % % %     x = trainingInput(81:end,1);
+    % % %     y = trainingInput(81:end,2);
+    % % %     z = latentVariables* 10;
+    % % %
+    % % %
+    % % %
+    % % %     z1=zeros(size(z,1),1);    % initial 'zldata'
+    % % %     for i1=1:ngroups
+    % % %         z2=z1;
+    % % %         z1=z1+squeeze(z(:,i1));
+    % % %         h(i1)=CREATESTACKEDMULTIBAR3d(x, y, z2, z1, i1.*ones(numel(z1(:)),1), 2, ngroups);
+    % % %         hold on
+    % % %     end
+    % % %     hold off;
+    % % %     set(gca, 'fontname', 'Bitstream Charter','fontsize', 15);
+    % % %     xlabel('Width [mm]','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'bottom');
+    % % %     ylabel('Length [mm]','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'top');
+    % % %     title('Latent Variables', 'fontsize', 20, 'interpreter', 'tex');
+    % % %     %legend(h, 'L 1','L 2','L 3','L 5','L 5');
+    % % %     axis  tight equal;
+    % % %     view([50, 35]);
+    % % %     grid off; box off;
     
     drawnow;
     

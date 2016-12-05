@@ -686,11 +686,11 @@ void Hand::configure(yarp::os::ResourceFinder rf){
 
     // ToDo: clean it up
     _rawTactileData_in.open("/" + _moduleName + "/skin/" + _whichHand + "hand:i");
-    yarp::os::Network::connect("/" + _robotName + "skin/" + _whichHand + "_hand",
+    yarp::os::Network::connect("/" + _robotName + "/skin/" + _whichHand + "_hand",
                                "/" + _moduleName + "/skin/" + _whichHand + "hand:i");
 
     _tactileDataComp_in.open("/" + _moduleName + "/skin/" + _whichHand + "hand_comp:i");
-    yarp::os::Network::connect("/" + _robotName + "skin/" + _whichHand + "_hand_comp",
+    yarp::os::Network::connect("/" + _robotName + "/skin/" + _whichHand + "_hand_comp",
                                "/" + _moduleName + "/skin/" + _whichHand + "hand_comp:i");
 }
 
