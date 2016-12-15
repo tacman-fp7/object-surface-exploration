@@ -354,7 +354,7 @@ void TappingExplorationThread::approachObject()
     double maxProximal = 40;
 
     ///// Put the index finger in the starting position /////
-    moveExplorationFingerBlocking(10, _curAbduction, 40);
+    moveExplorationFingerBlocking(10, _curAbduction, 10);
 
 
     // Go to the wayPoint if only it is a valid wayPoint.
