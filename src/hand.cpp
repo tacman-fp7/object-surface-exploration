@@ -294,6 +294,7 @@ bool Hand::goToStartingPose(Finger * explorationFinger){
         bool motionDone = false;
         while(!motionDone){
             checkMotionDone(&motionDone);
+            motionDone = true; // Hack
         }
         goToPoseSync(desiredArmPos, desiredArmOrient, 10);
 
@@ -535,7 +536,7 @@ void Hand::configure(yarp::os::ResourceFinder rf){
     // Set the trajectory time
     //cout << "Trajectory time: " << trajectoryTime << endl;
     _armCartesianCtrl->setTrajTime(trajectoryTime);
-    //_armCartesianCtrl->setInTargetTol(2.5/1000); // half of
+    _armCartesianCtrl->setInTargetTol(5/1000); // half of
     //strictTolerence();
 
     // Enable the torso movement
