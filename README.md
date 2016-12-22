@@ -38,6 +38,10 @@ commands:
 
 
 
-
 ## Publications
 Jamali, N; Ciliberto, C ; Rosasco, L; Natale,~L (2016). ``Active perception: Building Objects' Models using Tactile Exploration''. In the proceedings of the IEEE-RAS International Conference on Humanoids.
+
+## Video
+
+[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/GQ7h0g35Kp4/0.jpg)](https://www.youtube.com/watch?v=GQ7h0g35Kp4)
+
