@@ -2,7 +2,7 @@
 This module is a solution for Task 4-1 of the TACMAN project. The robot incrementally constructs the surface of an object using tactile sensors. This module implements two solutions: one based on Gaussian process regression and one based on Gaussian process classification. For more details please read the README file.
 
 ## Dependencies
-[iCub](http://wiki.icub.org/wiki/ICub_Software_Installation)
+[iCub: YARP, icub-main and icub-contrib](http://wiki.icub.org/wiki/ICub_Software_Installation)
 
 [GURLS](https://github.com/LCSL/GURLS)
 
