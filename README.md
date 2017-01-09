@@ -33,6 +33,7 @@ object-surface-exploration --from <config-file>
 commands:
 
 `Help` display available commands
+
 `explore <exploration-type> <object-name>` explores the workspace defined in the config file. Valid exploration-types are: regression, classification and multi 
  
 
