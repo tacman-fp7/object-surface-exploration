@@ -54,8 +54,6 @@ public:
     bool goToEndPose();
     bool setHeight(double height);
     bool multiContact(double angle);
-    //void relaxTolerence();
-    //void strictTolerence();
 
 
     Finger* getIndexFinger(){return _indexFinger;}
@@ -65,7 +63,8 @@ public:
 
     string getArmName(){return _whichHand;}
     string getRobotName(){return _robotName;}
-
+    double getContactSafetyForceThereshold(){return _contactSafetyForceThreshold;}
+    int getContactSafetyThreadRate(){_contactSafetyThreadRate;}
 
 
 protected:
@@ -97,6 +96,8 @@ protected:
 
 
 private:
+    double _contactSafetyForceThreshold;
+    int _contactSafetyThreadRate;
 
     yarp::dev::PolyDriver _deviceController_joint;
     yarp::dev::PolyDriver _deviceController; // The use depends on the view

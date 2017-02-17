@@ -47,7 +47,7 @@ Hand::Hand(ResourceFinder rf){
 bool Hand::multiContact(double angle){
 
 
-   _middleFinger->setAngles(0, angle, 30);
+    _middleFinger->setAngles(0, angle, 30);
 }
 
 bool Hand::setWayPoint(yarp::sig::Vector pos){
@@ -72,12 +72,12 @@ bool Hand::prepare(){
 
 bool Hand::calibrate(){
 
-   // double min, max;
-   // for (int iJoint = 0; iJoint < 16; iJoint++){
-   // _armControlLimits->getLimits(iJoint, &min, &max );
-   // cout << "J " << iJoint << " min: " << min << ", max: " << max << endl;
-   // }
-   // return true;
+    // double min, max;
+    // for (int iJoint = 0; iJoint < 16; iJoint++){
+    // _armControlLimits->getLimits(iJoint, &min, &max );
+    // cout << "J " << iJoint << " min: " << min << ", max: " << max << endl;
+    // }
+    // return true;
     open();
     _indexFinger->calibrate();
     open();
@@ -92,9 +92,9 @@ bool Hand::calibrate(){
     _middleFinger->getPosition(position);
     cout << "M: " << position.toString() << endl;
 
-//    cout << "Little" << endl;
-//    _littleFinger->getPosition(position);
-//    cout << position.toString() << endl;
+    //    cout << "Little" << endl;
+    //    _littleFinger->getPosition(position);
+    //    cout << position.toString() << endl;
 
     //double min, max;
 
@@ -102,17 +102,17 @@ bool Hand::calibrate(){
     //std::cout << "Min: " << min << "Max: " << max << std::endl;
 
     //std::deque<yarp::dev::IControlLimits*> calib;
-   // calib.push_back(_armControlLimits);
+    // calib.push_back(_armControlLimits);
     //_indexFinger->alignJointsBounds(calib);
 
     //calib.push_back(_armControlLimits);
 
-/*    _indexFinger->printJointLimits();
+    /*    _indexFinger->printJointLimits();
     _indexFinger->calibrate2();
     _indexFinger->printJointLimits();
 */
 
-/*    _indexFinger->open();
+    /*    _indexFinger->open();
     _thumb->open();
     _middleFinger->open();
 
@@ -464,6 +464,8 @@ void Hand::configure(yarp::os::ResourceFinder rf){
 
 
 
+
+
     ///// Set a safe workspace for the robot
     //// This get updated when I read the
     /// Starting and ending positions
@@ -481,8 +483,21 @@ void Hand::configure(yarp::os::ResourceFinder rf){
                            "module name (string)").asString().c_str();
 
 
+
+    /////////////////////////////////////////////////////////////////
+    ///////////// Read contact safety data //////////////////////////
+    /////////////////////////////////////////////////////////////////
+    Bottle &contactSafetyParameters = rf.findGroup("ContactSafetyParameters");
+    if(contactSafetyParameters.isNull()){
+        std::cerr << _dbgtag << "Failed to load contact safety data" << std::endl;
+        return;
+    }
+    _contactSafetyForceThreshold = contactSafetyParameters.check("forceThreshold", Value(5)).asDouble();
+    _contactSafetyThreadRate = contactSafetyParameters.check("preriod", Value(5)).asDouble();
+
     Bottle &robotParameters = rf.findGroup("RobotParameters");
     if(robotParameters.isNull()){
+        std::cerr << _dbgtag << "Failed to load robot parameters" << std::endl;
         return;
     }
 
@@ -520,7 +535,7 @@ void Hand::configure(yarp::os::ResourceFinder rf){
     {
         cerr << _dbgtag << "Failed to open the device: " << controller << endl;
 
-       throw std::runtime_error("Failed to open the device: " + controller );
+        throw std::runtime_error("Failed to open the device: " + controller );
     }
 
     // Open a Cartesian controller
@@ -580,7 +595,7 @@ void Hand::configure(yarp::os::ResourceFinder rf){
     if(!_deviceController_joint.view(_armJointModeCtrl))
     {
         cerr << _dbgtag << "Failed to open arm joint mode controller" << endl;
-         throw std::runtime_error("Failed to open arm joint mode controller");
+        throw std::runtime_error("Failed to open arm joint mode controller");
 
     }
 
@@ -754,7 +769,7 @@ bool icubHand::configure(yarp::os::ResourceFinder rf){
     string remotePort = "/" + _robotName + "/" + _whichHand + "_hand/analog:o";
 
     if(!_fingerEncoders.open(localPort) || ! yarp::os::Network::connect(remotePort, localPort)){
-       std::runtime_error("Could not connect to: " + remotePort);
+        std::runtime_error("Could not connect to: " + remotePort);
     }
 
 

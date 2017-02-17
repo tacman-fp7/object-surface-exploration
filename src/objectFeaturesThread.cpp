@@ -314,103 +314,14 @@ ObjectFeaturesThread::~ObjectFeaturesThread()
     _fingertipPosition_out.close();
 }
 
-/*void ObjectFeaturesThread::setArmController_cart(yarp::dev::ICartesianControl *cartesianCtrl)
-{
-    _armCartesianCtrl = cartesianCtrl;
-}*/
-
-/*void ObjectFeaturesThread::setArmController_jnt(yarp::dev::IEncoders *encoder, yarp::dev::IPositionControl *jointCtrl)
-{
-
-    _armEncoder = encoder;
-    _armJointPositionCtrl = jointCtrl;
-}*/
-
-/*void ObjectFeaturesThread::setArmController_mode(yarp::dev::IControlMode2 *armJointCtrlmode)
-{
-    _armJointModeCtrl = armJointCtrlmode;
-}*/
-
-ObjectFeaturesThread::ObjectFeaturesThread ( int period, ResourceFinder rf ) : RateThread ( period )
-{
-
-    //_explorationThreadPeriod = 20;
 
 
+ObjectFeaturesThread::ObjectFeaturesThread ( int period, ResourceFinder rf )
+    : RateThread ( period ){
 
-
-
-
-
-
-    _moduleName = rf.check("moduleName", Value("object-exploration-server"),
+    _moduleName = rf.check("moduleName", Value("object-featuesThread-default"),
                             "module name (string)").asString().c_str();
-
-
 }
 
-
-
-/*void ObjectFeaturesThread::updateRobotReachableSpace()
-{
-    if(_desiredStartingPose_isValid) // && _desiredEndPose_isValid)
-    {
-        _robotReachableSpace.minX = _desiredStartingPosition[0] - 0.30; //Maximum width 13 cm + 2 cm leeway
-        _robotReachableSpace.maxX = _desiredStartingPosition[0] + 0.10;
-        _robotReachableSpace.minZ = _desiredStartingPosition[2] - 0.05;
-        _robotReachableSpace.maxZ = _desiredStartingPosition[2] + 0.05;
-
-    }
-
-    if(_desiredStartingPose_isValid && _desiredEndPose_isValid)
-    {
-        if(_desiredStartingPosition[1] < _desiredEndPosition[1])
-        {
-            _robotReachableSpace.minY = _desiredStartingPosition[1] - 0.08;
-            _robotReachableSpace.maxY = _desiredEndPosition[1] + 0.08;
-
-        }
-        else
-        {
-            _robotReachableSpace.minY = _desiredEndPosition[1] - 0.08;
-            _robotReachableSpace.maxY = _desiredStartingPosition[1] + 0.08;
-
-        }
-    }
-}*/
-
-/*const string& ObjectFeaturesThread::getArm()
-{
-    return _arm;
-}*/
-
-
-
-/*const string& ObjectFeaturesThread::getControllerType()
-{
-    return _controller;
-}*/
-
-/*const string& ObjectFeaturesThread::getRobotName()
-{
-    return _robotName;
-}*/
-
-/*const int& ObjectFeaturesThread::getTrajectoryTime()
-{
-    return _trajectoryTime;
-}*/
-
-/*const int& ObjectFeaturesThread::getExplorationThreadPeriod()
-{
-    return _explorationThreadPeriod;
-}*/
-
-
-
-/*const double& ObjectFeaturesThread::getDesiredForce()
-{
-    return _desiredFroce;
-}*/
 
 } // namespace objectExploration

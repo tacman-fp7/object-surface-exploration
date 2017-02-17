@@ -4,7 +4,8 @@
 #include <yarp/sig/Vector.h>
 #include <yarp/os/Network.h>
 #include <math.h>
-//#include <yarp/os/ResourceFinder.h>
+#include <yarp/os/ResourceFinder.h>
+#include <sstream>
 
 using std::cerr;
 using std::cout;
@@ -33,7 +34,7 @@ void ContactSafetyThread::run()
         // arm movemnet
         if(fabs(resultant - _baseLine) > _forceThreshold){
             if(!_collisionDetected){
-                cout << _dbgtag << "exceeded contact force" << endl;
+                cout << _dbgtag << "exceeded contact force: " << fabs(resultant - _baseLine) << endl;
             }
             _robotHand->stopControl();
             _collisionDetected = true;
@@ -48,12 +49,12 @@ void ContactSafetyThread::run()
 
 
 ContactSafetyThread::ContactSafetyThread(int period,  Hand *robotHand)
-    :RateThread(period){
+    :RateThread(period), _robotHand(robotHand){
 
-    _forceThreshold = 5;
-    //_objectFeatures = objectFeatures;
+
+
+    _forceThreshold = _robotHand->getContactSafetyForceThereshold();
     _dbgtag = "Contact safety: ";
-    _robotHand = robotHand;
     _collisionDetected = false;
 
 
