@@ -58,7 +58,7 @@ bool Hand::prepare(){
 
     bool ret = true;
 
-    setAbduction(0);
+    setAbduction(60); //TODO put it in config file
     _indexFinger->prepare();
     _middleFinger->prepare();
     _ringFinger->prepare();
@@ -135,7 +135,7 @@ bool Hand::checkOpenMotionDone(){
 
 bool Hand::open(){
 
-    setAbduction(0);
+    setAbduction(60); //TODO abduction
 
     // Ask all fingers to open
     _indexFinger->open();
@@ -238,7 +238,9 @@ bool Hand::goToPoseSync(yarp::sig::Vector& pos, yarp::sig::Vector& orient, doubl
     bool ret;
     ret =  _armCartesianCtrl->goToPoseSync(pos, orient);
     if(timeout > 0){
-        _armCartesianCtrl->waitMotionDone(0.1, timeout);
+       if(!_armCartesianCtrl->waitMotionDone(0.1, timeout)){
+           std::cerr << _dbgtag << "warning -- goToPoseSync timed out" << endl;
+       }
     }
     return ret;
 
@@ -280,23 +282,30 @@ bool Hand::goToStartingPose(Finger * explorationFinger){
     Vector currentArmPos, currentArmOrient;
 
 
+    // Get the starting pose
     if(getStartingPose(desiredFingerPos, desiredArmOrient))
     {
 
-        // Move the arm up before moving sideways
+        // Get the arm postion from the finger position
         explorationFinger->toArmPosition(desiredFingerPos, desiredArmPos);
+
+
+        //////////////////////////////////////////////////////
+        ///// first move the hand up to avoid collisions /////
+        //////////////////////////////////////////////////////
 
         // Get the current arm pose
         getPose(currentArmPos, currentArmOrient);
+        // Swap the z-coordinate with that of the starting pose
         currentArmPos[2] = desiredArmPos[2];
-        goToPoseSync(currentArmPos, desiredArmOrient,10);
+        // Move the arm up
+        goToPoseSync(currentArmPos, desiredArmOrient,5); //Todo: use either #define or config for the timeout
 
-        bool motionDone = false;
-        while(!motionDone){
-            checkMotionDone(&motionDone);
-            motionDone = true; // Hack
-        }
-        goToPoseSync(desiredArmPos, desiredArmOrient, 10);
+
+        /////////////////////////////////////////////////////////
+        /// now move the arm to the desired postion
+        /////////////////////////////////////////////////////////
+        goToPoseSync(desiredArmPos, desiredArmOrient, 5);
 
         return true;
     }

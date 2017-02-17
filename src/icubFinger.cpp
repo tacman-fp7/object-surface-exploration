@@ -364,12 +364,12 @@ IndexFinger::IndexFinger(t_controllerData ctrlData):
     _distalEncoderIndex = INDEX_DISTAL_ENCODER;
 
     // TODO: Put it in a config file!
-    _maxProximal = 240;
-    _minProximal = 15;
-    _maxMiddle = 225;
-    _minMiddle = 50;
-    _maxDistal = 239;
-    _minDistal = 0;
+    _maxProximal = 253;
+    _minProximal = 38;
+    _maxMiddle = 251;
+    _minMiddle = 61;
+    _maxDistal = 255;
+    _minDistal = 35;
 
 
 
@@ -453,9 +453,10 @@ bool icubFinger::calibrateIndexMiddle(){
         ;
     }
 
+    // TODO: Why do I d this!
     checkMinMax(_minDistal, _maxDistal);
-    checkMinMax(_minMiddle, _minMiddle);
-    checkMinMax(_minProximal, _minProximal);
+    checkMinMax(_minMiddle, _maxMiddle);
+    checkMinMax(_minProximal, _maxProximal);
 
     cout << "Calibration mins:" <<
             _minProximal << "\t" <<
@@ -520,12 +521,12 @@ MiddleFinger::MiddleFinger(t_controllerData ctrlData):
     _distalEncoderIndex = MIDDLE_DISTAL_ENCODER;
 
     // TODO: Put it in a config file!
-    _maxProximal = 236;
-    _minProximal = 0;
-    _maxMiddle = 234;
-    _minMiddle = 3;
-    _maxDistal = 255;
-    _minDistal = 19;
+    _maxProximal = 228;
+    _minProximal = 1;
+    _maxMiddle = 243;
+    _minMiddle = 28;
+    _maxDistal = 254;
+    _minDistal = 38;
 
 }
 

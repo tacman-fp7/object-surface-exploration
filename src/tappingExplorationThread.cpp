@@ -278,6 +278,8 @@ void TappingExplorationThread::moveArmToWayPoint(yarp::sig::Vector pos, yarp::si
             }
             //_robotCartesianController->checkMotionDone(&motionDone);
             _robotHand->checkMotionDone(&motionDone);
+            // Fails here
+
         }
     }
 }
@@ -413,7 +415,7 @@ void TappingExplorationThread::detectContact(double maxAngle)
         // Get the angles
         _explorationFinger->getAngels(explorationFingerAngles);
 
-        //cout << "Finger angles: " << indexFingerAngles.toString() << endl;
+        //cout << "Finger angles: " << explorationFingerAngles.toString() << endl;
         //_robotHand->getIndexFingerAngles(indexFingerAngles);
 
 

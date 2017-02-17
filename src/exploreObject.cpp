@@ -500,7 +500,7 @@ bool ExploreObject::startExploringMultifinger(const string& objectName)
         prepHand();
         if(!this->goToStartingPose())
             ret = false;
-        _robotHand->waitMotionDone(0.1, 20);
+        //_robotHand->waitMotionDone(0.1, 20);
         //_armCartesianController->waitMotionDone(0.1, 20);
 
         // Ge the current position of the arm.

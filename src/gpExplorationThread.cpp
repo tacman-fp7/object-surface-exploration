@@ -136,7 +136,7 @@ void GPExplorationThread::setWayPoint_GP_validate()
     bool ret = false;
 
     _curProximal = 10;
-    _curAbduction = 0;
+    _curAbduction = 60;
 
     moveExplorationFingerBlocking(_curProximal, _curAbduction, 40);
     // Get the valid point from object features
@@ -457,7 +457,7 @@ void GPExplorationThread::sampleSurface_wiggleFingers()
     // Open the fingertip
 
     _curProximal = 0;
-    _curAbduction = 0;
+    _curAbduction = 60;
     double curDistal = 0;
     moveExplorationFingerBlocking(_curProximal, curDistal, _curAbduction, 40);
     //_objectFeatures->fingerMovePosition(11, 0, 40);
@@ -502,7 +502,7 @@ void GPExplorationThread::sampleSurface_wiggleFingers()
         // Move the fingertip up
         _curProximal = 0;
         curDistal = 0;
-        _curAbduction = 0;
+        _curAbduction = 60;
         moveExplorationFingerBlocking(_curProximal, curDistal, _curAbduction, 50);
 
         // _objectFeatures->fingerMovePosition(11, 0, 50);
@@ -550,7 +550,7 @@ void GPExplorationThread::sampleSurface_wiggleFingers()
 
         _curProximal = 3;
         curDistal = 0;
-        _curAbduction = 40;
+        _curAbduction = 60;
 
         moveExplorationFingerBlocking(_curProximal, curDistal, _curAbduction, 40);
         yarp::os::Time::delay(1);
@@ -559,7 +559,7 @@ void GPExplorationThread::sampleSurface_wiggleFingers()
         _objectFeatures->updateContactState(_contactState);
 
         //_objectFeatures->updateContactState(_contactState);
-        _curProximal = 0;
+        _curProximal = 60;
         moveExplorationFingerBlocking(_curProximal, curDistal, _curAbduction, 40);
 
 
@@ -584,7 +584,7 @@ void GPExplorationThread::sampleSurface_wiggleFingers()
     _contactSafetyThread->suspend();
     //_objectFeatures->openHand();
 
-    _curProximal = 0; curDistal = 0; _curAbduction = 0;
+    _curProximal = 0; curDistal = 0; _curAbduction = 60;
     moveExplorationFingerBlocking(_curProximal, curDistal, _curAbduction, 40);
 
     Vector startingPos, startingOrient;
@@ -1033,7 +1033,7 @@ void GPExplorationThread::setWayPoint_GP()
     bool ret;
 
     _curProximal = 10;
-    _curAbduction = 0;
+    _curAbduction = 60;
 
     moveExplorationFingerBlocking(_curProximal, _curAbduction, 40);
     // Get the valid point from object features

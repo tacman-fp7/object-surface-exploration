@@ -69,11 +69,11 @@ protected:
     void finshExploration();
 
     // Rename the functions to refelect the fact that the proximal and distal are locked
-    void moveExplorationFinger(double proximalAngle, double abductionAngle, double speed = 40);
+    void moveExplorationFinger(double proximalAngle, double abductionAngle, double speed = 60);
     void moveExplorationFingerBlocking(double proximalAngle, double abductionAngle, double speed);
     void moveExplorationFingerBlocking(double proximalAngle, double distalAngle, double abductionAngle, double speed);
 
-    void moveFinger(Finger *finger, double proximalAngle, double abductionAngle, double speed = 40);
+    void moveFinger(Finger *finger, double proximalAngle, double abductionAngle, double speed = 60);
     void moveFingerBlocking(Finger *finger, double proximalAngle, double abductionAngle, double speed);
     void moveFingerBlocking(Finger *finger, double proximalAngle, double distalAngle, double abductionAngle, double speed);
 

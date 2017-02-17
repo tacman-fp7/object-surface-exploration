@@ -510,12 +510,12 @@ bool Finger::checkMotionDone(){
 
     if(!_armJointPositionCtrl->checkMotionDone(_proximalJointIndex, &retProximal))
     {
-        std::cerr << _dbgtag << "CheckMotion failed on network comms" << std::endl;
+        std::cerr << _dbgtag << "CheckMotion failed!" << std::endl;
         retProximal = true;
     }
     if(!_armJointPositionCtrl->checkMotionDone(_distalJointIndex, &retDistal))
     {
-        std::cerr << _dbgtag << "CheckMotion failed on network comms" << std::endl;
+        std::cerr << _dbgtag << "CheckMotion failed!" << std::endl;
         retDistal = true;
     }
 
