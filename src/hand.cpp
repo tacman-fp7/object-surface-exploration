@@ -269,13 +269,13 @@ bool Hand::goToStartingPose(Finger * explorationFinger){
         // Swap the z-coordinate with that of the starting pose
         currentArmPos[2] = desiredArmPos[2];
         // Move the arm up
-        goToPoseSync(currentArmPos, desiredArmOrient,5); //Todo: use either #define or config for the timeout
+        goToPoseSync(currentArmPos, desiredArmOrient, 20); //Todo: use either #define or config for the timeout
 
 
         /////////////////////////////////////////////////////////
         /// now move the arm to the desired postion
         /////////////////////////////////////////////////////////
-        goToPoseSync(desiredArmPos, desiredArmOrient, 5);
+        goToPoseSync(desiredArmPos, desiredArmOrient, 20);
 
         return true;
     }
@@ -529,7 +529,7 @@ void Hand::configure(yarp::os::ResourceFinder rf){
 
     // Set the trajectory time
     _armCartesianCtrl->setTrajTime(trajectoryTime);
-    _armCartesianCtrl->setInTargetTol(10.0/1000); // half of
+    _armCartesianCtrl->setInTargetTol(10.0/1000); 
     //strictTolerence();
 
     // Enable the torso movement
