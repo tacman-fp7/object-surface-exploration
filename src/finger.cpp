@@ -564,7 +564,7 @@ bool Finger::open(){
     while (!checkMotionDone()) {
         ;
     }
-
+    return ret;
 }
 
 

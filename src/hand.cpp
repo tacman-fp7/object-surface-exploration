@@ -105,14 +105,17 @@ bool Hand::checkOpenMotionDone(){
 
 bool Hand::open(){
 
-    setAbduction(60); //TODO abduction
+    bool ret = true;
+
+    ret &= setAbduction(60); //TODO abduction
 
     // Ask all fingers to open
-    _indexFinger->open();
-    _middleFinger->open();
-    _ringFinger->open();
-    //_littleFinger->open(); //This not needed because it is linked to the ring finger
-    _thumb->open();
+    ret &= _indexFinger->open();
+    ret &= _middleFinger->open();
+    ret &= _ringFinger->open();
+    ret &= _thumb->open();
+
+    return ret;
 }
 
 bool Hand::checkMotionDone(bool *motionDone){
@@ -120,6 +123,7 @@ bool Hand::checkMotionDone(bool *motionDone){
 }
 
 bool Hand::setAbduction(double angle, double speed){
+
 
     Bottle& msg = _abuductionPort_out.prepare();
     msg.clear();
@@ -130,7 +134,9 @@ bool Hand::setAbduction(double angle, double speed){
     if(!_armJointPositionCtrl->positionMove(ABDUCTION, angle))
     {
         cerr << _dbgtag << "Falied to move to the requsted positions." << endl;
-    }
+        return false;
+ }
+        return true;
 }
 
 void Hand::updateSafeWorkspace()

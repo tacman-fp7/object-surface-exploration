@@ -73,6 +73,7 @@ void GPExplorationMultifingerThread::run()
 
                 GPExplorationThread::maintainContact();
 
+
                 multifingerContact();
                 //logData();
             }

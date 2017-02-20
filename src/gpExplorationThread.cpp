@@ -358,7 +358,7 @@ void GPExplorationThread::maintainContact()
     TappingExplorationThread::maintainContact();
 
     // Wiggle wiggle
-    if(_sampleSurface){
+    if(false){//_sampleSurface){
         _explorationFinger->getPositionCorrected(fingertipPosition);
         cout << "Finger position: " << fingertipPosition[2] + 0.15 << endl;
         if((fabs(fingertipPosition[2]  + 0.15) > 15.0/1000)){
