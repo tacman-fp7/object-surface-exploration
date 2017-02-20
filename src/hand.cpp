@@ -401,7 +401,7 @@ bool Hand::setWayPoint( Vector pos, Vector orient ){
 
     _wayPointPos = pos;
     _wayPointOrient = orient;
-
+    std::cout << "Next waypoint is: " << pos.toString() << std::endl;
     return _wayPoint_isValid;
 
 }

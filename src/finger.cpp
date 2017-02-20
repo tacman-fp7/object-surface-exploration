@@ -234,7 +234,7 @@ bool Finger::getPositionCorrected(yarp::sig::Vector &position){
     getPositionHandFrameCorrected(tip_x);
     tip_x.resize(4);
     tip_x[3] = 1.0;
-    cout << "TipX: " << tip_x.toString() << endl;
+//    cout << "TipX: " << tip_x.toString() << endl;
 
     Vector armPos, armOrient;
     _armCartesianCtrl->getPose(armPos, armOrient);
