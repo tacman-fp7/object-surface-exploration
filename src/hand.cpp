@@ -72,12 +72,7 @@ bool Hand::prepare(){
 
 bool Hand::calibrate(){
 
-    // double min, max;
-    // for (int iJoint = 0; iJoint < 16; iJoint++){
-    // _armControlLimits->getLimits(iJoint, &min, &max );
-    // cout << "J " << iJoint << " min: " << min << ", max: " << max << endl;
-    // }
-    // return true;
+
     open();
     _indexFinger->calibrate();
     open();
@@ -92,31 +87,6 @@ bool Hand::calibrate(){
     _middleFinger->getPosition(position);
     cout << "M: " << position.toString() << endl;
 
-    //    cout << "Little" << endl;
-    //    _littleFinger->getPosition(position);
-    //    cout << position.toString() << endl;
-
-    //double min, max;
-
-    //_armControlLimits->getLimits(11, &min, &max);
-    //std::cout << "Min: " << min << "Max: " << max << std::endl;
-
-    //std::deque<yarp::dev::IControlLimits*> calib;
-    // calib.push_back(_armControlLimits);
-    //_indexFinger->alignJointsBounds(calib);
-
-    //calib.push_back(_armControlLimits);
-
-    /*    _indexFinger->printJointLimits();
-    _indexFinger->calibrate2();
-    _indexFinger->printJointLimits();
-*/
-
-    /*    _indexFinger->open();
-    _thumb->open();
-    _middleFinger->open();
-
-    _indexFinger->calibrate();*/
 
     return true;
 }
@@ -238,7 +208,7 @@ bool Hand::goToPoseSync(yarp::sig::Vector& pos, yarp::sig::Vector& orient, doubl
     bool ret;
     ret =  _armCartesianCtrl->goToPoseSync(pos, orient);
     if(timeout > 0){
-       if(!_armCartesianCtrl->waitMotionDone(0.1, timeout)){
+       if(!_armCartesianCtrl->waitMotionDone(0.1, 20)){//timeout)){
            std::cerr << _dbgtag << "warning -- goToPoseSync timed out" << endl;
        }
     }
@@ -558,22 +528,21 @@ void Hand::configure(yarp::os::ResourceFinder rf){
     _armCartesianCtrl->storeContext(&_cartCtrlStartupIDstartupID);
 
     // Set the trajectory time
-    //cout << "Trajectory time: " << trajectoryTime << endl;
     _armCartesianCtrl->setTrajTime(trajectoryTime);
-    _armCartesianCtrl->setInTargetTol(10/1000); // half of
+    _armCartesianCtrl->setInTargetTol(10.0/1000); // half of
     //strictTolerence();
 
     // Enable the torso movement
 
     Vector curDof;
     _armCartesianCtrl->getDOF(curDof);
-    //cout<<"["<<curDof.toString()<<"]"<<endl;  // [0 0 0 1 1 1 1 1 1 1] will be printed out
+
     Vector newDof(3);
-    newDof[0]=1;    // torso pitch: 1 => enable
-    newDof[1]=2;    // torso roll:  2 => skip
-    newDof[2]=1;    // torso yaw:   1 => enable
+    newDof[0]=1;//1;    // torso pitch: 1 => enable
+    newDof[1]=0;//2;    // torso roll:  2 => skip
+    newDof[2]=1;//1;    // torso yaw:   1 => enable
     _armCartesianCtrl->setDOF(newDof,curDof);
-    //cout<<"["<<curDof.toString()<<"]"<<endl;  // [1 0 1 1 1 1 1 1 1 1] will be printed out
+
 
     //_armCartesianCtrl->setPosePriority("orientation");
 
