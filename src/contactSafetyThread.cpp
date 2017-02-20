@@ -52,10 +52,11 @@ ContactSafetyThread::ContactSafetyThread(int period,  Hand *robotHand)
     :RateThread(period), _robotHand(robotHand){
 
 
-
-    _forceThreshold = _robotHand->getContactSafetyForceThereshold();
-    _dbgtag = "Contact safety: ";
+    _dbgtag = "Contact safety thread: ";
     _collisionDetected = false;
+
+    // Set the force threshold from the config file
+    _forceThreshold = _robotHand->getContactSafetyForceThereshold();
 
 
     /// Force torque//////
@@ -81,16 +82,8 @@ ContactSafetyThread::ContactSafetyThread(int period,  Hand *robotHand)
 
 }
 
-void ContactSafetyThread::init(){
 
-    //ResourceFinder rf;
-
-
-
-}
-
-bool ContactSafetyThread::resetBaseline()
-{
+bool ContactSafetyThread::resetBaseline(){
 
     Bottle* forceTorqueData = _forceTorque_in.read(true);
     if(!forceTorqueData->isNull())

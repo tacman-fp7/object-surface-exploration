@@ -125,20 +125,7 @@ void GPExplorationMultifingerThread::run()
 
 }
 
-/*void GPExplorationMultifingerThread::logData(){
 
-    Vector fingerPosition;
-    Finger *indexFinger = _robotHand->getIndexFinger();
-    Finger *middleFinger = _robotHand->getMiddleFinger();
-
-    indexFinger->getPosition(fingerPosition);
-  _indexFingerLog << fingerPosition[0] << ", " << fingerPosition[1] << ", " << fingerPosition[2] << endl;
-  fingerPosition.clear();
-  middleFinger->getPosition(fingerPosition);
-  _middleFingerLog << fingerPosition[0] << "," << fingerPosition[1] << "," << fingerPosition[2] << endl;
-
-
-}*/
 
 bool GPExplorationMultifingerThread::clenchRingLittleFinger(Finger *ringFinger, Finger *littleFinger, double maxAngle, clenchResults_t *clenchResults)
 {
