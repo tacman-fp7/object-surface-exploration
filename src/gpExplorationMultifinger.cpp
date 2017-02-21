@@ -77,7 +77,7 @@ void GPExplorationMultifingerThread::run()
                 multifingerContact();
                 //logData();
             }
-            //_stateMutex.unlock();
+
             break;
         case MOVE_LOCATION:
             cout << "Contact state is: move location" << endl;
@@ -306,34 +306,6 @@ void GPExplorationMultifingerThread::multifingerContact(){
 
 
 
-/*    if(clenchResults.littleFingerExAngle || clenchResults.littleFingerForce
-            || clenchResults.ringFingerExAngle || clenchResults.ringFingerForce){
-
-
-
-
-        if(clenchResults.littleFingerForce || clenchResults.littleFingerExAngle){
-            cout << "Little finger contact" << endl;
-            Vector fingertipPosition;
-            littleFinger->getPosition(fingertipPosition);
-            std::cout << "Little finger pos: " << fingertipPosition.toString() << std::endl;
-            _surfaceModel->addContactPoint(fingertipPosition);*
-        }
-        if(clenchResults.ringFingerForce||clenchResults.ringFingerExAngle){
-
-            cout << "Ring finger contact" << endl;
-            Vector fingertipPosition;
-            ringFinger->getPosition(fingertipPosition);
-            std::cout << "Ring finger pos: " << fingertipPosition.toString() << std::endl;
-            _surfaceModel->addContactPoint(fingertipPosition);
-
-        }
-    }
-
-
-    // Move back to the starting position
-    middleFinger->setAngles(0, 0, 60);
-    ringFinger->setAngles(0, 0, 60);*/
 
     // Move back to the starting position
     _auxiliaryFinger->setAngles(0, 0, 60);

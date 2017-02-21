@@ -130,130 +130,19 @@ bool ExploreGPSurfaceThread::initialiseGP(yarp::sig::Vector startingPos, yarp::s
 void ExploreGPSurfaceThread::maintainContact()
 {
 
-   /* if(!_wayPointListComplete)
-    {
-
-        Vector fingertipPositon;
-        _objectFeatures->getIndexFingertipPosition(fingertipPositon);
-
-        // Check if it is high enough
-        if(fabs(fingertipPositon[2]  + 0.15) > 15.0/1000)
-        {
-
-        }
-        _contactState = SET_WAYPOINT_GP;
-
-
-
-    }
-    else
-    {
-        moveArmUp();
-
-        // Open the fingertip
-        _objectFeatures->fingerMovePosition(11, 0);
-        _objectFeatures->fingerMovePosition(12, 15);
-        while (!_objectFeatures->checkOpenHandDone())
-            ;
-
-        // Go to the first position in the list
-        Vector fingertipPosition;
-        Vector indexFingerAngles;
-        Vector desiredArmPos, desiredArmOrient;
-        _objectFeatures->getStartingPose(desiredArmPos, desiredArmOrient);
-
-        if(_wayPointList.empty())
-            return;
-
-        double offset = 3.0/1000;
-        for (int i = 0; i < _wayPointList.size(); i++)
-        {
-            fingertipPosition = _wayPointList.at(i);
-            cout << "DF: " << fingertipPosition.toString() << endl;
-            // Get the current desired arm positionw with the new fingertip configuration
-            _objectFeatures->indexFinger2ArmPosition(fingertipPosition, desiredArmPos);
-
-            desiredArmPos[2] -= offset; // offset from the middle
-            _robotCartesianController->goToPoseSync(desiredArmPos, desiredArmOrient);
-           // _robotCartesianController->waitMotionDone(0.1, 2);
-
-
-
-            //moveArmToWayPoint(desiredArmPos, desiredArmOrient);
-
-            bool motionDone = false;
-            while(!motionDone)
-            {
-                if(_objectFeatures->getContactForce() > 4)
-                {
-                    cout  << "Abandoned motion due to force" << endl;
-                    _robotCartesianController->stopControl();
-
-                    break;
-                }
-
-                _robotCartesianController->checkMotionDone(&motionDone);
-            }
-
-            _objectFeatures->getIndexFingertipPosition(fingertipPosition);
-            cout << "AF: " << fingertipPosition.toString() << endl;
-
-
-
-            _objectFeatures->getIndexFingerAngles(indexFingerAngles);
-
-            if(indexFingerAngles[1] > 0 )
-            {
-                cout << "No contact!" << endl;
-                cout << "Angles: " << indexFingerAngles.toString() << endl;
-
-                offset += 3.0/1000;
-                i -= 1;
-                continue;
-            }
-            else
-            {
-                offset = 6.0/1000;
-            }
-
-
-        }
-
-        // Just to be safe
-       //////////////////// move the arm up
-
-        Vector startingPos, startingOrient;
-        Vector armPos, orient;
-
-
-
-        _objectFeatures->getArmPose(armPos, orient);
-        _objectFeatures->getStartingPose(startingPos, startingOrient);
-
-
-        _objectFeatures->indexFinger2ArmPosition(startingPos, desiredArmPos);
-        armPos[2] = desiredArmPos[2]; // Move the fingertip up to avoid collisiont
-        _objectFeatures->moveArmToPosition(armPos, orient);
-
-        _contactState = STOP;
-
-
-        return;
-    }
-    */
 
     // Get the fingertip position
     Vector indexFingerAngles;
     Vector fingertipPosition;
-    _explorationFinger->getPositionCorrected(fingertipPosition);
+    _explorationFinger->getPositionCorrected(fingertipPosition); //TODO: This should be called only in the multifinger
 
     // set the current fingertip position as the next waypoint;
     Vector desiredArmPos, desiredArmOrient;
     _robotHand->getStartingPose(desiredArmPos, desiredArmOrient);
 
     // Open the fingertip
-    _explorationFinger->setProximalAngle(0);
-    _explorationFinger->setDistalAngle(10);
+    _explorationFinger->setProximalAngle(0); //TODO: config files
+    _explorationFinger->setDistalAngle(10); //TODO: config files
    // _objectFeatures->fingerMovePosition(11, 0);
     //_objectFeatures->fingerMovePosition(12, 10);
     while (!_explorationFinger->checkMotionDone())

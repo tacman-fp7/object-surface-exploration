@@ -2,7 +2,7 @@
 %cd('/home/nawidj/gpdata')
 %cd('/home/nawidj/gpDataTrial06')
 %cd('/home/nawidj/tacman/GaussianSurfaceExplorationData/data/hut/set02/trial05/gpPoints');
-cd('/home/nawidj/gpdata');
+cd('/home/nawidj/demoData');
 objectName = 'largeObjectIndex03';
 nextPointFileName = [objectName '_model_nextPoint.csv'];
 modelInputFileName = [objectName '_model_input.csv'];
