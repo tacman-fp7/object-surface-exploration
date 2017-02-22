@@ -304,6 +304,7 @@ void GPExplorationThread::maintainContact()
     _explorationFinger->getPositionCorrected(fingertipPosition);
     _explorationFinger->logTactileCoP();
 
+    cout << "Fingertip pos before adding:" << fingertipPosition.toString() << endl;
     _zPoints.push_back(fingertipPosition[2]);
 
     while (_zPoints.size() < 1) {
@@ -735,7 +736,12 @@ bool GPExplorationThread::initialiseGP(Vector startingPos, Vector startingOrient
     xMax = startingPos[0];
     xMin = xMax - 170.0/1000;
 
-    zMin = -0.148;//-0.148; // TODO: fix it! Maybe take it form reachable space
+    zMin = -0.135;//-0.148; // TODO: fix it! Maybe take it form reachable space
+
+    ////////////////////////////////////////////////////////////////////////////
+    //// The start and the end y locations depends on the right/left hand //////
+    //// Set the appropriately                                            //////
+    ////////////////////////////////////////////////////////////////////////////
     if(startingPos[1] < endingPos[1])
     {
         yMin = startingPos[1];

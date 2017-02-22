@@ -33,80 +33,30 @@ bool icubFinger::toArmPosition(Vector &fingertipPosition, Vector &retArmpPositio
     bool ret = true;
 
 
-  /*  Vector joints;
-    int nEncs;
-
-    ret = ret && _armEncoder->getAxes(&nEncs);
-    Vector encs(nEncs);
-    if(! (ret = ret && _armEncoder->getEncoders(encs.data())))
-    {
-        cerr << _dbgtag << "Failed to read arm encoder data" << endl;
-    }
-
-    ret = ret && _iCubFinger->getChainJoints(encs, joints);
-
-    //cout << fingerEncoders.toString() << endl;
-    Vector fingerEncoders;
-
-    ret = ret && readEncoders(fingerEncoders);
-
-
-
-
-    // Replace the joins with the encoder readings
-
-    joints[1] = 90 * (1 - (fingerEncoders[0] - _minProximal) / (_maxProximal - _minProximal) );
-    joints[2] = 90 * (1 - (fingerEncoders[1] - _minMiddle) / (_maxMiddle - _minMiddle) );
-    joints[3] = 90 * (1 - (fingerEncoders[2] - _minDistal) / (_maxDistal - _minDistal) );
-
-    //Convert the joints to radians.
-    for (int j = 0; j < joints.size(); j++)
-        joints[j] *= DEG2RAD;
-
-    yarp::sig::Matrix tipFrame = _iCubFinger->getH(joints);
-    Vector tip_x = tipFrame.getCol(3);*/
-
     Vector tip_x;
     getPositionHandFrameCorrected(tip_x);
 
     retArmpPosition.resize(3);
-    retArmpPosition[0] = fingertipPosition[0] + tip_x[0];
-    retArmpPosition[1] = fingertipPosition[1] + tip_x[1];
-    retArmpPosition[2] = fingertipPosition[2] - tip_x[2];
+
+    if(_whichHand.compare("left") == 0){
+        retArmpPosition[0] = fingertipPosition[0] + tip_x[0];
+        retArmpPosition[1] = fingertipPosition[1] + tip_x[1];
+        retArmpPosition[2] = fingertipPosition[2] - tip_x[2];
+    }else if(_whichHand.compare("right") == 0){
+        retArmpPosition[0] = fingertipPosition[0] + tip_x[0];
+        retArmpPosition[1] = fingertipPosition[1] - tip_x[1];
+        retArmpPosition[2] = fingertipPosition[2] + tip_x[2];
+    }
 
 
     return ret;
 }
 
-/*bool icubFinger::getPosition(yarp::sig::Vector &position){
-    bool ret;
-
-    Vector fingerEncoders;
-    fingerEncoders.resize(3);
-    ret = readEncoders(fingerEncoders);
-
-    ret = ret && getPosition(position, fingerEncoders);
-
-    return ret;
-
-}*/
 
 
-/*bool icubFinger::getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders){
-    cerr << _dbgtag << "get position has not been implemented for this finger." << endl;
-    return false;
-}*/
-
-/*bool icubFinger::getPositionHandFrame(yarp::sig::Vector &position){
-    cerr << _dbgtag << "get position has not been implemented for this finger." << endl;
-
-
-return false;
-
-}*/
 
 bool icubFinger::getPositionHandFrameCorrected(yarp::sig::Vector &position){
-   return Finger::getPositionHandFrame(position);
+    return Finger::getPositionHandFrame(position);
 }
 
 bool icubFinger::getPositionHandFrameCorrected(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders){
@@ -125,7 +75,7 @@ bool IndexFinger::getPositionHandFrameCorrected(yarp::sig::Vector &position){
     // Transfer it to the new frame
 
     yarp::sig::Matrix H0(4,4);
-/*
+    /*
 R_hand =
 
     0.9928   -0.1104    0.0474
@@ -172,19 +122,19 @@ TT_hand =
 
     // Should be able to choose based on left/right hand
     // Also should be able to disable it
-   if(false){
-    H0(0,0)=0.9934;   H0(0,1)=-0.1093; H0(0,2)=0.0345;  H0(0,3)=-0.0014;
-    H0(1,0)=0.1060;   H0(1,1)=0.9906;  H0(1,2)=0.0867;  H0(1,3)=0;//0.0156;
-    H0(2,0)=-0.0437;  H0(2,1)=-0.0824; H0(2,2)=0.9956;  H0(2,3)=-0.0033;
-    H0(3,0)=0.0;      H0(3,1)=0.0;     H0(3,2)=0.0;     H0(3,3)=1.0;
+    if(false){
+        H0(0,0)=0.9934;   H0(0,1)=-0.1093; H0(0,2)=0.0345;  H0(0,3)=-0.0014;
+        H0(1,0)=0.1060;   H0(1,1)=0.9906;  H0(1,2)=0.0867;  H0(1,3)=0;//0.0156;
+        H0(2,0)=-0.0437;  H0(2,1)=-0.0824; H0(2,2)=0.9956;  H0(2,3)=-0.0033;
+        H0(3,0)=0.0;      H0(3,1)=0.0;     H0(3,2)=0.0;     H0(3,3)=1.0;
 
-   }
-   else{
-   H0(0,0)=1.0;   H0(0,1)=0.0; H0(0,2)=0.0;  H0(0,3)=0.0;
-   H0(1,0)=0.0;   H0(1,1)=1.0; H0(1,2)=0.0;  H0(1,3)=0.0;//0.0156;
-   H0(2,0)=0.0;   H0(2,1)=0.0; H0(2,2)=1.0;  H0(2,3)=0.0;
-   H0(3,0)=0.0;   H0(3,1)=0.0; H0(3,2)=0.0;  H0(3,3)=1.0;
-   }
+    }
+    else{
+        H0(0,0)=1.0;   H0(0,1)=0.0; H0(0,2)=0.0;  H0(0,3)=0.0;
+        H0(1,0)=0.0;   H0(1,1)=1.0; H0(1,2)=0.0;  H0(1,3)=0.0;//0.0156;
+        H0(2,0)=0.0;   H0(2,1)=0.0; H0(2,2)=1.0;  H0(2,3)=0.0;
+        H0(3,0)=0.0;   H0(3,1)=0.0; H0(3,2)=0.0;  H0(3,3)=1.0;
+    }
     //T_rotoTrans = yarp::math::axis2dcm(armOrient);
     //T_rotoTrans.setSubcol(armPos, 0,3);
 
@@ -225,7 +175,7 @@ bool IndexFinger::getPositionHandFrame(yarp::sig::Vector &position, yarp::sig::V
 
 
     // Replace the joins with the encoder readings
-    joints[0] = 20; // The index fingertip calibration procedure used this value.
+    //joints[0] = 60; // The index fingertip calibration procedure used this value.
     joints[1] = 90 * (1 - (fingerEncoders[0] - _minProximal) / (_maxProximal - _minProximal) );
     joints[2] = 90 * (1 - (fingerEncoders[1] - _minMiddle) / (_maxMiddle - _minMiddle) );
     joints[3] = 90 * (1 - (fingerEncoders[2] - _minDistal) / (_maxDistal - _minDistal) );
@@ -243,33 +193,7 @@ bool IndexFinger::getPositionHandFrame(yarp::sig::Vector &position, yarp::sig::V
     return ret;
 }
 
-/*bool IndexFinger::getPosition(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders){
 
-
-    // I am using an hybrid fingertip position forward kinematics. Fristly, I use the the actual encoder
-    // data for the last three joints. Secondly, the behaviour of the icubFinger position estimation
-    // is a little unpredictable, so I am transforming the fingertip position into the robot coordingates
-    // myself.
-    bool ret = true;
-    Vector tip_x;
-
-    getPositionHandFrame(tip_x, fingerEncoders);
-
-    cout << "TipX: " << tip_x.toString() << endl;
-
-    Vector armPos, armOrient;
-    _armCartesianCtrl->getPose(armPos, armOrient);
-
-    // My own transformation
-    yarp::sig::Matrix T_rotoTrans(4,4);
-    T_rotoTrans = yarp::math::axis2dcm(armOrient);
-    T_rotoTrans.setSubcol(armPos, 0,3);
-    Vector retMat = yarp::math::operator *(T_rotoTrans, tip_x);
-    position = retMat.subVector(0,2);
-    //cout << "Finger position: " << position.toString()  << endl;
-
-    return ret;
-}*/
 
 icubFinger::icubFinger(t_controllerData ctrlData):Finger(ctrlData){
     _fingerEncoders = ctrlData.fingerEncoders;
@@ -374,12 +298,22 @@ IndexFinger::IndexFinger(t_controllerData ctrlData):
     _distalEncoderIndex = INDEX_DISTAL_ENCODER;
 
     // TODO: Put it in a config file!
-    _maxProximal = 253;
+
+   /* _maxProximal = 253;
     _minProximal = 38;
     _maxMiddle = 251;
     _minMiddle = 61;
     _maxDistal = 255;
     _minDistal = 35;
+*/
+
+
+     _maxProximal = 249;
+     _minProximal = 0;
+     _maxMiddle = 255;
+     _minMiddle = 78;
+     _maxDistal = 243;
+     _minDistal = 0;
 
 
 
@@ -389,7 +323,10 @@ IndexFinger::IndexFinger(t_controllerData ctrlData):
 
 bool IndexFinger::setSynchroProximalAngle(double angle){
 
-    double distal = 90-angle;
+    if(angle > 60){
+        angle = 60;
+    }
+    double distal = 60-angle;
     return setAngles(angle, distal, 40);
 }
 

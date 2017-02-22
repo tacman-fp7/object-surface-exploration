@@ -173,7 +173,7 @@ void TappingExplorationThread::maintainContact()
 {
 
     _curProximal = 10;
-    _curAbduction = 0;
+    _curAbduction = 60; //TODO config file
     moveExplorationFingerBlocking(_curProximal, _curAbduction, 40);
 
     if(_repeats < _nRepeats) // TODO: change
@@ -314,7 +314,8 @@ void TappingExplorationThread::moveExplorationFinger(double proximalAngle, doubl
     _curProximal = proximalAngle;
     _curAbduction = abductionAngle;
     _robotHand->setAbduction(abductionAngle, speed);
-    _explorationFinger->setAngles(_curProximal, speed);
+    //_explorationFinger->setAngles(_curProximal, speed);
+    _explorationFinger->setSynchroProximalAngle(_curProximal);
 
 }
 

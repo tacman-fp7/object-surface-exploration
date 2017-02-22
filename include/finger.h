@@ -187,6 +187,7 @@ protected:
     double _curDistalAngle;
 
     string _whichFinger;
+    string _whichHand;
 private:
     bool _isCoPValid;
     bool _isForceValid;

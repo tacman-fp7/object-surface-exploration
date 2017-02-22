@@ -208,8 +208,14 @@ bool ExploreObject::prepHand(){
 
 bool ExploreObject::calibrateHand(){
 
+    Vector encoders;
 
-    _robotHand->calibrate();
+    _robotHand->getIndexFinger()->readEncoders(encoders);
+    cout << "Index Finger: " << encoders.toString() << endl;
+
+    _robotHand->getMiddleFinger()->readEncoders(encoders);
+    cout << "Middle Finger: " << encoders.toString() << endl;
+    //_robotHand->calibrate();
     return true;
 }
 

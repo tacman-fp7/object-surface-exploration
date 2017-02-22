@@ -162,9 +162,16 @@ bool Finger::toArmPosition(Vector &fingertipPosition, Vector &retArmpPosition){
     Vector tip_x = tipFrame.getCol(3);
 
     retArmpPosition.resize(3);
+    if(_whichHand.compare("left") == 0){
     retArmpPosition[0] = fingertipPosition[0] + tip_x[0];
     retArmpPosition[1] = fingertipPosition[1] + tip_x[1];
     retArmpPosition[2] = fingertipPosition[2] - tip_x[2];
+    }else if(_whichHand.compare("right") == 0){
+
+        retArmpPosition[0] = fingertipPosition[0] + tip_x[0];
+        retArmpPosition[1] = fingertipPosition[1] - tip_x[1];
+        retArmpPosition[2] = fingertipPosition[2] + tip_x[2];
+    }
 
 
     return ret;
@@ -336,6 +343,7 @@ Finger::Finger(t_controllerData ctrlData){
     _isCoPValid = false;
     _isActiveTaxelValid = false;
     _whichFinger = ctrlData.whichFinger;
+    _whichHand = ctrlData.whichHand;
     _rawTactileData_in = ctrlData.rawTactileData_in;
     _tactileDataComp_in = ctrlData.tactileDataComp_in;
     _armControlLimits = ctrlData.armControlLimits;

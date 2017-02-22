@@ -110,9 +110,12 @@ void SurfaceModelGP::updatePaddingZ(double zVal){
 
 void SurfaceModelGP::addContactPoint(gVec<double> posXY, gVec<double> posZ, const int fingerID)
 {
+
     if(posXY.at(0) <= _minX || posXY.at(0) >= _maxX || posXY.at(1) <= _minY || posXY.at(1) >= _maxY)
     {
-        cout << "Contact outside the bounding box, skipping it!" << endl;
+        cerr << "Contact outside the bounding box, skipping it!" << endl;
+        cerr << "Bounding box (" << _minX << ", " << _maxX << ", " << _minY << ", " << _maxY << ")"  << endl;
+        cerr << "Pont corrds: (" << posXY.at(0) << ", " <<  posXY.at(1) << ")" << endl;
         return;
     }
     // Add the new point to the matrix
