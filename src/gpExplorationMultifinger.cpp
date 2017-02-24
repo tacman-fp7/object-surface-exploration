@@ -318,10 +318,7 @@ bool GPExplorationMultifingerThread::threadInit()
 
 
 
-    string fileName = _explorationFinger->getFingerName() + "FingertipLogGP.csv";
-    _explorationFingerLog.open(fileName.c_str());
-    fileName = _auxiliaryFinger->getFingerName() + "FingertipLogGP.csv";
-    _auxiliaryFingerLog.open(fileName.c_str());
+
 
     ret = GPExplorationThread::threadInit();
     GPExplorationThread::disableSurfaceSampling();
@@ -332,8 +329,7 @@ bool GPExplorationMultifingerThread::threadInit()
 
 void GPExplorationMultifingerThread::threadRelease()
 {
-     _explorationFingerLog.close();
-     _auxiliaryFingerLog.close();
+
     GPExplorationThread::threadRelease();
 
 }

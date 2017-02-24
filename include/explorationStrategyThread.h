@@ -33,6 +33,7 @@ protected:
 
     std::ofstream _explorationFingerLog;
     std::ofstream _auxiliaryFingerLog;
+    std::ofstream _explorationFingerTaxelResponseLog;
 
 protected:
     ContactSafetyThread* _contactSafetyThread;

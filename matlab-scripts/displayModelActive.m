@@ -2,7 +2,7 @@
 %cd('/home/nawidj/gpdata')
 %cd('/home/nawidj/gpDataTrial06')
 %cd('/home/nawidj/tacman/GaussianSurfaceExplorationData/data/hut/set02/trial05/gpPoints');
-cd('/home/nawidj/demoData');
+cd('/home/nawidj/demoRight');
 objectName = 'test';
 nextPointFileName = [objectName '_model_nextPoint.csv'];
 modelInputFileName = [objectName '_model_input.csv'];
@@ -20,18 +20,17 @@ indexFingerFileName = [objectName '_finger_1_GP.csv'];
 middleFingerFileName = [objectName '_finger_2_GP.csv'];
 
 %%
-%viewVars = [45, 55];
-%viewVars = [90, 90];
+
 viewVars = [50, 35];
 clf('reset');
 while(true)
     
     isLatentValid = false;
     
-    while(~exist(nextPointFileName, 'file'))
-        pause(0.05);
-    end
-    
+    % %     while(~exist(nextPointFileName, 'file'))
+    % %         pause(0.05);
+    % %     end
+    % %
     
     
     mmFactor = 1000;
@@ -41,14 +40,14 @@ while(true)
     
     
     
-    delete(nextPointFileName);
+    % %    delete(nextPointFileName);
     
-    if(exist('taxel,csv', 'file'))
-        %isLatentValid = true;
+    if(exist('taxel.csv', 'file'))
+        isLatentValid = true;
     end
     
     if(isLatentValid)
-        % system('python vae.py --taxel-file=./taxel.csv --latent-file=latent.csv');
+        system('python vae.py --taxel-file=./taxel.csv --latent-file=latent.csv');
     end
     
     
@@ -198,33 +197,6 @@ while(true)
     view(viewVars);
     
     
-    % % % % %     subplot(2,2,2)
-    % % % % %     %figure(2)
-    % % % % %     mesh(XT,YT, ZVClassification);
-    % % % % %     set(gca, 'fontname', 'Bitstream Charter','fontsize', 15);
-    % % % % %     xlabel('Width [mm]','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'bottom');
-    % % % % %     ylabel('Lengt [mm]','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'top');
-    % % % % %     zlabel('Uncertainty','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'bottom');
-    % % % % %     title('GP Classification Variance', 'fontsize', 20, 'interpreter', 'tex');
-    % % % % %     %zlim([0 5]);
-    % % % % %     %axis('equal');
-    % % % % %     axis tight;
-    % % % % %     view(viewVars);
-    % % % % %
-    % % % % %     hold on
-    % % % % %        h_cp = scatter3(maxVarPoint(1), maxVarPoint(2),...
-    % % % % %            maxVarPoint(4), 'fill', 'markerFaceColor', 'black', 'sizeData', [100]);
-    % % % % %
-    % % % % %     %     scatter3(nextSamplePoint(1), nextSamplePoint(2), nextSamplePoint(3),...
-    % % % % %     %         'fill', 'markerFaceColor', 'black', 'sizeData', [100]);
-    % % % % %     hold off
-    
-    % %     hold on
-    % %     h_cp = scatter3(maxVarPoint(1), maxVarPoint(2),...
-    % %         maxVarPoint(4), 'fill', 'markerFaceColor', 'green', 'sizeData', [100]);
-    % %     hold off
-    
-    
     
     
     ZVCombined = reshape(modelVarianceCombined, nPoints, nPoints);
@@ -307,35 +279,39 @@ while(true)
     
     
     
-    % % %     subplot(2,2,4)
-    % % %
-    % % %     ngroups=5;
-    % % %     x = trainingInput(81:end,1);
-    % % %     y = trainingInput(81:end,2);
-    % % %     z = latentVariables* 10;
-    % % %
-    % % %
-    % % %
-    % % %     z1=zeros(size(z,1),1);    % initial 'zldata'
-    % % %     for i1=1:ngroups
-    % % %         z2=z1;
-    % % %         z1=z1+squeeze(z(:,i1));
-    % % %         h(i1)=CREATESTACKEDMULTIBAR3d(x, y, z2, z1, i1.*ones(numel(z1(:)),1), 2, ngroups);
-    % % %         hold on
-    % % %     end
-    % % %     hold off;
-    % % %     set(gca, 'fontname', 'Bitstream Charter','fontsize', 15);
-    % % %     xlabel('Width [mm]','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'bottom');
-    % % %     ylabel('Length [mm]','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'top');
-    % % %     title('Latent Variables', 'fontsize', 20, 'interpreter', 'tex');
-    % % %     %legend(h, 'L 1','L 2','L 3','L 5','L 5');
-    % % %     axis  tight equal;
-    % % %     view([50, 35]);
-    % % %     grid off; box off;
+    subplot(2,2,4)
+    
+    ngroups=5;
+    x = trainingInput(81:end,1);
+    y = trainingInput(81:end,2);
+    z = abs(latentVariables * 5);
+    
+    
+    
+    mesh(XT, YT, ZTNearestNeighbour);
+    hold on;
+    %z1=zeros(size(z,1),1);    % initial 'zldata'
+    z1=indexFingerLocations(:,3);
+    for i1=1:ngroups
+        z2=z1;
+        z1=z1+squeeze(z(:,i1));
+        h(i1)=CREATESTACKEDMULTIBAR3d(x, y, z2, z1, i1.*ones(numel(z1(:)),1), 2, ngroups);
+        pause;
+        hold on
+    end
+    hold off;
+    set(gca, 'fontname', 'Bitstream Charter','fontsize', 15);
+    xlabel('Width [mm]','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'bottom');
+    ylabel('Length [mm]','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'top');
+    title('Latent Variables', 'fontsize', 20, 'interpreter', 'tex');
+    %legend(h, 'L 1','L 2','L 3','L 5','L 5');
+    axis  tight equal;
+    view([50, 35]);
+    grid off; box off;
     
     drawnow;
     
     %pause;
-    
+    break;
 end
 

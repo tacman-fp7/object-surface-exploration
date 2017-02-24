@@ -339,17 +339,17 @@ void GPExplorationThread::maintainContact()
     msg = _tactileData_in.read(true);
     if(!msg->isNull()){
 
-        std::ofstream myFile;
-        myFile.open("taxel.csv", std::ios::app);
+        //std::ofstream myFile;
+        //myFile.open("taxel.csv", std::ios::app);
 
 
-        //myFile << "1458686550.2213881015777587890625" << ", ";
+
 
         for (int i = 0; i < 11; i++){
-            myFile << msg->get(i).asDouble() << ", ";
+            _explorationFingerTaxelResponseLog << msg->get(i).asDouble() << ", ";
         }
-        myFile << msg->get(12).asDouble() << endl;
-        myFile.close();
+        _explorationFingerTaxelResponseLog << msg->get(12).asDouble() << endl;
+
     }
     else{
         cout << "No taxel data was available." << endl;
@@ -1072,6 +1072,15 @@ void GPExplorationThread::setWayPoint_GP()
 
 bool GPExplorationThread::threadInit()
 {
+
+    // TODO: This should be moved to the base class
+    string fileName = _explorationFinger->getFingerName() + "FingertipLogGP.csv";
+    _explorationFingerLog.open(fileName.c_str());
+    _explorationFingerTaxelResponseLog.open("taxel.csv"); //TODO: proper name
+    fileName = _auxiliaryFinger->getFingerName() + "FingertipLogGP.csv";
+    _auxiliaryFingerLog.open(fileName.c_str());
+
+
     if(_contactSafetyThread == NULL){
         try{
             _contactSafetyThread = new ContactSafetyThread(5, _robotHand );
@@ -1106,6 +1115,12 @@ bool GPExplorationThread::threadInit()
 
 void GPExplorationThread::threadRelease()
 {
+
+     // TODO: This should be moved to the base class
+    _explorationFingerLog.close();
+    _auxiliaryFingerLog.close();
+    _explorationFingerTaxelResponseLog.close();
+
     if(_contactSafetyThread != NULL)
     {
         if(_contactSafetyThread->isRunning())
