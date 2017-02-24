@@ -31,7 +31,7 @@ public:
   virtual bool validatePositionsEnable();
   virtual bool validatePositionsDisable();
   virtual bool setHeight(const double height);
-  virtual bool multiFinger(const double angle);
+  virtual bool alignFingers();
   virtual bool quit();
   virtual bool read(yarp::os::ConnectionReader& connection);
   virtual std::vector<std::string> help(const std::string& functionName="--all");

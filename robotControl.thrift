@@ -18,7 +18,7 @@ service robotControl {
         bool validatePositionsEnable();
         bool validatePositionsDisable();
         bool setHeight(1: double height);
-	bool multiFinger(1: double angle);
+	bool alignFingers();
 	bool quit();
 	
 }

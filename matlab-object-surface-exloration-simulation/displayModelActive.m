@@ -3,7 +3,7 @@
 %cd('/home/nawidj/gpDataTrial06')
 %cd('/home/nawidj/tacman/GaussianSurfaceExplorationData/data/hut/set02/trial05/gpPoints');
 cd('/home/nawidj/demoData');
-objectName = 'largeObjectIndex03';
+objectName = 'test';
 nextPointFileName = [objectName '_model_nextPoint.csv'];
 modelInputFileName = [objectName '_model_input.csv'];
 modelOutputRegressionFileName = [objectName '_model_output_GPRegression.csv'];
@@ -26,7 +26,9 @@ viewVars = [50, 35];
 clf('reset');
 while(true)
     
-    while(~exist(nextPointFileName))
+    isLatentValid = false;
+    
+    while(~exist(nextPointFileName, 'file'))
         pause(0.05);
     end
     
@@ -41,7 +43,13 @@ while(true)
     
     delete(nextPointFileName);
     
-    system('python vae.py --taxel-file=./taxel.csv --latent-file=latent.csv');
+    if(exist('taxel,csv', 'file'))
+        %isLatentValid = true;
+    end
+    
+    if(isLatentValid)
+        % system('python vae.py --taxel-file=./taxel.csv --latent-file=latent.csv');
+    end
     
     
     
@@ -60,7 +68,9 @@ while(true)
     
     trainingInput = dlmread(trainingInputFileName);
     trainingTarget = dlmread(trainingTargetFileName);
-    latentVariables = dlmread('latent.csv');
+    if(isLatentValid)
+        latentVariables = dlmread('latent.csv');
+    end
     
     if(exist(indexFingerFileName, 'file') == 2)
         indexFingerLocations = dlmread(indexFingerFileName, ',');
@@ -279,7 +289,7 @@ while(true)
     hold on
     scatter3(indexFingerLocations(:,1), indexFingerLocations(:,2), indexFingerLocations(:,3),...
         'fill', 'markerFaceColor', 'red', 'sizeData', [90]);
-   
+    
     if(exist(middleFingerFileName, 'file') == 2)
         scatter3(middleFingerLocations(:,1), middleFingerLocations(:,2), middleFingerLocations(:,3),...
             'fill', 'markerFaceColor', 'blue', 'sizeData', [90]);

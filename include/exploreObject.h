@@ -57,7 +57,7 @@ public: // Methods related to the robot control
     bool nRepeatsSet(const int32_t nRepeats);
     bool setHeight(double height);
     bool quit();
-    bool multiFinger(const double angle);
+    bool alignFingers();
     
 public: // Methods related to the RF module
     bool attach(yarp::os::Port &source);
@@ -71,12 +71,10 @@ private:
     // The port for the robot control server
     yarp::os::Port _robotControl_port;
 
-    std::ofstream _indexFingertipLog;
-    std::ofstream _middleFingertipLog;
-    std::ofstream _indexFingerHandLog;
-    std::ofstream _middleFingerHandLog;
-    std::ofstream _handPoseLog;
-    std::ofstream _indexCorrectedLog;
+
+
+
+
     
     // Different exploration strategies
     ExplorationStrategyThread *_exploreObjectThread; // run appropriate exploration strategy

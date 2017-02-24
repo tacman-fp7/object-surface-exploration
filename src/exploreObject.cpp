@@ -16,155 +16,79 @@ using std::cerr;
 using std::endl;
 using yarp::os::Value;
 
-bool ExploreObject::multiFinger(const double angle){
-
+/**
+ * @brief ExploreObject::alignFingers
+ * @return
+ * Get position data for the index finger and the middle finger
+ * to be used for offline calculation of the alignment
+ * matric using ICP
+ */
+bool ExploreObject::alignFingers(){
+#define MAX_POSITIONS 200
 
     Finger *indexFinger = _robotHand->getIndexFinger();
     Finger *middleFinger = _robotHand->getMiddleFinger();
 
+    std::ofstream _middleFingertipLog;
+    std::ofstream _indexFingertipLog;
+    std::ofstream _indexFingerHandLog;
+    std::ofstream _middleFingerHandLog;
+    std::ofstream _handPoseLog;
+    std::ofstream _indexCorrectedLog;
+
+
+    // Open the files to store the positions
+    _middleFingertipLog.open("middleFingertipLog.csv");
+    _indexFingertipLog.open("indexFingertipLog.csv");
+    _middleFingerHandLog.open("middleFingerHandLog.csv");
+    _indexFingerHandLog.open("indexFingerHandLog.csv");
+    _handPoseLog.open("handPoseLog.csv");
+    _indexCorrectedLog.open("indexFingerCorrectedLog.csv");
+
+
     yarp::sig::Vector position;
-    for (int i = 1; i < 200; i++ ){
-    position.clear();
-    indexFinger->getPosition(position);
-    _indexFingertipLog << position[0] << ", " << position[1] << ", " << position[2] << endl;
-    position.clear();
-    indexFinger->getPositionHandFrame(position);
-    _indexFingerHandLog << position[0] << ", " << position[1] << ", " << position[2] << endl;
+    for (int i = 0; i < MAX_POSITIONS; i++ ){
+        position.clear();
+        indexFinger->getPosition(position);
+        _indexFingertipLog << position[0] << ", " << position[1] << ", " << position[2] << endl;
+        position.clear();
+        indexFinger->getPositionHandFrame(position);
+        _indexFingerHandLog << position[0] << ", " << position[1] << ", " << position[2] << endl;
 
-    position.clear();
-    //indexFinger->getPositionHandFrameCorrected(position);
-    indexFinger->getPositionCorrected(position);
-    _indexCorrectedLog <<  position[0] << ", " << position[1] << ", " << position[2] << endl;
+        position.clear();
+        //indexFinger->getPositionHandFrameCorrected(position);
+        indexFinger->getPositionCorrected(position);
+        _indexCorrectedLog <<  position[0] << ", " << position[1] << ", " << position[2] << endl;
 
-    position.clear();
-    middleFinger->getPosition(position);
-    _middleFingertipLog << position[0] << ", " << position[1] << ", " << position[2] << endl;
+        position.clear();
+        middleFinger->getPosition(position);
+        _middleFingertipLog << position[0] << ", " << position[1] << ", " << position[2] << endl;
 
-    position.clear();
-    middleFinger->getPositionHandFrame(position);
-    _middleFingerHandLog << position[0] << ", " << position[1] << ", " << position[2] << endl;
+        position.clear();
+        middleFinger->getPositionHandFrame(position);
+        _middleFingerHandLog << position[0] << ", " << position[1] << ", " << position[2] << endl;
 
-    Vector orient;
-    position.clear();
-    _robotHand->getPose(position, orient);
-    _handPoseLog << position[0] << ", " << position[1] << ", " << position[2] << ", ";
-    _handPoseLog << orient[0] << ", " << orient[1] << ", " << orient[2] << ", " << orient[3] << endl;
-    yarp::os::Time::delay(0.1);
+        Vector orient;
+        position.clear();
+        _robotHand->getPose(position, orient);
+        _handPoseLog << position[0] << ", " << position[1] << ", " << position[2] << ", ";
+        _handPoseLog << orient[0] << ", " << orient[1] << ", " << orient[2] << ", " << orient[3] << endl;
+        yarp::os::Time::delay(0.1);
     }
-return true;
+
+    // Close the files
+    _middleFingertipLog.close();
+    _indexFingertipLog.close();
+    _middleFingerHandLog.close();
+    _indexFingerHandLog.close();
+    _handPoseLog.close();
+    _indexCorrectedLog.close();
+    return true;
 
 }
 
-/*bool ExploreObject::multiFinger(const double angle){
-    //_robotHand->multiContact(angle);
 
 
-
-    Finger *indexFinger = _robotHand->getIndexFinger();
-    Finger *middleFinger = _robotHand->getMiddleFinger();
-
-    for (int i = 20; i <= 50; i++){
-        middleFinger->setSynchroProximalAngle(i);
-        while(!middleFinger->checkMotionDone())
-            ;
-
-
-        //indexFinger->setSynchroProximalAngle(i);
-        //while(!indexFinger->checkMotionDone())
-        //    ;
-
-
-        yarp::sig::Vector position;
-        position.clear();
-        indexFinger->getPosition(position);
-        _indexFingertipLog << position[0] << ", " << position[1] << ", " << position[2] << endl;
-        position.clear();
-        indexFinger->getPositionHandFrame(position);
-        _indexFingerHandLog << position[0] << ", " << position[1] << ", " << position[2] << endl;
-
-        position.clear();
-        //indexFinger->getPositionHandFrameCorrected(position);
-        indexFinger->getPositionCorrected(position);
-        _indexCorrectedLog <<  position[0] << ", " << position[1] << ", " << position[2] << endl;
-
-        position.clear();
-        middleFinger->getPosition(position);
-        _middleFingertipLog << position[0] << ", " << position[1] << ", " << position[2] << endl;
-
-        position.clear();
-        middleFinger->getPositionHandFrame(position);
-        _middleFingerHandLog << position[0] << ", " << position[1] << ", " << position[2] << endl;
-
-        Vector orient;
-        position.clear();
-        _robotHand->getPose(position, orient);
-        _handPoseLog << position[0] << ", " << position[1] << ", " << position[2] << ", ";
-        _handPoseLog << orient[0] << ", " << orient[1] << ", " << orient[2] << ", " << orient[3] << endl;
-
-    }
-
-    for (int i = 50; i >= 20; i--){
-        middleFinger->setSynchroProximalAngle(i);
-        while(!middleFinger->checkMotionDone())
-            ;
-
-
-        //indexFinger->setSynchroProximalAngle(i);
-        //while(!indexFinger->checkMotionDone())
-        //    ;
-
-
-        yarp::sig::Vector position;
-        position.clear();
-        indexFinger->getPosition(position);
-        _indexFingertipLog << position[0] << ", " << position[1] << ", " << position[2] << endl;
-        position.clear();
-        indexFinger->getPositionHandFrame(position);
-        _indexFingerHandLog << position[0] << ", " << position[1] << ", " << position[2] << endl;
-
-        position.clear();
-        //indexFinger->getPositionHandFrameCorrected(position);
-        indexFinger->getPositionCorrected(position);
-        _indexCorrectedLog <<  position[0] << ", " << position[1] << ", " << position[2] << endl;
-
-
-        position.clear();
-        middleFinger->getPosition(position);
-        _middleFingertipLog << position[0] << ", " << position[1] << ", " << position[2] << endl;
-
-        position.clear();
-        middleFinger->getPositionHandFrame(position);
-        _middleFingerHandLog << position[0] << ", " << position[1] << ", " << position[2] << endl;
-
-        Vector orient;
-        position.clear();
-        _robotHand->getPose(position, orient);
-        _handPoseLog << position[0] << ", " << position[1] << ", " << position[2] << ", ";
-        _handPoseLog << orient[0] << ", " << orient[1] << ", " << orient[2] << ", " << orient[3] << endl;
-
-
-    }
-
-
-return true;
-
-}*/
-
-/*
-bool ExploreObject::multiFinger(const double angle){
-    indexFinger->setSynchroProximalAngle(angle);
-    indexFinger->getPosition(position);
-    cout << "I Finger: " << position.toString() << endl;
-
-
-    MiddleFinger->setSynchroProximalAngle(angle);
-    MiddleFinger->getPosition(position);
-    cout << "M Finger: " << position.toString() << endl << endl;
-
-
-    return true;
-
-}*/
 
 bool ExploreObject::validatePositionsEnable(){
     _exploreObjectGP_thread->enableValidatePositions();
@@ -200,10 +124,6 @@ bool ExploreObject::prepHand(){
     ret &= _robotHand->prepare();
     ret &= _explorationFinger->setSynchroProximalAngle(0);
 
-    //cout << "Force: " << _explorationFinger->getContactForce() << endl;
-    //Vector cop;
-    //_explorationFinger->getContactCoP(cop);
-    //cout << "CoP: " << cop.toString() << endl;
 }
 
 bool ExploreObject::calibrateHand(){
@@ -230,52 +150,26 @@ bool ExploreObject::fingerSetAngle(const double angle){
 
     finger = _robotHand->getMiddleFinger();
 
-    //finger->setProximalAngle(0);
-    //finger->setAngles(0,0, 60);
-    // while(!finger->checkMotionDone())
-    //    ;
+
     finger->getPosition(middleFinger_pos);
     cout << "M: " << middleFinger_pos.toString() << endl;
 
 
-    //finger->setDistalAngle(90,60);
-    //while(!finger->checkMotionDone())
-    //    ;
-    //finger->getPosition(finger_pos);
-    //cout << "M: " << finger_pos.toString() << endl;
-    //m = finger_pos[2];
+
 
     cout << "Dx: " << indexFinger_pos[0] - middleFinger_pos[0] << endl;
     cout << "Dy: " << indexFinger_pos[1] - middleFinger_pos[1] << endl;
     cout << "Dz: " << indexFinger_pos[2] - middleFinger_pos[2] << endl;
     return true;
 
-    /*   bool ret;
-
-    ret = _explorationFinger->setSynchroProximalAngle(angle);
-    while(!_explorationFinger->checkMotionDone())
-        ;
-
-    _explorationFinger->getPosition(finger_pos);
-    cout << "Finger pos: " << finger_pos.toString() << endl;
-    _explorationFinger->getAngels(finger_pos);
-    cout << "Finger ang: " << finger_pos.toString() << endl;
-
-
-    return ret;
-*/
 }
 
 ExploreObject::ExploreObject(yarp::os::ResourceFinder& rf)
 {
 
 
-    _middleFingertipLog.open("middleFingertipLog.csv");
-    _indexFingertipLog.open("indexFingertipLog.csv");
-    _middleFingerHandLog.open("middleFingerHandLog.csv");
-    _indexFingerHandLog.open("indexFingerHandLog.csv");
-    _handPoseLog.open("handPoseLog.csv");
-    _indexCorrectedLog.open("indexFingerCorrectedLog.csv");
+
+
 
     _dbgtag = "ExploreObject: ";
     // bool failed = false;
@@ -308,12 +202,8 @@ ExploreObject::ExploreObject(yarp::os::ResourceFinder& rf)
 ExploreObject::~ExploreObject()
 {
 
-    _middleFingertipLog.close();
-    _indexFingertipLog.close();
-    _middleFingerHandLog.close();
-    _indexFingerHandLog.close();
-    _handPoseLog.close();
-    _indexCorrectedLog.close();
+
+
 
     //cout << "Here" << endl;
 
