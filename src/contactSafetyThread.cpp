@@ -47,6 +47,12 @@ void ContactSafetyThread::run()
 }
 
 
+double ContactSafetyThread::getForceThreshold(){
+    double ret;
+    _forceThreshold_mutex.lock();
+    ret = _forceThreshold;
+    _forceThreshold_mutex.unlock();
+}
 
 ContactSafetyThread::ContactSafetyThread(int period,  Hand *robotHand)
     :RateThread(period), _robotHand(robotHand){
@@ -54,10 +60,9 @@ ContactSafetyThread::ContactSafetyThread(int period,  Hand *robotHand)
 
     _dbgtag = "Contact safety thread: ";
     _collisionDetected = false;
-
+    _forceThreshold = 3; // initialise to a meaningful value
     // Set the force threshold from the config file
-    _forceThreshold = _robotHand->getContactSafetyForceThereshold();
-
+    setForceThreshold(_robotHand->getContactSafetyForceThereshold());
 
     /// Force torque//////
 
@@ -109,7 +114,9 @@ bool ContactSafetyThread::collisionDetected()
 
 void ContactSafetyThread::setForceThreshold(double desiredForceThreshold)
 {
+    _forceThreshold_mutex.lock();
     _forceThreshold = desiredForceThreshold;
+    _forceThreshold_mutex.unlock();
 }
 
 
@@ -126,6 +133,7 @@ bool ContactSafetyThread::threadInit(){
         cerr << _dbgtag << "failed to initialise, force baseline could not be calculated." << endl;
         return false;
     }
+
 
     return true;
 }

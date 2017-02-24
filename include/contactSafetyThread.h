@@ -3,6 +3,7 @@
 #include <objectFeaturesThread.h>
 #include <yarp/dev/CartesianControl.h>
 #include "hand.h"
+#include <yarp/os/Mutex.h>
 
 namespace objectExploration
 {
@@ -20,11 +21,13 @@ public:
 
 private:
     // things
+    yarp::os::Mutex _forceThreshold_mutex;
     double _forceThreshold;
     double _baseLine;
     std::string _dbgtag;
     Hand* _robotHand;
     BufferedPort<Bottle> _forceTorque_in;
+    inline double getForceThreshold();
 
     bool _collisionDetected;
 };

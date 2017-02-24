@@ -65,6 +65,7 @@ public:
     string getRobotName(){return _robotName;}
     double getContactSafetyForceThereshold(){return _contactSafetyForceThreshold;}
     int getContactSafetyThreadRate(){_contactSafetyThreadRate;}
+    void setContactSafetyForceThrehold(const double forceThreshold);
 
 
 protected:

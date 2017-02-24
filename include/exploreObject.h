@@ -58,6 +58,7 @@ public: // Methods related to the robot control
     bool setHeight(double height);
     bool quit();
     bool alignFingers();
+    bool setSafetyThreshold(const double threshold);
     
 public: // Methods related to the RF module
     bool attach(yarp::os::Port &source);
@@ -77,10 +78,10 @@ private:
 
     
     // Different exploration strategies
-    ExplorationStrategyThread *_exploreObjectThread; // run appropriate exploration strategy
-    GPExplorationThread *_exploreObjectGP_thread; //TODO: fix this os there is only one pointer to the exploration strategy
-    GPExplorationMultifingerThread *_exploreObjectMultifinger_thread;
-    ExploreGPSurfaceThread * _exploreGPSurface_thread;
+    ExplorationStrategyThread *_exploreObject_thread; // run appropriate exploration strategy
+    //GPExplorationThread *_exploreObjectGP_thread; //TODO: fix this os there is only one pointer to the exploration strategy
+    //GPExplorationMultifingerThread *_exploreObjectMultifinger_thread;
+    //ExploreGPSurfaceThread * _exploreGPSurface_thread;
 
 
 

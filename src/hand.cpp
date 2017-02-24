@@ -214,7 +214,7 @@ bool Hand::goToPoseSync(yarp::sig::Vector& pos, yarp::sig::Vector& orient, doubl
     bool ret;
     ret =  _armCartesianCtrl->goToPoseSync(pos, orient);
     if(timeout > 0){
-       if(!_armCartesianCtrl->waitMotionDone(0.1, 20)){//timeout)){
+       if(!_armCartesianCtrl->waitMotionDone(0.1, timeout)){
            std::cerr << _dbgtag << "warning -- goToPoseSync timed out" << endl;
        }
     }
@@ -702,15 +702,13 @@ void Hand::waitMotionDone(const double period, const double timeout){
     _armCartesianCtrl->waitMotionDone(period, timeout);
 }
 
-/*void Hand::relaxTolerence(){
-    //_armCartesianCtrl->setInTargetTol(20/100);
-}
 
-void Hand::strictTolerence(){
-    //_armCartesianCtrl->setInTargetTol(2.5/100);
-}
 
-*/
+void Hand::setContactSafetyForceThrehold(const double forceThreshold){
+
+    // Update the value here
+    _contactSafetyForceThreshold = forceThreshold;
+}
 
 bool SimHand::configure(yarp::os::ResourceFinder& rf){
     // Common configuration

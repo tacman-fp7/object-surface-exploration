@@ -35,7 +35,7 @@ protected:
 
 private:
 
-    ContactSafetyThread* _contactSafetyThread;
+    //ContactSafetyThread* _contactSafetyThread;
     ObjectModelGrid* _objectModel;
     string _dbgtag;
 };

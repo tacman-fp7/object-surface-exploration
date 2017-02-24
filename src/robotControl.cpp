@@ -163,6 +163,15 @@ public:
   virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
+class robotControl_setSafetyThreshold : public yarp::os::Portable {
+public:
+  double threshold;
+  bool _return;
+  void init(const double threshold);
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
+};
+
 class robotControl_quit : public yarp::os::Portable {
 public:
   bool _return;
@@ -580,6 +589,29 @@ void robotControl_alignFingers::init() {
   _return = false;
 }
 
+bool robotControl_setSafetyThreshold::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(2)) return false;
+  if (!writer.writeTag("setSafetyThreshold",1,1)) return false;
+  if (!writer.writeDouble(threshold)) return false;
+  return true;
+}
+
+bool robotControl_setSafetyThreshold::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void robotControl_setSafetyThreshold::init(const double threshold) {
+  _return = false;
+  this->threshold = threshold;
+}
+
 bool robotControl_quit::write(yarp::os::ConnectionWriter& connection) {
   yarp::os::idl::WireWriter writer(connection);
   if (!writer.writeListHeader(1)) return false;
@@ -790,6 +822,16 @@ bool robotControl::alignFingers() {
   helper.init();
   if (!yarp().canWrite()) {
     yError("Missing server method '%s'?","bool robotControl::alignFingers()");
+  }
+  bool ok = yarp().write(helper,helper);
+  return ok?helper._return:_return;
+}
+bool robotControl::setSafetyThreshold(const double threshold) {
+  bool _return = false;
+  robotControl_setSafetyThreshold helper;
+  helper.init(threshold);
+  if (!yarp().canWrite()) {
+    yError("Missing server method '%s'?","bool robotControl::setSafetyThreshold(const double threshold)");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
@@ -1048,6 +1090,22 @@ bool robotControl::read(yarp::os::ConnectionReader& connection) {
       reader.accept();
       return true;
     }
+    if (tag == "setSafetyThreshold") {
+      double threshold;
+      if (!reader.readDouble(threshold)) {
+        reader.fail();
+        return false;
+      }
+      bool _return;
+      _return = setSafetyThreshold(threshold);
+      yarp::os::idl::WireWriter writer(reader);
+      if (!writer.isNull()) {
+        if (!writer.writeListHeader(1)) return false;
+        if (!writer.writeBool(_return)) return false;
+      }
+      reader.accept();
+      return true;
+    }
     if (tag == "quit") {
       bool _return;
       _return = quit();
@@ -1112,6 +1170,7 @@ std::vector<std::string> robotControl::help(const std::string& functionName) {
     helpString.push_back("validatePositionsDisable");
     helpString.push_back("setHeight");
     helpString.push_back("alignFingers");
+    helpString.push_back("setSafetyThreshold");
     helpString.push_back("quit");
     helpString.push_back("help");
   }
@@ -1172,6 +1231,9 @@ std::vector<std::string> robotControl::help(const std::string& functionName) {
     }
     if (functionName=="alignFingers") {
       helpString.push_back("bool alignFingers() ");
+    }
+    if (functionName=="setSafetyThreshold") {
+      helpString.push_back("bool setSafetyThreshold(const double threshold) ");
     }
     if (functionName=="quit") {
       helpString.push_back("bool quit() ");

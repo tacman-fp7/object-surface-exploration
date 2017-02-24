@@ -70,7 +70,7 @@ private:
 protected:
     //SurfaceModelGP *_surfaceModel;
     //MaintainContactThread *_maintainContactThread;
-    ContactSafetyThread* _contactSafetyThread;
+    //ContactSafetyThread* _contactSafetyThread;
     bool  confirmWiggleContact(double maxAngle);
     bool _sampleSurface;
 
