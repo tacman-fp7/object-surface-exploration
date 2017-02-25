@@ -33,7 +33,7 @@ void TappingExplorationThread::run()
     _contactState = APPROACH_OBJECT;
     _repeats = 0;
     _nRepeats = 0;
-    _contactForceThreshold = FORCE_TH;
+    _contactForceThreshold = _explorationFinger->getContactForceThreshold();//FORCE_TH;
 
     // put the finger in known position
     _curProximal = 0;
@@ -108,7 +108,7 @@ TappingExplorationThread::TappingExplorationThread(int period, Hand* robotHand, 
     ExplorationStrategyThread(period, robotHand, explorationFinger, auxiliaryFinger, objectName,
                               objectFeatures){
     _nGrid = 0;
-    _contactForceThreshold = FORCE_TH;
+    _contactForceThreshold = 0;
     _curAbduction = 0;
     _curAbduction = 0;
     _nRepeats = 0;
@@ -179,13 +179,13 @@ void TappingExplorationThread::maintainContact()
     if(_repeats < _nRepeats) // TODO: change
     {
 
-        _contactForceThreshold = 0.7 * FORCE_TH;
+        _contactForceThreshold = 0.7 * _explorationFinger->getContactForceThreshold();
         _contactState = APPROACH_OBJECT;
         _repeats++;
     }
     else
     {
-        _contactForceThreshold = FORCE_TH;
+        _contactForceThreshold = _explorationFinger->getContactForceThreshold();
         _contactState = MOVE_LOCATION;
         _repeats = 0;
     }

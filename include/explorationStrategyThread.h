@@ -5,7 +5,7 @@
 #include "finger.h"
 #include <contactSafetyThread.h>
 
-#define FORCE_TH 1
+//#define FORCE_TH 1
 namespace objectExploration{
 
 class ExplorationStrategyThread: public yarp::os::Thread

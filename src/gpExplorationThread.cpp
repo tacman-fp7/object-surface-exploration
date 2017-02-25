@@ -30,7 +30,7 @@ void GPExplorationThread::run()
 
     _repeats = 0;
     _curProximal = 0;
-    _contactForceThreshold = FORCE_TH; //TODO: should be in a config file
+    _contactForceThreshold = _explorationFinger->getContactForceThreshold();//FORCE_TH; //TODO: should be in a config file
 
     while(!isStopping() && !(_contactState == STOP)) // Keep running this
     {
@@ -1088,7 +1088,7 @@ bool GPExplorationThread::threadInit()
         catch(std::exception& e){
             std::cerr << e.what();
             std::cerr << "Disable contact safetey if you do not want to use it" << endl;
-            return false;
+            return true;
         }
 
         if(!_contactSafetyThread->start())

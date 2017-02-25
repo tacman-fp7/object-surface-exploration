@@ -80,7 +80,7 @@ using yarp::os::Bottle;
 using yarp::os::BufferedPort;
 using yarp::os::ResourceFinder;
 
-#define FORCE_TH 1
+//#define FORCE_TH 1
 class Finger{
 
 

@@ -25,7 +25,7 @@ public:
     //virtual bool threadInit(){_middleFinger = NULL; _maxAngle = 0; _contactState = false; return true;}
     virtual void threadRelease(){_finger = NULL, _maxAngle = 0;}
 
-    void initThread(Finger *finger, double maxAngle, double forceThreshold);//{_middleFinger = finger; _maxAngle = maxAngle; _forceThreshold = forceThreshold;}
+    void initThread(Finger *finger, double maxAngle);//{_middleFinger = finger; _maxAngle = maxAngle; _forceThreshold = forceThreshold;}
     void getResults(bool *contactState){*contactState = _contactState;}
 
 

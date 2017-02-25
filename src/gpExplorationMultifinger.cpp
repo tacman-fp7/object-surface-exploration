@@ -23,7 +23,7 @@ void GPExplorationMultifingerThread::run()
 
     _repeats = 0;
     _curProximal = 0;
-    _contactForceThreshold = FORCE_TH; //TODO: should be in a config file
+    _contactForceThreshold = _explorationFinger->getContactForceThreshold();//FORCE_TH; //TODO: should be in a config file
 
     while(!isStopping() && !(_contactState == STOP)) // Keep running this
     {
@@ -277,7 +277,7 @@ void GPExplorationMultifingerThread::multifingerContact(){
     bool auxiliaryFingerHasContact;
 
 
-    _contactAuxiliaryFinger.initThread(_auxiliaryFinger, 80, _contactForceThreshold);
+    _contactAuxiliaryFinger.initThread(_auxiliaryFinger, 80);
     _contactAuxiliaryFinger.start();
 
    // _contactRingAndLittleFingers.initThread(ringFinger, littleFinger, 120, _contactForceThreshold);
@@ -421,10 +421,10 @@ void RingAndLittleFingersContactThread::run(){
     }
 }
 
-void ActuatedFingerContactThread::initThread(Finger *finger, double maxAngle, double forceThreshold){
+void ActuatedFingerContactThread::initThread(Finger *finger, double maxAngle){
     _finger = finger;
     _maxAngle = maxAngle;
-    _forceThreshold = forceThreshold;
+    _forceThreshold = _finger->getContactForceThreshold(); // forceThreshold;
 
 }
 
