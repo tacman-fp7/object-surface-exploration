@@ -2,7 +2,7 @@
 %cd('/home/nawidj/gpdata')
 %cd('/home/nawidj/gpDataTrial06')
 %cd('/home/nawidj/tacman/GaussianSurfaceExplorationData/data/hut/set02/trial05/gpPoints');
-cd('/home/nawidj/demoRight');
+cd('/home/nawidj/demoData');
 objectName = 'test';
 nextPointFileName = [objectName '_model_nextPoint.csv'];
 modelInputFileName = [objectName '_model_input.csv'];
@@ -19,6 +19,7 @@ nextSamplePointFileName = [objectName '_nextPoint.csv'];
 indexFingerFileName = [objectName '_finger_1_GP.csv'];
 middleFingerFileName = [objectName '_finger_2_GP.csv'];
 
+
 %%
 
 viewVars = [50, 35];
@@ -26,11 +27,13 @@ clf('reset');
 while(true)
     
     isLatentValid = false;
+    isSurfaceModelValid = false;
     
-    % %     while(~exist(nextPointFileName, 'file'))
-    % %         pause(0.05);
-    % %     end
-    % %
+    
+    while(~exist(nextPointFileName, 'file'))
+        pause(0.05);
+    end
+    
     
     
     mmFactor = 1000;
@@ -40,11 +43,26 @@ while(true)
     
     
     
-    % %    delete(nextPointFileName);
+    delete(nextPointFileName);
     
     if(exist('taxel.csv', 'file'))
-        isLatentValid = true;
+        
+        fileID = fopen('taxel.csv');
+        if fseek(fileID, 1, 'bof') == 0
+            
+            % Check for more than one field
+            testLatent = dlmread('taxel.csv');
+            if(size(testLatent, 1) > 1)
+                isLatentValid = true;
+            end
+        end
+        fclose(fileID);
     end
+    
+    if(exist(modelOutputClassificationFileName, 'file'))
+        isSurfaceModelValid = true;
+    end
+    
     
     if(isLatentValid)
         system('python vae.py --taxel-file=./taxel.csv --latent-file=latent.csv');
@@ -58,12 +76,17 @@ while(true)
     
     modelInput = dlmread(modelInputFileName);
     modelOutputRegression = dlmread(modelOutputRegressionFileName);
-    modelOutputClassification = dlmread(modelOutputClassificationFileName);
-    modelOutputSurfaceClassification = dlmread(modelOutputSurfaceClassificationFileName);
-    
-    modelVarianceRegression = dlmread(modelVarianceRegressionFileName);
-    modelVarianceClassification = dlmread(modelVarianceClassificationFileName);
     modelVarianceCombined = dlmread(modelVarianceCombinedFileName);
+    
+    if(isSurfaceModelValid)
+        modelOutputClassification = dlmread(modelOutputClassificationFileName);
+        modelOutputSurfaceClassification = dlmread(modelOutputSurfaceClassificationFileName);
+        %modelVarianceRegression = dlmread(modelVarianceRegressionFileName);
+        %modelVarianceClassification = dlmread(modelVarianceClassificationFileName);
+    end
+    
+    
+    
     
     trainingInput = dlmread(trainingInputFileName);
     trainingTarget = dlmread(trainingTargetFileName);
@@ -94,9 +117,6 @@ while(true)
     modelInput = (modelInput - repmat(min(modelInput), length(modelInput), 1)) * mmFactor;
     modelOutputRegression = (modelOutputRegression - min(modelOutputRegression)) * mmFactor;
     
-    %modelVarianceRegression = modelVarianceRegression * mmFactor;
-    %modelVarianceClassification = modelVarianceClassification * mmFactor;
-    %modelVarianceCombined =  modelVarianceCombined * mmFactor;
     
     
     
@@ -115,88 +135,43 @@ while(true)
     xlin = linspace(min(x), max(x), nPoints);
     ylin = linspace(min(y), max(y), nPoints);
     [XT,YT] = meshgrid(xlin,ylin);
-    ZTRegression = reshape(modelOutputRegression, nPoints, nPoints);
-    ZVRegression = reshape(modelVarianceRegression, nPoints, nPoints);
+    %ZTRegression = reshape(modelOutputRegression, nPoints, nPoints);
+    %ZVRegression = reshape(modelVarianceRegression, nPoints, nPoints);
     
     figH = figure(1);
-    %clf('reset');
     set(figH, 'color', 'white');
     
-    % % %     subplot(3,2,1)
-    % % %     figure(1)
-    % % %
-    % % %     mesh(XT, YT, ZTRegression);
-    % % %     set(gca, 'fontname', 'Bitstream Charter','fontsize', 15);
-    % % %     xlabel('Width [mm]','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'bottom');
-    % % %     ylabel('Length [mm]','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'top');
-    % % %     zlabel('Height [mm]','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'bottom');
-    % % %     title('Object Surface [GP Regression]', 'fontsize', 20, 'interpreter', 'tex');
-    % % %     axis('equal');
-    % % %     axis  tight
-    % % %     view(viewVars);
-    % % %
-    % % %     hold on
-    % % %     h_cp = scatter3(maxVarPoint(1), maxVarPoint(2),...
-    % % %         maxVarPoint(3), 'fill', 'markerFaceColor', 'black', 'sizeData', [100]);
-    % % %
-    % % %     scatter3(nextSamplePoint(1), nextSamplePoint(2), nextSamplePoint(3),...
-    % % %         'fill', 'markerFaceColor', 'black', 'sizeData', [100]);
-    % % %     hold off
-    % % %
-    % % %
-    % % %     hold on
-    % % %     h_cp = scatter3(trainingInput(:,1), trainingInput(:,2),...
-    % % %         trainingTarget(:,1), 'fill', 'markerFaceColor', 'blue', 'sizeData', [50]);
-    % % %     hold off
-    
-    % % %     subplot(2,2,1)
-    % % %     %figure(2)
-    % % %     mesh(XT,YT, ZVRegression);
-    % % %     set(gca, 'fontname', 'Bitstream Charter','fontsize', 15);
-    % % %     xlabel('Width [mm]','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'bottom');
-    % % %     ylabel('Length [mm]','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'top');
-    % % %     zlabel('Uncertainty','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'bottom');
-    % % %     title('GP Regression Variance', 'fontsize', 20, 'interpreter', 'tex');
-    % % %     %zlim([0 5]);
-    % % %     %axis('equal');
-    % % %     axis tight;
-    % % %     view(viewVars);
-    % % %
-    % % %     hold on
-    % % %        h_cp = scatter3(maxVarPoint(1), maxVarPoint(2),...
-    % % %            maxVarPoint(4), 'fill', 'markerFaceColor', 'black', 'sizeData', [100]);
-    % % %
-    % % %     %     scatter3(nextSamplePoint(1), nextSamplePoint(2), nextSamplePoint(3),...
-    % % %     %         'fill', 'markerFaceColor', 'black', 'sizeData', [100]);
-    % % %     hold off
-    
-    % %     hold on
-    % %     h_cp = scatter3(maxVarPoint(1), maxVarPoint(2),...
-    % %         maxVarPoint(4), 'fill', 'markerFaceColor', 'green', 'sizeData', [100]);
-    % %     hold off
     
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
-    
-    
-    ZTClassification = reshape(modelOutputSurfaceClassification * 10, nPoints, nPoints);
-    ZVClassification = reshape(modelVarianceClassification, nPoints, nPoints);
-    
-    subplot(2,2,1)
-    %figure(1)
-    
-    mesh(XT, YT, ZTClassification);
-    set(gca, 'fontname', 'Bitstream Charter','fontsize', 15);
-    xlabel('Width [mm]','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'bottom');
-    ylabel('Length [mm]','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'top');
-    zlabel('Height [mm]','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'bottom');
-    title('Object Surface [GP Classification]', 'fontsize', 20, 'interpreter', 'tex');
-    axis('equal');
-    axis  tight
-    view(viewVars);
-    
-    
+    if(isSurfaceModelValid)
+        
+        ZTClassification = reshape(modelOutputSurfaceClassification * 10, nPoints, nPoints);
+        %ZVClassification = reshape(modelVarianceClassification, nPoints, nPoints);
+        
+        subplot(2,2,1)
+        %figure(1)
+        
+        mesh(XT, YT, ZTClassification);
+        set(gca, 'fontname', 'Bitstream Charter','fontsize', 15);
+        xlabel('Width [mm]','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'bottom');
+        ylabel('Length [mm]','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'top');
+        zlabel('Height [mm]','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'bottom');
+        title('Object Surface [GP Classification]', 'fontsize', 20, 'interpreter', 'tex');
+        hold on
+        scatter3(maxVarPoint(1), maxVarPoint(2),...
+            max(max(ZTClassification)) + 0.05, 'fill', 'markerFaceColor', 'black', 'sizeData', [200]);
+        
+        %     scatter3(nextSamplePoint(1), nextSamplePoint(2), nextSamplePoint(3),...
+        %         'fill', 'markerFaceColor', 'black', 'sizeData', [100]);
+        hold off
+        
+        axis('equal');
+        axis  tight
+        view(viewVars);
+        
+    end
     
     
     ZVCombined = reshape(modelVarianceCombined, nPoints, nPoints);
@@ -216,7 +191,7 @@ while(true)
     
     hold on
     h_cp = scatter3(maxVarPoint(1), maxVarPoint(2),...
-        maxVarPoint(3), 'fill', 'markerFaceColor', 'black', 'sizeData', [100]);
+        max(max(ZVCombined)) + 0.05, 'fill', 'markerFaceColor', 'black', 'sizeData', [200]);
     
     %     scatter3(nextSamplePoint(1), nextSamplePoint(2), nextSamplePoint(3),...
     %         'fill', 'markerFaceColor', 'black', 'sizeData', [100]);
@@ -253,14 +228,12 @@ while(true)
     axis('equal');
     axis tight;
     
-    %hold on
-    %scatter3(x, y, z,...
-    %    'fill', 'markerFaceColor', 'blue', 'sizeData', [90]);
-    %hold off
     
     hold on
-    scatter3(indexFingerLocations(:,1), indexFingerLocations(:,2), indexFingerLocations(:,3),...
-        'fill', 'markerFaceColor', 'red', 'sizeData', [90]);
+    if(exist(indexFingerFileName, 'file') ==2)
+        scatter3(indexFingerLocations(:,1), indexFingerLocations(:,2), indexFingerLocations(:,3),...
+            'fill', 'markerFaceColor', 'red', 'sizeData', [90]);
+    end
     
     if(exist(middleFingerFileName, 'file') == 2)
         scatter3(middleFingerLocations(:,1), middleFingerLocations(:,2), middleFingerLocations(:,3),...
@@ -270,48 +243,49 @@ while(true)
     view(viewVars);
     
     hold on
-    %        h_cp = scatter3(maxVarPoint(1), maxVarPoint(2),...
-    %            maxVarPoint(3), 'fill', 'markerFaceColor', 'black', 'sizeData', [100]);
+    scatter3(maxVarPoint(1), maxVarPoint(2),...
+        max(max(ZTNearestNeighbour)), 'fill', 'markerFaceColor', 'black', 'sizeData', [100]);
     
-    %     scatter3(nextSamplePoint(1), nextSamplePoint(2), nextSamplePoint(3),...
-    %         'fill', 'markerFaceColor', 'black', 'sizeData', [100]);
+    
     hold off
     
     
-    
-    subplot(2,2,4)
-    
-    ngroups=5;
-    x = trainingInput(81:end,1);
-    y = trainingInput(81:end,2);
-    z = abs(latentVariables * 5);
-    
-    
-    
-    mesh(XT, YT, ZTNearestNeighbour);
-    hold on;
-    %z1=zeros(size(z,1),1);    % initial 'zldata'
-    z1=indexFingerLocations(:,3);
-    for i1=1:ngroups
-        z2=z1;
-        z1=z1+squeeze(z(:,i1));
-        h(i1)=CREATESTACKEDMULTIBAR3d(x, y, z2, z1, i1.*ones(numel(z1(:)),1), 2, ngroups);
-        pause;
-        hold on
+    if(isLatentValid)
+        subplot(2,2,4)
+        
+        ngroups=5;
+        x = trainingInput(81:end,1);
+        y = trainingInput(81:end,2);
+        z = latentVariables * 5;
+        
+        
+        
+        mesh(XT, YT, ZTNearestNeighbour);
+        hold on;
+        %z1=zeros(size(z,1),1);    % initial 'zldata'
+        z1=indexFingerLocations(:,3);
+        for i1=1:ngroups
+            z2=z1;
+            z1=z1+squeeze(z(:,i1));
+            h(i1)=CREATESTACKEDMULTIBAR3d(x, y, z2, z1, i1.*ones(numel(z1(:)),1), 2, ngroups);
+            
+            hold on
+        end
+        hold off;
+        set(gca, 'fontname', 'Bitstream Charter','fontsize', 15);
+        xlabel('Width [mm]','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'bottom');
+        ylabel('Length [mm]','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'top');
+        title('Latent Variables', 'fontsize', 20, 'interpreter', 'tex');
+        %legend(h, 'L 1','L 2','L 3','L 5','L 5');
+        axis  tight equal;
+        view([50, 35]);
+        grid off; box off;
+        
     end
-    hold off;
-    set(gca, 'fontname', 'Bitstream Charter','fontsize', 15);
-    xlabel('Width [mm]','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'bottom');
-    ylabel('Length [mm]','fontsize', 15, 'interpreter', 'tex', 'verticalAlignment', 'top');
-    title('Latent Variables', 'fontsize', 20, 'interpreter', 'tex');
-    %legend(h, 'L 1','L 2','L 3','L 5','L 5');
-    axis  tight equal;
-    view([50, 35]);
-    grid off; box off;
     
     drawnow;
     
     %pause;
-    break;
+    %break;
 end
 
