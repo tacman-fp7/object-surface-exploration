@@ -5,6 +5,7 @@
 #include "finger.h"
 #include <contactSafetyThread.h>
 
+#define FORCE_TH 1
 namespace objectExploration{
 
 class ExplorationStrategyThread: public yarp::os::Thread
@@ -22,6 +23,7 @@ public:
     }
 
     volatile void setNRepeats(const int nRepeats){}
+    void setContactForceThreshold(const double threshold){_contactForceThreshold = threshold;}
     
 protected:
     ObjectFeaturesThread* _objectFeatures;
@@ -37,7 +39,7 @@ protected:
 
 protected:
     ContactSafetyThread* _contactSafetyThread;
-
+    double _contactForceThreshold; // Force threshold to determine contact
 
 };
 

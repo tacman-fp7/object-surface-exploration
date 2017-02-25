@@ -17,7 +17,7 @@ public:
         GPExplorationThread(period, robotHand, explorationFinger, auxiliaryFinger, objectName, objectFeatures)
     {
         _surfaceModel = new SurfaceModelGP(objectName);
-        _forceThreshold = FORCE_TH;
+        _contactForceThreshold = FORCE_TH;
         _wayPointListComplete = false;
     }
 

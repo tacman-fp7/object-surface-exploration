@@ -20,7 +20,7 @@ void GridExplorationThread::run()
     _contactState = MOVE_LOCATION;
     _repeats = 0;
     _nRepeats = 0;
-    _forceThreshold = FORCE_TH;
+    _contactForceThreshold = FORCE_TH;
 
     // put the finger in known position
     _curProximal = 0;

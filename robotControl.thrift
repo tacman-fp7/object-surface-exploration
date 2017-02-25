@@ -20,6 +20,8 @@ service robotControl {
         bool setHeight(1: double height);
 	bool alignFingers();
 	bool setSafetyThreshold(1: double threshold)
+        bool setExplorationFingerContactForce(1: double threshold);
+        bool setAuxiliaryFingerContactForce(1: double threshold);
 	bool quit();
 	
 }

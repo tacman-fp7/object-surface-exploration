@@ -15,6 +15,7 @@
 #include "gpExplorationMultifinger.h"
 #include "hand.h"
 #include <fstream>
+#include <string>
 
 using yarp::os::RFModule;
 
@@ -94,6 +95,7 @@ private:
     bool _stopModule;
 
     Hand* _robotHand;
+    std::string _explorationFingerName;
     Finger* _explorationFinger;
     Finger* _auxiliaryFinger;
 

@@ -23,7 +23,7 @@ void GPExplorationMultifingerThread::run()
 
     _repeats = 0;
     _curProximal = 0;
-    _forceThreshold = FORCE_TH; //TODO: should be in a config file
+    _contactForceThreshold = FORCE_TH; //TODO: should be in a config file
 
     while(!isStopping() && !(_contactState == STOP)) // Keep running this
     {
@@ -167,12 +167,12 @@ bool GPExplorationMultifingerThread::clenchRingLittleFinger(Finger *ringFinger, 
             //cout << "Little: " << littleFingerAngles.toString() << endl;
 
 
-            if(ringFinger->getContactForce() >= _forceThreshold/4.0){
+            if(ringFinger->getContactForce() >= _contactForceThreshold/4.0){
                 cout << "Ring finger contact confirmed" << endl;
                 ringFingerForce = true;
 
             }
-            if(littleFinger->getContactForce() >= _forceThreshold/4.0){
+            if(littleFinger->getContactForce() >= _contactForceThreshold/4.0){
                 cout << "Little finger contact confirmed" << endl;
                 littleFingerForce = true;
             }
@@ -239,7 +239,7 @@ bool GPExplorationMultifingerThread::clenchFinger(Finger *finger, double maxAngl
 
             finger->getAngels(fingerAngles);
 
-            if(finger->getContactForce() >= _forceThreshold){
+            if(finger->getContactForce() >= _contactForceThreshold){
                 cout << "contact confirmed" << endl;
                 ret = true;
                 break;
@@ -277,10 +277,10 @@ void GPExplorationMultifingerThread::multifingerContact(){
     bool auxiliaryFingerHasContact;
 
 
-    _contactAuxiliaryFinger.initThread(_auxiliaryFinger, 80, _forceThreshold);
+    _contactAuxiliaryFinger.initThread(_auxiliaryFinger, 80, _contactForceThreshold);
     _contactAuxiliaryFinger.start();
 
-   // _contactRingAndLittleFingers.initThread(ringFinger, littleFinger, 120, _forceThreshold);
+   // _contactRingAndLittleFingers.initThread(ringFinger, littleFinger, 120, _contactForceThreshold);
    // _contactRingAndLittleFingers.start();
 
 
@@ -383,7 +383,7 @@ void RingAndLittleFingersContactThread::run(){
             //cout << "Little: " << littleFingerAngles.toString() << endl;
 
 
-            if(_ringFinger->getContactForce() >= _forceThreshold/4.0){
+            if(_ringFinger->getContactForce() >= _forceThreshold/4.0){ //TODO: Gotta look into it, why is it different from the global one
                 cout << "Ring finger contact confirmed" << endl;
                 _clenchResults.ringFingerForce = true;
 

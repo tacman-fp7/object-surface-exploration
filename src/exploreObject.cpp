@@ -186,18 +186,14 @@ ExploreObject::ExploreObject(yarp::os::ResourceFinder& rf)
 
 
     _dbgtag = "ExploreObject: ";
-    // bool failed = false;
     _exploreObjectOnOff = true;
     _exploreObjectValid = true; // Assume it is true, set it to false when something fails
     _stopModule = false;
     _rf = rf;
 
-    //    _maintainContactThread = NULL;
-    //_contactSafetyThread = NULL;
+
     _exploreObject_thread = NULL;
-   // _exploreObject_thread = NULL;
-    //_exploreObject_thread = NULL;
-    //_exploreObject_thread = NULL;
+
 
     //// TODO: I save system parameters here that I use in this module.
     /// This is not a good idea. I should change it.
@@ -206,9 +202,13 @@ ExploreObject::ExploreObject(yarp::os::ResourceFinder& rf)
     if(!explorationParameters.isNull())
     {
         _explorationThreadPeriod = explorationParameters.check("explorationThreadPeriod", Value(20)).asInt();
+        //This is for the objectFeaturesThread, but it is not needed anymore. Fix in future
         readTactilePeriod = explorationParameters.check("readTactilePeriod", Value(20)).asInt();
+
+        _explorationFingerName = explorationParameters.check("explorationFinger", Value("unknown")).asString();
     }
 
+    //TODO: it is no longer necessary to have it as a thread
     _objectFeaturesThread = new ObjectFeaturesThread(readTactilePeriod,  rf);
 
 }
@@ -706,15 +706,19 @@ bool ExploreObject::configure(yarp::os::ResourceFinder& rf ){
         return false;
     }
 
-    //_explorationFinger = _robotHand->getIndexFinger();
-    //TODO: use config file to select
-    //_explorationFinger = _robotHand->getMiddleFinger();
-    //_auxiliaryFinger = _robotHand->getIndexFinger();
+   // Select between the fingers
+    if(_explorationFingerName.compare("index") == 0){
+        _explorationFinger = _robotHand->getIndexFinger();
+        _auxiliaryFinger = _robotHand->getMiddleFinger();
 
+    }else if(_explorationFingerName.compare("middle") == 0){
+        _explorationFinger = _robotHand->getMiddleFinger();
+        _auxiliaryFinger = _robotHand->getIndexFinger();
 
-
-    _explorationFinger = _robotHand->getIndexFinger();
-    _auxiliaryFinger = _robotHand->getMiddleFinger();
+    }
+    else{
+        cerr << _dbgtag << "exploration finger has not been defined." << endl;
+    }
 
     // Check if exploration finger has force and CoP data
     // We need these two data to be able to explore a surface

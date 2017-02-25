@@ -16,19 +16,12 @@ using yarp::os::Network;
 using yarp::dev::IControlLimits;
 using std::deque;
 
+Finger::Finger(){
+    _contactForceThreshold = FORCE_TH;
+}
+
 void Finger::logTactileCoP(){
 
-/*
- *  std::string fileName;
-    fileName = _whichFinger + "_tactileComp.csv";
-    _tactileDataCompFile.open(fileName.c_str());
-
-    fileName = _whichFinger + "_tactileRaw.csv";
-    _tactileDataRawFile.open(fileName.c_str());
-
-    fileName = _whichFinger + "_cop.csv";
-    _copFile.open(fileName.c_str());
- */
     if(!_tactileDataCompFile.is_open()){
         // I am assuming if one is not open all are not open
         std::string fileName;
@@ -121,6 +114,11 @@ bool Finger::getPositionHandFrameCorrected(yarp::sig::Vector &position, yarp::si
     cerr << _dbgtag << "get position in hand frame has not been implemented for this finger." << endl;
     return false;
 }
+
+double Finger::getContactForceThreshold(){
+    return _contactForceThreshold;
+}
+
 
 bool Finger::toArmPosition(Vector &fingertipPosition, Vector &retArmpPosition){
 

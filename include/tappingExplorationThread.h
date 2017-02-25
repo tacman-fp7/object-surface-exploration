@@ -6,7 +6,7 @@
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Bottle.h>
 
-#define FORCE_TH 1
+
 
 namespace objectExploration
 {
@@ -46,7 +46,7 @@ protected:
     State _contactState;
     int _repeats; // Number of contact repeats so far
     int _nRepeats; // Desired number of repeats
-    double _forceThreshold; // Force threshold to determine contact
+
     double _curProximal;  // Used for logging
     double _curAbduction; // Used for logging
 

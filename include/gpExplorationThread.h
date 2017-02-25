@@ -22,7 +22,7 @@ public:
         TappingExplorationThread(period, robotHand, explorationFinger, auxiliaryFinger, objectName,
                                  objectFeatures){
         _surfaceModel = new SurfaceModelGPActive(objectName);
-        _forceThreshold = FORCE_TH;
+        _contactForceThreshold = FORCE_TH;
         _sampleSurface = true;
         _refineModel = false;
         _validatePositionsEnabled = false;

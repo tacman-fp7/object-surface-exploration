@@ -81,11 +81,12 @@ using yarp::os::Bottle;
 using yarp::os::BufferedPort;
 using yarp::os::ResourceFinder;
 
-
+#define FORCE_TH 1
 class Finger{
 
 
 public:
+    Finger();
     ~Finger();
     bool open();
     virtual bool prepare();
@@ -123,6 +124,12 @@ public:
     virtual bool getPositionHandFrameCorrected(yarp::sig::Vector &position);
 
     double getContactForce();
+
+    /**
+     * @brief getContactForceThreshold
+     * @return the threshold for the contact force
+     */
+    double getContactForceThreshold();
     bool getContactCoP(yarp::sig::Vector& contactCoP);
     bool hasForceCoP();
     virtual void getTactileDataRaw(Vector& rawTactileData){
@@ -188,6 +195,8 @@ protected:
 
     string _whichFinger;
     string _whichHand;
+
+    double _contactForceThreshold; //Store finger specific force threshold that determins contact
 private:
     bool _isCoPValid;
     bool _isForceValid;
