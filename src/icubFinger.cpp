@@ -297,26 +297,6 @@ IndexFinger::IndexFinger(t_controllerData ctrlData):
     _middleEncoderIndex = INDEX_MIDDLE_ENCODER;
     _distalEncoderIndex = INDEX_DISTAL_ENCODER;
 
-    // TODO: Put it in a config file!
-
-   /* _maxProximal = 253;
-    _minProximal = 38;
-    _maxMiddle = 251;
-    _minMiddle = 61;
-    _maxDistal = 255;
-    _minDistal = 35;
-*/
-
-
-     _maxProximal = 249;
-     _minProximal = 0;
-     _maxMiddle = 255;
-     _minMiddle = 78;
-     _maxDistal = 243;
-     _minDistal = 0;
-
-
-
 }
 
 
@@ -467,13 +447,7 @@ MiddleFinger::MiddleFinger(t_controllerData ctrlData):
     _middleEncoderIndex = MIDDLE_MIDDLE_ENCODER;
     _distalEncoderIndex = MIDDLE_DISTAL_ENCODER;
 
-    // TODO: Put it in a config file!
-    _maxProximal = 228;
-    _minProximal = 1;
-    _maxMiddle = 243;
-    _minMiddle = 28;
-    _maxDistal = 254;
-    _minDistal = 38;
+
 
 }
 
@@ -630,14 +604,7 @@ RingFinger::RingFinger(t_controllerData ctrlData): RingAndLittleFingers(ctrlData
 
     _proximalJointIndex = PINKY;
     _distalJointIndex = PINKY;
-    // TODO: check if I can get them from the
 
-    _maxProximal = 235;
-    _minProximal = 14;
-    _maxMiddle = 215;
-    _minMiddle = 20;
-    _maxDistal = 250;
-    _minDistal = 24;
 }
 
 LittleFinger::LittleFinger(t_controllerData ctrlData): RingAndLittleFingers(ctrlData){
@@ -652,12 +619,7 @@ LittleFinger::LittleFinger(t_controllerData ctrlData): RingAndLittleFingers(ctrl
     _distalJointIndex = PINKY;
     // TODO: check if I can get them from the IControlLimits
 
-    _maxProximal = 235;
-    _minProximal = 14;
-    _maxMiddle = 215;
-    _minMiddle = 20;
-    _maxDistal = 250;
-    _minDistal = 24;
+
 }
 
 /*bool icubFinger::calibrate2(){
@@ -693,13 +655,7 @@ Thumb::Thumb(t_controllerData ctrlData):
     _middleEncoderIndex = THUMB_MIDDLE_ENCODER;
     _distalEncoderIndex = THUMB_DISTAL_ENCODER;
 
-    // TODO: Put it in a config file! Get the correct ones for the thumb!
-    _maxProximal = 235;
-    _minProximal = 14;
-    _maxMiddle = 215;
-    _minMiddle = 20;
-    _maxDistal = 250;
-    _minDistal = 24;
+
 
 }
 

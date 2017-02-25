@@ -722,8 +722,14 @@ bool SimHand::configure(yarp::os::ResourceFinder& rf){
     ctrlData.armJointModeCtrl = _armJointModeCtrl;
     ctrlData.armEncoder = _armEncoders;
     ctrlData.armJointPositionCtrl = _armJointPositionCtrl;
-
     ctrlData.armCartesianCtrl = _armCartesianCtrl;
+    ctrlData.rawTactileData_in = &_rawTactileData_in;
+    ctrlData.tactileDataComp_in = &_tactileDataComp_in;
+    ctrlData.armControlLimits = _armControlLimits;
+    ctrlData.rf = &rf;
+
+
+
 
     FingerFactory fingerCreator;
 
@@ -742,7 +748,7 @@ SimHand::SimHand(yarp::os::ResourceFinder &rf):Hand(rf){
     configure(rf);
 }
 
-bool icubHand::configure(yarp::os::ResourceFinder rf){
+bool icubHand::configure(yarp::os::ResourceFinder& rf){
 
     // Common configuration
     //Hand::configure(rf);
@@ -765,6 +771,7 @@ bool icubHand::configure(yarp::os::ResourceFinder rf){
     ctrlData.rawTactileData_in = &_rawTactileData_in;
     ctrlData.tactileDataComp_in = &_tactileDataComp_in;
     ctrlData.armControlLimits = _armControlLimits;
+    ctrlData.rf = &rf;
 
     FingerFactory fingerCreator;
 

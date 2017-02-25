@@ -70,8 +70,7 @@ struct fingerControllerData{
     yarp::os::BufferedPort<yarp::os::Bottle>* fingerEncoders;
     yarp::os::BufferedPort<yarp::os::Bottle>* rawTactileData_in;
     yarp::os::BufferedPort<yarp::os::Bottle> * tactileDataComp_in;
-
-
+    yarp::os::ResourceFinder *rf; //to load parameters
 };
 typedef struct fingerControllerData t_controllerData;
 
@@ -86,7 +85,7 @@ class Finger{
 
 
 public:
-    Finger();
+    //Finger() it is a factory class. Do not implement this method
     ~Finger();
     bool open();
     virtual bool prepare();
@@ -130,6 +129,12 @@ public:
      * @return the threshold for the contact force
      */
     double getContactForceThreshold();
+
+    /**
+     * @brief setContactForceThreshold
+     */
+    void setContactForceThreshold(const double threshold);
+
     bool getContactCoP(yarp::sig::Vector& contactCoP);
     bool hasForceCoP();
     virtual void getTactileDataRaw(Vector& rawTactileData){
@@ -143,6 +148,8 @@ public:
     string getFingerName();
 
 
+
+
 protected:
     virtual bool getPositionHandFrame(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders);
     virtual bool getPositionHandFrameCorrected(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders);
@@ -154,9 +161,10 @@ protected:
     void alignJointsBounds();
     void checkMinMax(double &min, double &max);
 
+
 private:
     static void initController(ResourceFinder& rf);
-
+    void configure(std::string fingerName, yarp::os::ResourceFinder *rf);
 
 protected:
 
@@ -197,10 +205,19 @@ protected:
     string _whichHand;
 
     double _contactForceThreshold; //Store finger specific force threshold that determins contact
+
+    double _maxProximal;
+    double _minProximal;
+    double _maxMiddle;
+    double _minMiddle;
+    double _maxDistal;
+    double _minDistal;
+
 private:
     bool _isCoPValid;
     bool _isForceValid;
     bool _isActiveTaxelValid;
+
 
 
 };

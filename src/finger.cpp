@@ -16,9 +16,7 @@ using yarp::os::Network;
 using yarp::dev::IControlLimits;
 using std::deque;
 
-Finger::Finger(){
-    _contactForceThreshold = FORCE_TH;
-}
+
 
 void Finger::logTactileCoP(){
 
@@ -138,19 +136,7 @@ bool Finger::toArmPosition(Vector &fingertipPosition, Vector &retArmpPosition){
 
     ret = ret && _iCubFinger->getChainJoints(encs, joints);
 
-    //cout << fingerEncoders.toString() << endl;
-    //Vector fingerEncoders;
 
-    //ret = ret && readEncoders(fingerEncoders);
-
-
-
-
-    // Replace the joins with the encoder readings
-
-    //joints[1] = 90 * (1 - (fingerEncoders[0] - _minProximal) / (_maxProximal - _minProximal) );
-    //joints[2] = 90 * (1 - (fingerEncoders[1] - _minMiddle) / (_maxMiddle - _minMiddle) );
-    //joints[3] = 90 * (1 - (fingerEncoders[2] - _minDistal) / (_maxDistal - _minDistal) );
 
     //Convert the joints to radians.
     for (int j = 0; j < joints.size(); j++)
@@ -161,9 +147,9 @@ bool Finger::toArmPosition(Vector &fingertipPosition, Vector &retArmpPosition){
 
     retArmpPosition.resize(3);
     if(_whichHand.compare("left") == 0){
-    retArmpPosition[0] = fingertipPosition[0] + tip_x[0];
-    retArmpPosition[1] = fingertipPosition[1] + tip_x[1];
-    retArmpPosition[2] = fingertipPosition[2] - tip_x[2];
+        retArmpPosition[0] = fingertipPosition[0] + tip_x[0];
+        retArmpPosition[1] = fingertipPosition[1] + tip_x[1];
+        retArmpPosition[2] = fingertipPosition[2] - tip_x[2];
     }else if(_whichHand.compare("right") == 0){
 
         retArmpPosition[0] = fingertipPosition[0] + tip_x[0];
@@ -193,35 +179,7 @@ bool Finger::getPositionHandFrame(yarp::sig::Vector &position){
 
     return ret;
 
-    /*
-    bool ret = true;
-    Vector joints;
-    int nEncs;
 
-    position.clear();
-    position.resize(3); //x,y, z position
-
-
-    ret = ret && _armEncoder->getAxes(&nEncs);
-    Vector encs(nEncs);
-    if(! (ret = ret && _armEncoder->getEncoders(encs.data())))
-    {
-        cerr << _dbgtag << "Failed to read arm encoder data" << endl;
-    }
-
-    //cout << encs.toString() << endl;
-    ret = ret && _iCubFinger->getChainJoints(encs, joints);
-
-    //Convert the joints to radians.
-    for (int j = 0; j < joints.size(); j++)
-        joints[j] *= M_PI/180;
-
-
-    //cout << "J: " << _iCubFinger->setAng(joints).toString() << endl;
-    //_iCubFinger->setAng(joints);
-    yarp::sig::Matrix tipFrame = _iCubFinger->getH(joints);
-    position = tipFrame.getCol(3); // Tip's position in the hand coordinate
-*/
 }
 
 bool Finger::getPositionHandFrameCorrected(yarp::sig::Vector &position){
@@ -239,7 +197,7 @@ bool Finger::getPositionCorrected(yarp::sig::Vector &position){
     getPositionHandFrameCorrected(tip_x);
     tip_x.resize(4);
     tip_x[3] = 1.0;
-//    cout << "TipX: " << tip_x.toString() << endl;
+    //    cout << "TipX: " << tip_x.toString() << endl;
 
     Vector armPos, armOrient;
     _armCartesianCtrl->getPose(armPos, armOrient);
@@ -346,6 +304,7 @@ Finger::Finger(t_controllerData ctrlData){
     _tactileDataComp_in = ctrlData.tactileDataComp_in;
     _armControlLimits = ctrlData.armControlLimits;
 
+    configure(ctrlData.whichFinger, ctrlData.rf);
     //_fingerEncoders = ctrlData.fingerEncoders;
 
     // /force-cop-estimator/left_index/force:o
@@ -361,16 +320,6 @@ Finger::Finger(t_controllerData ctrlData){
             ctrlData.whichFinger + "/cop:i";
 
 
-/*    std::string fileName;
-    fileName = _whichFinger + "_tactileComp.csv";
-    _tactileDataCompFile.open(fileName.c_str());
-
-    fileName = _whichFinger + "_tactileRaw.csv";
-    _tactileDataRawFile.open(fileName.c_str());
-
-    fileName = _whichFinger + "_cop.csv";
-    _copFile.open(fileName.c_str());
-*/
 
 
 
@@ -411,11 +360,57 @@ bool Finger::hasForceCoP(){
     return (_isForceValid && _isCoPValid);
 }
 
+void Finger::configure(std::string fingerName, yarp::os::ResourceFinder *rf){
 
+
+    Bottle fingerParameters = rf->findGroup(fingerName);
+    Bottle* encoderLimits;
+
+    if(!fingerParameters.isNull()){
+        _contactForceThreshold = fingerParameters.check("contactForceThreshold", yarp::os::Value(10)).asDouble();
+
+        encoderLimits = fingerParameters.find("encoderLimits").asList();
+
+
+    }
+
+    // Oder of check is important to not sigfault
+    if(encoderLimits == NULL || encoderLimits->size() < 6  ){
+        cout << _dbgtag << "encoder limits are invalid; using default values." << endl;
+        _maxProximal = 250;
+        _minProximal = 0;
+        _maxMiddle = 250;
+        _minMiddle = 0;
+        _maxDistal = 250;
+        _minDistal = 0;
+    }
+    else{
+
+        _maxProximal = encoderLimits->get(0).asInt();
+        _minProximal = encoderLimits->get(1).asInt();
+        _maxMiddle = encoderLimits->get(2).asInt();
+        _minMiddle = encoderLimits->get(3).asInt();
+        _maxDistal = encoderLimits->get(4).asInt();
+        _minDistal = encoderLimits->get(5).asInt();
+
+
+
+    }
+
+
+
+
+
+
+}
 
 bool Finger::getPositionCoPAdjusted(yarp::sig::Vector &position){
     // To implemented
     cout << "Not yet implemented" << endl;
+}
+
+void Finger::setContactForceThreshold(const double threshold){
+    _contactForceThreshold = threshold;
 }
 
 bool Finger::getContactCoP(yarp::sig::Vector &contactCoP){
@@ -470,31 +465,7 @@ bool Finger::calibrate(){
 
 }
 
-/*bool Finger::readEncoders(Vector &encoderValues)
-{
 
-    bool ret = false;
-
-    encoderValues.clear();
-    encoderValues.resize(3);
-
-    int nData = _fingerEncoders->getInputCount();
-    Bottle *handEnc;
-
-    for(int data = 0; data < nData; data++)
-        handEnc = _fingerEncoders->read();
-
-    if(!handEnc->isNull())
-    {
-        encoderValues[0] = handEnc->get(_proximalEncoderIndex).asDouble();
-        encoderValues[1] = handEnc->get(_middleEncoderIndex).asDouble();
-        encoderValues[2] = handEnc->get(_distalEncoderIndex).asDouble();
-        ret = true;
-    }
-
-    //cout << "Encoders: " << encoderValues.toString() << endl;
-    return ret;
-}*/
 
 bool Finger::setAngles(double proximalAngle, double speed){
 

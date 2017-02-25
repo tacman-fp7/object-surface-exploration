@@ -25,13 +25,6 @@ public:
 
     virtual bool getPositionHandFrameCorrected(yarp::sig::Vector &position);
 
-protected:
-    double _maxProximal;
-    double _minProximal;
-    double _maxMiddle;
-    double _minMiddle;
-    double _maxDistal;
-    double _minDistal;
 
 
 

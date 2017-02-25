@@ -143,7 +143,7 @@ public:
 class icubHand: public Hand{
 public:
     icubHand(ResourceFinder& rf);
-    bool configure(yarp::os::ResourceFinder rf);
+    bool configure(yarp::os::ResourceFinder &rf);
 
 protected:
     BufferedPort<Bottle> _fingerEncoders;

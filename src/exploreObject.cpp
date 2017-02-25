@@ -757,6 +757,15 @@ bool ExploreObject::configure(yarp::os::ResourceFinder& rf ){
     return ret;
 }
 
+bool ExploreObject::setExplorationFingerContactForce(const double threshold){
+    _explorationFinger->setContactForceThreshold(threshold);
+    return true;
+}
+
+bool ExploreObject::setAuxiliaryFingerContactForce(const double threshold){
+    _auxiliaryFinger->setContactForceThreshold(threshold);
+    return true;
+}
 
 bool ExploreObject::close()
 {
