@@ -62,6 +62,8 @@ public: // Methods related to the robot control
     bool setSafetyThreshold(const double threshold);
     bool setExplorationFingerContactForce(const double threshold);
     bool setAuxiliaryFingerContactForce(const double threshold);
+    bool pause();
+    bool resume();
     
 public: // Methods related to the RF module
     bool attach(yarp::os::Port &source);

@@ -56,15 +56,6 @@ public:
   virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
-class robotControl_fingerSetAngle : public yarp::os::Portable {
-public:
-  double angle;
-  bool _return;
-  void init(const double angle);
-  virtual bool write(yarp::os::ConnectionWriter& connection);
-  virtual bool read(yarp::os::ConnectionReader& connection);
-};
-
 class robotControl_prepHand : public yarp::os::Portable {
 public:
   bool _return;
@@ -89,59 +80,11 @@ public:
   virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
-class robotControl_enableSurfaceSampling : public yarp::os::Portable {
-public:
-  bool _return;
-  void init();
-  virtual bool write(yarp::os::ConnectionWriter& connection);
-  virtual bool read(yarp::os::ConnectionReader& connection);
-};
-
-class robotControl_disableSurfaceSampling : public yarp::os::Portable {
-public:
-  bool _return;
-  void init();
-  virtual bool write(yarp::os::ConnectionWriter& connection);
-  virtual bool read(yarp::os::ConnectionReader& connection);
-};
-
-class robotControl_refineModelEnable : public yarp::os::Portable {
-public:
-  bool _return;
-  void init();
-  virtual bool write(yarp::os::ConnectionWriter& connection);
-  virtual bool read(yarp::os::ConnectionReader& connection);
-};
-
-class robotControl_refineModelDisable : public yarp::os::Portable {
-public:
-  bool _return;
-  void init();
-  virtual bool write(yarp::os::ConnectionWriter& connection);
-  virtual bool read(yarp::os::ConnectionReader& connection);
-};
-
 class robotControl_nRepeatsSet : public yarp::os::Portable {
 public:
   int32_t nRepeats;
   bool _return;
   void init(const int32_t nRepeats);
-  virtual bool write(yarp::os::ConnectionWriter& connection);
-  virtual bool read(yarp::os::ConnectionReader& connection);
-};
-
-class robotControl_validatePositionsEnable : public yarp::os::Portable {
-public:
-  bool _return;
-  void init();
-  virtual bool write(yarp::os::ConnectionWriter& connection);
-  virtual bool read(yarp::os::ConnectionReader& connection);
-};
-
-class robotControl_validatePositionsDisable : public yarp::os::Portable {
-public:
-  bool _return;
-  void init();
   virtual bool write(yarp::os::ConnectionWriter& connection);
   virtual bool read(yarp::os::ConnectionReader& connection);
 };
@@ -186,6 +129,22 @@ public:
   double threshold;
   bool _return;
   void init(const double threshold);
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
+};
+
+class robotControl_pause : public yarp::os::Portable {
+public:
+  bool _return;
+  void init();
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
+};
+
+class robotControl_resume : public yarp::os::Portable {
+public:
+  bool _return;
+  void init();
   virtual bool write(yarp::os::ConnectionWriter& connection);
   virtual bool read(yarp::os::ConnectionReader& connection);
 };
@@ -328,29 +287,6 @@ void robotControl_stopExploring::init() {
   _return = false;
 }
 
-bool robotControl_fingerSetAngle::write(yarp::os::ConnectionWriter& connection) {
-  yarp::os::idl::WireWriter writer(connection);
-  if (!writer.writeListHeader(2)) return false;
-  if (!writer.writeTag("fingerSetAngle",1,1)) return false;
-  if (!writer.writeDouble(angle)) return false;
-  return true;
-}
-
-bool robotControl_fingerSetAngle::read(yarp::os::ConnectionReader& connection) {
-  yarp::os::idl::WireReader reader(connection);
-  if (!reader.readListReturn()) return false;
-  if (!reader.readBool(_return)) {
-    reader.fail();
-    return false;
-  }
-  return true;
-}
-
-void robotControl_fingerSetAngle::init(const double angle) {
-  _return = false;
-  this->angle = angle;
-}
-
 bool robotControl_prepHand::write(yarp::os::ConnectionWriter& connection) {
   yarp::os::idl::WireWriter writer(connection);
   if (!writer.writeListHeader(1)) return false;
@@ -414,90 +350,6 @@ void robotControl_calibrateHand::init() {
   _return = false;
 }
 
-bool robotControl_enableSurfaceSampling::write(yarp::os::ConnectionWriter& connection) {
-  yarp::os::idl::WireWriter writer(connection);
-  if (!writer.writeListHeader(1)) return false;
-  if (!writer.writeTag("enableSurfaceSampling",1,1)) return false;
-  return true;
-}
-
-bool robotControl_enableSurfaceSampling::read(yarp::os::ConnectionReader& connection) {
-  yarp::os::idl::WireReader reader(connection);
-  if (!reader.readListReturn()) return false;
-  if (!reader.readBool(_return)) {
-    reader.fail();
-    return false;
-  }
-  return true;
-}
-
-void robotControl_enableSurfaceSampling::init() {
-  _return = false;
-}
-
-bool robotControl_disableSurfaceSampling::write(yarp::os::ConnectionWriter& connection) {
-  yarp::os::idl::WireWriter writer(connection);
-  if (!writer.writeListHeader(1)) return false;
-  if (!writer.writeTag("disableSurfaceSampling",1,1)) return false;
-  return true;
-}
-
-bool robotControl_disableSurfaceSampling::read(yarp::os::ConnectionReader& connection) {
-  yarp::os::idl::WireReader reader(connection);
-  if (!reader.readListReturn()) return false;
-  if (!reader.readBool(_return)) {
-    reader.fail();
-    return false;
-  }
-  return true;
-}
-
-void robotControl_disableSurfaceSampling::init() {
-  _return = false;
-}
-
-bool robotControl_refineModelEnable::write(yarp::os::ConnectionWriter& connection) {
-  yarp::os::idl::WireWriter writer(connection);
-  if (!writer.writeListHeader(1)) return false;
-  if (!writer.writeTag("refineModelEnable",1,1)) return false;
-  return true;
-}
-
-bool robotControl_refineModelEnable::read(yarp::os::ConnectionReader& connection) {
-  yarp::os::idl::WireReader reader(connection);
-  if (!reader.readListReturn()) return false;
-  if (!reader.readBool(_return)) {
-    reader.fail();
-    return false;
-  }
-  return true;
-}
-
-void robotControl_refineModelEnable::init() {
-  _return = false;
-}
-
-bool robotControl_refineModelDisable::write(yarp::os::ConnectionWriter& connection) {
-  yarp::os::idl::WireWriter writer(connection);
-  if (!writer.writeListHeader(1)) return false;
-  if (!writer.writeTag("refineModelDisable",1,1)) return false;
-  return true;
-}
-
-bool robotControl_refineModelDisable::read(yarp::os::ConnectionReader& connection) {
-  yarp::os::idl::WireReader reader(connection);
-  if (!reader.readListReturn()) return false;
-  if (!reader.readBool(_return)) {
-    reader.fail();
-    return false;
-  }
-  return true;
-}
-
-void robotControl_refineModelDisable::init() {
-  _return = false;
-}
-
 bool robotControl_nRepeatsSet::write(yarp::os::ConnectionWriter& connection) {
   yarp::os::idl::WireWriter writer(connection);
   if (!writer.writeListHeader(2)) return false;
@@ -519,48 +371,6 @@ bool robotControl_nRepeatsSet::read(yarp::os::ConnectionReader& connection) {
 void robotControl_nRepeatsSet::init(const int32_t nRepeats) {
   _return = false;
   this->nRepeats = nRepeats;
-}
-
-bool robotControl_validatePositionsEnable::write(yarp::os::ConnectionWriter& connection) {
-  yarp::os::idl::WireWriter writer(connection);
-  if (!writer.writeListHeader(1)) return false;
-  if (!writer.writeTag("validatePositionsEnable",1,1)) return false;
-  return true;
-}
-
-bool robotControl_validatePositionsEnable::read(yarp::os::ConnectionReader& connection) {
-  yarp::os::idl::WireReader reader(connection);
-  if (!reader.readListReturn()) return false;
-  if (!reader.readBool(_return)) {
-    reader.fail();
-    return false;
-  }
-  return true;
-}
-
-void robotControl_validatePositionsEnable::init() {
-  _return = false;
-}
-
-bool robotControl_validatePositionsDisable::write(yarp::os::ConnectionWriter& connection) {
-  yarp::os::idl::WireWriter writer(connection);
-  if (!writer.writeListHeader(1)) return false;
-  if (!writer.writeTag("validatePositionsDisable",1,1)) return false;
-  return true;
-}
-
-bool robotControl_validatePositionsDisable::read(yarp::os::ConnectionReader& connection) {
-  yarp::os::idl::WireReader reader(connection);
-  if (!reader.readListReturn()) return false;
-  if (!reader.readBool(_return)) {
-    reader.fail();
-    return false;
-  }
-  return true;
-}
-
-void robotControl_validatePositionsDisable::init() {
-  _return = false;
 }
 
 bool robotControl_setHeight::write(yarp::os::ConnectionWriter& connection) {
@@ -676,6 +486,48 @@ void robotControl_setAuxiliaryFingerContactForce::init(const double threshold) {
   this->threshold = threshold;
 }
 
+bool robotControl_pause::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(1)) return false;
+  if (!writer.writeTag("pause",1,1)) return false;
+  return true;
+}
+
+bool robotControl_pause::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void robotControl_pause::init() {
+  _return = false;
+}
+
+bool robotControl_resume::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(1)) return false;
+  if (!writer.writeTag("resume",1,1)) return false;
+  return true;
+}
+
+bool robotControl_resume::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void robotControl_resume::init() {
+  _return = false;
+}
+
 bool robotControl_quit::write(yarp::os::ConnectionWriter& connection) {
   yarp::os::idl::WireWriter writer(connection);
   if (!writer.writeListHeader(1)) return false;
@@ -760,16 +612,6 @@ bool robotControl::stopExploring() {
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-bool robotControl::fingerSetAngle(const double angle) {
-  bool _return = false;
-  robotControl_fingerSetAngle helper;
-  helper.init(angle);
-  if (!yarp().canWrite()) {
-    yError("Missing server method '%s'?","bool robotControl::fingerSetAngle(const double angle)");
-  }
-  bool ok = yarp().write(helper,helper);
-  return ok?helper._return:_return;
-}
 bool robotControl::prepHand() {
   bool _return = false;
   robotControl_prepHand helper;
@@ -800,72 +642,12 @@ bool robotControl::calibrateHand() {
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-bool robotControl::enableSurfaceSampling() {
-  bool _return = false;
-  robotControl_enableSurfaceSampling helper;
-  helper.init();
-  if (!yarp().canWrite()) {
-    yError("Missing server method '%s'?","bool robotControl::enableSurfaceSampling()");
-  }
-  bool ok = yarp().write(helper,helper);
-  return ok?helper._return:_return;
-}
-bool robotControl::disableSurfaceSampling() {
-  bool _return = false;
-  robotControl_disableSurfaceSampling helper;
-  helper.init();
-  if (!yarp().canWrite()) {
-    yError("Missing server method '%s'?","bool robotControl::disableSurfaceSampling()");
-  }
-  bool ok = yarp().write(helper,helper);
-  return ok?helper._return:_return;
-}
-bool robotControl::refineModelEnable() {
-  bool _return = false;
-  robotControl_refineModelEnable helper;
-  helper.init();
-  if (!yarp().canWrite()) {
-    yError("Missing server method '%s'?","bool robotControl::refineModelEnable()");
-  }
-  bool ok = yarp().write(helper,helper);
-  return ok?helper._return:_return;
-}
-bool robotControl::refineModelDisable() {
-  bool _return = false;
-  robotControl_refineModelDisable helper;
-  helper.init();
-  if (!yarp().canWrite()) {
-    yError("Missing server method '%s'?","bool robotControl::refineModelDisable()");
-  }
-  bool ok = yarp().write(helper,helper);
-  return ok?helper._return:_return;
-}
 bool robotControl::nRepeatsSet(const int32_t nRepeats) {
   bool _return = false;
   robotControl_nRepeatsSet helper;
   helper.init(nRepeats);
   if (!yarp().canWrite()) {
     yError("Missing server method '%s'?","bool robotControl::nRepeatsSet(const int32_t nRepeats)");
-  }
-  bool ok = yarp().write(helper,helper);
-  return ok?helper._return:_return;
-}
-bool robotControl::validatePositionsEnable() {
-  bool _return = false;
-  robotControl_validatePositionsEnable helper;
-  helper.init();
-  if (!yarp().canWrite()) {
-    yError("Missing server method '%s'?","bool robotControl::validatePositionsEnable()");
-  }
-  bool ok = yarp().write(helper,helper);
-  return ok?helper._return:_return;
-}
-bool robotControl::validatePositionsDisable() {
-  bool _return = false;
-  robotControl_validatePositionsDisable helper;
-  helper.init();
-  if (!yarp().canWrite()) {
-    yError("Missing server method '%s'?","bool robotControl::validatePositionsDisable()");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
@@ -916,6 +698,26 @@ bool robotControl::setAuxiliaryFingerContactForce(const double threshold) {
   helper.init(threshold);
   if (!yarp().canWrite()) {
     yError("Missing server method '%s'?","bool robotControl::setAuxiliaryFingerContactForce(const double threshold)");
+  }
+  bool ok = yarp().write(helper,helper);
+  return ok?helper._return:_return;
+}
+bool robotControl::pause() {
+  bool _return = false;
+  robotControl_pause helper;
+  helper.init();
+  if (!yarp().canWrite()) {
+    yError("Missing server method '%s'?","bool robotControl::pause()");
+  }
+  bool ok = yarp().write(helper,helper);
+  return ok?helper._return:_return;
+}
+bool robotControl::resume() {
+  bool _return = false;
+  robotControl_resume helper;
+  helper.init();
+  if (!yarp().canWrite()) {
+    yError("Missing server method '%s'?","bool robotControl::resume()");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
@@ -1016,22 +818,6 @@ bool robotControl::read(yarp::os::ConnectionReader& connection) {
       reader.accept();
       return true;
     }
-    if (tag == "fingerSetAngle") {
-      double angle;
-      if (!reader.readDouble(angle)) {
-        reader.fail();
-        return false;
-      }
-      bool _return;
-      _return = fingerSetAngle(angle);
-      yarp::os::idl::WireWriter writer(reader);
-      if (!writer.isNull()) {
-        if (!writer.writeListHeader(1)) return false;
-        if (!writer.writeBool(_return)) return false;
-      }
-      reader.accept();
-      return true;
-    }
     if (tag == "prepHand") {
       bool _return;
       _return = prepHand();
@@ -1065,50 +851,6 @@ bool robotControl::read(yarp::os::ConnectionReader& connection) {
       reader.accept();
       return true;
     }
-    if (tag == "enableSurfaceSampling") {
-      bool _return;
-      _return = enableSurfaceSampling();
-      yarp::os::idl::WireWriter writer(reader);
-      if (!writer.isNull()) {
-        if (!writer.writeListHeader(1)) return false;
-        if (!writer.writeBool(_return)) return false;
-      }
-      reader.accept();
-      return true;
-    }
-    if (tag == "disableSurfaceSampling") {
-      bool _return;
-      _return = disableSurfaceSampling();
-      yarp::os::idl::WireWriter writer(reader);
-      if (!writer.isNull()) {
-        if (!writer.writeListHeader(1)) return false;
-        if (!writer.writeBool(_return)) return false;
-      }
-      reader.accept();
-      return true;
-    }
-    if (tag == "refineModelEnable") {
-      bool _return;
-      _return = refineModelEnable();
-      yarp::os::idl::WireWriter writer(reader);
-      if (!writer.isNull()) {
-        if (!writer.writeListHeader(1)) return false;
-        if (!writer.writeBool(_return)) return false;
-      }
-      reader.accept();
-      return true;
-    }
-    if (tag == "refineModelDisable") {
-      bool _return;
-      _return = refineModelDisable();
-      yarp::os::idl::WireWriter writer(reader);
-      if (!writer.isNull()) {
-        if (!writer.writeListHeader(1)) return false;
-        if (!writer.writeBool(_return)) return false;
-      }
-      reader.accept();
-      return true;
-    }
     if (tag == "nRepeatsSet") {
       int32_t nRepeats;
       if (!reader.readI32(nRepeats)) {
@@ -1117,28 +859,6 @@ bool robotControl::read(yarp::os::ConnectionReader& connection) {
       }
       bool _return;
       _return = nRepeatsSet(nRepeats);
-      yarp::os::idl::WireWriter writer(reader);
-      if (!writer.isNull()) {
-        if (!writer.writeListHeader(1)) return false;
-        if (!writer.writeBool(_return)) return false;
-      }
-      reader.accept();
-      return true;
-    }
-    if (tag == "validatePositionsEnable") {
-      bool _return;
-      _return = validatePositionsEnable();
-      yarp::os::idl::WireWriter writer(reader);
-      if (!writer.isNull()) {
-        if (!writer.writeListHeader(1)) return false;
-        if (!writer.writeBool(_return)) return false;
-      }
-      reader.accept();
-      return true;
-    }
-    if (tag == "validatePositionsDisable") {
-      bool _return;
-      _return = validatePositionsDisable();
       yarp::os::idl::WireWriter writer(reader);
       if (!writer.isNull()) {
         if (!writer.writeListHeader(1)) return false;
@@ -1222,6 +942,28 @@ bool robotControl::read(yarp::os::ConnectionReader& connection) {
       reader.accept();
       return true;
     }
+    if (tag == "pause") {
+      bool _return;
+      _return = pause();
+      yarp::os::idl::WireWriter writer(reader);
+      if (!writer.isNull()) {
+        if (!writer.writeListHeader(1)) return false;
+        if (!writer.writeBool(_return)) return false;
+      }
+      reader.accept();
+      return true;
+    }
+    if (tag == "resume") {
+      bool _return;
+      _return = resume();
+      yarp::os::idl::WireWriter writer(reader);
+      if (!writer.isNull()) {
+        if (!writer.writeListHeader(1)) return false;
+        if (!writer.writeBool(_return)) return false;
+      }
+      reader.accept();
+      return true;
+    }
     if (tag == "quit") {
       bool _return;
       _return = quit();
@@ -1273,22 +1015,17 @@ std::vector<std::string> robotControl::help(const std::string& functionName) {
     helpString.push_back("goToEndPose");
     helpString.push_back("startExploring");
     helpString.push_back("stopExploring");
-    helpString.push_back("fingerSetAngle");
     helpString.push_back("prepHand");
     helpString.push_back("openHand");
     helpString.push_back("calibrateHand");
-    helpString.push_back("enableSurfaceSampling");
-    helpString.push_back("disableSurfaceSampling");
-    helpString.push_back("refineModelEnable");
-    helpString.push_back("refineModelDisable");
     helpString.push_back("nRepeatsSet");
-    helpString.push_back("validatePositionsEnable");
-    helpString.push_back("validatePositionsDisable");
     helpString.push_back("setHeight");
     helpString.push_back("alignFingers");
     helpString.push_back("setSafetyThreshold");
     helpString.push_back("setExplorationFingerContactForce");
     helpString.push_back("setAuxiliaryFingerContactForce");
+    helpString.push_back("pause");
+    helpString.push_back("resume");
     helpString.push_back("quit");
     helpString.push_back("help");
   }
@@ -1311,9 +1048,6 @@ std::vector<std::string> robotControl::help(const std::string& functionName) {
     if (functionName=="stopExploring") {
       helpString.push_back("bool stopExploring() ");
     }
-    if (functionName=="fingerSetAngle") {
-      helpString.push_back("bool fingerSetAngle(const double angle) ");
-    }
     if (functionName=="prepHand") {
       helpString.push_back("bool prepHand() ");
     }
@@ -1323,26 +1057,8 @@ std::vector<std::string> robotControl::help(const std::string& functionName) {
     if (functionName=="calibrateHand") {
       helpString.push_back("bool calibrateHand() ");
     }
-    if (functionName=="enableSurfaceSampling") {
-      helpString.push_back("bool enableSurfaceSampling() ");
-    }
-    if (functionName=="disableSurfaceSampling") {
-      helpString.push_back("bool disableSurfaceSampling() ");
-    }
-    if (functionName=="refineModelEnable") {
-      helpString.push_back("bool refineModelEnable() ");
-    }
-    if (functionName=="refineModelDisable") {
-      helpString.push_back("bool refineModelDisable() ");
-    }
     if (functionName=="nRepeatsSet") {
       helpString.push_back("bool nRepeatsSet(const int32_t nRepeats) ");
-    }
-    if (functionName=="validatePositionsEnable") {
-      helpString.push_back("bool validatePositionsEnable() ");
-    }
-    if (functionName=="validatePositionsDisable") {
-      helpString.push_back("bool validatePositionsDisable() ");
     }
     if (functionName=="setHeight") {
       helpString.push_back("bool setHeight(const double height) ");
@@ -1358,6 +1074,12 @@ std::vector<std::string> robotControl::help(const std::string& functionName) {
     }
     if (functionName=="setAuxiliaryFingerContactForce") {
       helpString.push_back("bool setAuxiliaryFingerContactForce(const double threshold) ");
+    }
+    if (functionName=="pause") {
+      helpString.push_back("bool pause() ");
+    }
+    if (functionName=="resume") {
+      helpString.push_back("bool resume() ");
     }
     if (functionName=="quit") {
       helpString.push_back("bool quit() ");

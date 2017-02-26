@@ -6,22 +6,24 @@ service robotControl {
 	bool goToEndPose();
 	bool startExploring(1: string type 2: string objectName);
 	bool stopExploring();
-	bool fingerSetAngle(1: double angle);
+	#bool fingerSetAngle(1: double angle);
 	bool prepHand();
 	bool openHand();
 	bool calibrateHand();
-        bool enableSurfaceSampling();
-        bool disableSurfaceSampling();
-        bool refineModelEnable();
-        bool refineModelDisable();
+        #bool enableSurfaceSampling();
+        #bool disableSurfaceSampling();
+        #bool refineModelEnable();
+        #bool refineModelDisable();
         bool nRepeatsSet(1: i32 nRepeats);
-        bool validatePositionsEnable();
-        bool validatePositionsDisable();
+        #bool validatePositionsEnable();
+        #bool validatePositionsDisable();
         bool setHeight(1: double height);
 	bool alignFingers();
 	bool setSafetyThreshold(1: double threshold)
         bool setExplorationFingerContactForce(1: double threshold);
         bool setAuxiliaryFingerContactForce(1: double threshold);
+	bool pause();
+	bool resume();	
 	bool quit();
 	
 }

@@ -14,12 +14,20 @@ public:
     ExplorationStrategyThread(int period, Hand* robotHand, Finger* explorationFinger, Finger* auxiliaryFinger,
                               string objectName, ObjectFeaturesThread* objectFeatures):
         _objectFeatures(objectFeatures), _robotHand(robotHand), _explorationFinger(explorationFinger),
-    _auxiliaryFinger(auxiliaryFinger){}
+    _auxiliaryFinger(auxiliaryFinger){_paused = false;}
 
     void setContactSafetyForceThreshold(const double threshold){
         if(_contactSafetyThread != NULL){
             _contactSafetyThread->setForceThreshold(threshold);
         }
+    }
+
+    void pause(){
+        _paused = true;
+    }
+
+    void resume(){
+        _paused = false;
     }
 
     volatile void setNRepeats(const int nRepeats){}
@@ -36,6 +44,8 @@ protected:
     std::ofstream _explorationFingerLog;
     std::ofstream _auxiliaryFingerLog;
     std::ofstream _explorationFingerTaxelResponseLog;
+
+    bool _paused;
 
 protected:
     ContactSafetyThread* _contactSafetyThread;

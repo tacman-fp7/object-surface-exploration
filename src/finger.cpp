@@ -109,7 +109,7 @@ bool Finger::getPositionHandFrame(yarp::sig::Vector &position, yarp::sig::Vector
 }
 
 bool Finger::getPositionHandFrameCorrected(yarp::sig::Vector &position, yarp::sig::Vector &fingerEncoders){
-    cerr << _dbgtag << "get position in hand frame has not been implemented for this finger." << endl;
+    cerr << _dbgtag << "get position in hand frame has not been implemented for this finger: " << this->getFingerName() << endl;
     return false;
 }
 

@@ -29,6 +29,12 @@ void GPExplorationMultifingerThread::run()
     {
         _objectFeatures->updateContactState(_contactState);
 
+        if(_paused){
+            // Yield, then move the finger up and change to a meaningful state like approach object
+            yield();
+            yarp::os::Time::delay(1);
+            continue;
+        }
 
         switch (_contactState)
         {

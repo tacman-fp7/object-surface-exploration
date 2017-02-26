@@ -31,6 +31,41 @@ bool ExploreObject::setSafetyThreshold(const double threshold){
 }
 
 /**
+ * @brief ExploreObject::pause
+ * @return
+ */
+bool ExploreObject::pause(){
+    if(_exploreObject_thread !=NULL && _exploreObject_thread->isRunning()){
+        _exploreObject_thread->pause();
+
+    }
+    else{
+        cerr << _dbgtag << "exploration is not running" << endl;
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * @brief ExploreObject::resume
+ * @return
+ */
+
+bool ExploreObject::resume(){
+    if(_exploreObject_thread !=NULL && _exploreObject_thread->isRunning()){
+        _exploreObject_thread->resume();
+
+    }
+    else{
+        cerr << _dbgtag << "exploration is not running" << endl;
+        return false;
+    }
+
+    return true;
+}
+
+/**
  * @brief ExploreObject::alignFingers
  * @return
  * Get position data for the index finger and the middle finger
@@ -225,7 +260,7 @@ ExploreObject::~ExploreObject()
         _exploreObject_thread = NULL;
     }
 
- /*   if(_exploreObject_thread != NULL)
+    /*   if(_exploreObject_thread != NULL)
     {
         if(_exploreObject_thread->isRunning())
             _exploreObject_thread->stop();
@@ -358,7 +393,7 @@ bool ExploreObject::exploreGPSurface(const std::string& objectName)
         }
 
         _exploreObject_thread = new ExploreGPSurfaceThread(_explorationThreadPeriod ,
-                                                              _robotHand, _explorationFinger, _auxiliaryFinger, "fix", _objectFeaturesThread);
+                                                           _robotHand, _explorationFinger, _auxiliaryFinger, "fix", _objectFeaturesThread);
 
 
 
@@ -643,7 +678,7 @@ bool ExploreObject::stopExploring()
             delete _exploreObject_thread;
             _exploreObject_thread = NULL;
         }
-       /* if(_exploreObject_thread != NULL){
+        /* if(_exploreObject_thread != NULL){
             if(_exploreObject_thread->isRunning()){
                 _exploreObject_thread->stop();
             }
@@ -706,7 +741,7 @@ bool ExploreObject::configure(yarp::os::ResourceFinder& rf ){
         return false;
     }
 
-   // Select between the fingers
+    // Select between the fingers
     if(_explorationFingerName.compare("index") == 0){
         _explorationFinger = _robotHand->getIndexFinger();
         _auxiliaryFinger = _robotHand->getMiddleFinger();
