@@ -25,7 +25,7 @@ void ExploreGPSurfaceThread::run()
     _repeats = 0;
     //_curDistal = 0;
     _curProximal = 0;
-    _contactForceThreshold = _explorationFinger->getContactForceThreshold(); //FORCE_TH; //TODO: should be in a config file
+    //_contactForceThreshold = _explorationFinger->getContactForceThreshold(); //FORCE_TH; //TODO: should be in a config file
 
     // Get a new waypoint from the GP model
     _contactState = SET_WAYPOINT_GP;
@@ -258,7 +258,7 @@ void ExploreGPSurfaceThread::moveArmToWayPoint(yarp::sig::Vector pos, yarp::sig:
         bool motionDone = false;
         while(!motionDone)
         {
-            if(_explorationFinger->getContactForce() > _contactForceThreshold)
+            if(_explorationFinger->getContactForce() > _explorationFinger->getContactForceThreshold())
             {
                 cout  << "Abandoned motion due to force" << endl;
                 _robotHand->stopControl();

@@ -425,17 +425,12 @@ bool Hand::setWayPointGP(yarp::sig::Vector pos, yarp::sig::Vector orient)
     return true;
 }
 
-bool Hand::getWayPoint ( Vector& pos, Vector& orient, bool invalidateWayPoint )
-{
+bool Hand::getWayPoint ( Vector& pos, Vector& orient, bool invalidateWayPoint ){
 
     bool ret = _wayPoint_isValid;
-    //if(_wayPoint_isValid)
-    //{
     pos = _wayPointPos;
     orient = _wayPointOrient;
     _wayPoint_isValid = !invalidateWayPoint;
-    //  return true;
-    //}
     return ret;
 }
 

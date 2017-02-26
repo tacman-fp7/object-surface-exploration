@@ -23,7 +23,7 @@ void GPExplorationMultifingerThread::run()
 
     _repeats = 0;
     _curProximal = 0;
-    _contactForceThreshold = _explorationFinger->getContactForceThreshold();//FORCE_TH; //TODO: should be in a config file
+    //_contactForceThreshold = _explorationFinger->getContactForceThreshold();//FORCE_TH; //TODO: should be in a config file
 
     while(!isStopping() && !(_contactState == STOP)) // Keep running this
     {
@@ -167,12 +167,12 @@ bool GPExplorationMultifingerThread::clenchRingLittleFinger(Finger *ringFinger, 
             //cout << "Little: " << littleFingerAngles.toString() << endl;
 
 
-            if(ringFinger->getContactForce() >= _contactForceThreshold/4.0){
+            if(ringFinger->getContactForce() >= ringFinger->getContactForceThreshold()){
                 cout << "Ring finger contact confirmed" << endl;
                 ringFingerForce = true;
 
             }
-            if(littleFinger->getContactForce() >= _contactForceThreshold/4.0){
+            if(littleFinger->getContactForce() >= littleFinger->getContactForceThreshold()){
                 cout << "Little finger contact confirmed" << endl;
                 littleFingerForce = true;
             }
@@ -239,7 +239,7 @@ bool GPExplorationMultifingerThread::clenchFinger(Finger *finger, double maxAngl
 
             finger->getAngels(fingerAngles);
 
-            if(finger->getContactForce() >= _contactForceThreshold){
+            if(finger->getContactForce() >= finger->getContactForceThreshold()){
                 cout << "contact confirmed" << endl;
                 ret = true;
                 break;

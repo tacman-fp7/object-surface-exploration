@@ -23,7 +23,7 @@ public:
     }
 
     volatile void setNRepeats(const int nRepeats){}
-    void setContactForceThreshold(const double threshold){_contactForceThreshold = threshold;}
+//    void setContactForceThreshold(const double threshold){_contactForceThreshold = threshold;}
     
 protected:
     ObjectFeaturesThread* _objectFeatures;
@@ -39,7 +39,7 @@ protected:
 
 protected:
     ContactSafetyThread* _contactSafetyThread;
-    double _contactForceThreshold; // Force threshold to determine contact
+    //double _contactForceThreshold; // Force threshold to determine contact
 
 };
 

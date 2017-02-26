@@ -30,7 +30,7 @@ void GPExplorationThread::run()
 
     _repeats = 0;
     _curProximal = 0;
-    _contactForceThreshold = _explorationFinger->getContactForceThreshold();//FORCE_TH; //TODO: should be in a config file
+    //_contactForceThreshold = _explorationFinger->getContactForceThreshold();//FORCE_TH; //TODO: should be in a config file
 
     while(!isStopping() && !(_contactState == STOP)) // Keep running this
     {
@@ -397,7 +397,7 @@ bool GPExplorationThread::confirmWiggleContact(double maxAngle)
         {
 
             //cout << "Force: " << _explorationFinger->getContactForce() << endl;
-            if(_explorationFinger->getContactForce() >= _contactForceThreshold/2)
+            if(_explorationFinger->getContactForce() >= _explorationFinger->getContactForceThreshold() / 2.0 )
             {
                 cout << "contact confirmed" << endl;
                 contact = true;
@@ -419,7 +419,7 @@ bool GPExplorationThread::confirmWiggleContact(double maxAngle)
 
 
     cout << "Force: " << _explorationFinger->getContactForce() << endl;
-    if(_explorationFinger->getContactForce() >= _contactForceThreshold/2)
+    if(_explorationFinger->getContactForce() >= _explorationFinger->getContactForceThreshold() / 2)
     {
         cout << "contact confirmed" << endl;
         contact = true;
@@ -701,7 +701,7 @@ void GPExplorationThread::moveArmToWayPoint(yarp::sig::Vector pos, yarp::sig::Ve
         bool motionDone = false;
         while(!motionDone)
         {
-            if(_explorationFinger->getContactForce() > _contactForceThreshold)
+            if(_explorationFinger->getContactForce() > _explorationFinger->getContactForceThreshold())
             {
                 cout  << "Abandoned motion due to force" << endl;
                 _robotHand->stopControl();

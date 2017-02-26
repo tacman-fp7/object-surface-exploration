@@ -33,19 +33,20 @@ void TappingExplorationThread::run()
     _contactState = APPROACH_OBJECT;
     _repeats = 0;
     _nRepeats = 0;
-    _contactForceThreshold = _explorationFinger->getContactForceThreshold();//FORCE_TH;
+
 
     // put the finger in known position
     _curProximal = 0;
     _curAbduction = 0;
     moveExplorationFingerBlocking(_curProximal, _curAbduction, 40);
 
+    //_contactForceThreshold = _explorationFinger->getContactForceThreshold();
+
     while(!isStopping() && !(_contactState == STOP)) // Keep running this
     {
 
 
         _objectFeatures->updateContactState(_contactState);
-
 
         switch (_contactState)
         {
@@ -108,7 +109,7 @@ TappingExplorationThread::TappingExplorationThread(int period, Hand* robotHand, 
     ExplorationStrategyThread(period, robotHand, explorationFinger, auxiliaryFinger, objectName,
                               objectFeatures){
     _nGrid = 0;
-    _contactForceThreshold = 0;
+    //_contactForceThreshold = 0;
     _curAbduction = 0;
     _curAbduction = 0;
     _nRepeats = 0;
@@ -179,13 +180,13 @@ void TappingExplorationThread::maintainContact()
     if(_repeats < _nRepeats) // TODO: change
     {
 
-        _contactForceThreshold = 0.7 * _explorationFinger->getContactForceThreshold();
+        //_contactForceThreshold = 0.7 * _explorationFinger->getContactForceThreshold();
         _contactState = APPROACH_OBJECT;
         _repeats++;
     }
     else
     {
-        _contactForceThreshold = _explorationFinger->getContactForceThreshold();
+        //_contactForceThreshold = _explorationFinger->getContactForceThreshold();
         _contactState = MOVE_LOCATION;
         _repeats = 0;
     }
@@ -255,7 +256,7 @@ void TappingExplorationThread::moveArmToWayPoint(yarp::sig::Vector pos, yarp::si
         bool motionDone = false;
         while(!motionDone)
         {
-            if(_explorationFinger->getContactForce() > _contactForceThreshold)
+            if(_explorationFinger->getContactForce() > _explorationFinger->getContactForceThreshold())
             {
                 cout  << "Abandoned motion due to force" << endl;
                 //_robotCartesianController->stopControl();
@@ -346,38 +347,29 @@ void TappingExplorationThread::moveFingerBlocking(Finger *finger, double proxima
     }
 
 }
-void TappingExplorationThread::approachObject()
-{
+void TappingExplorationThread::approachObject(){
 
     // Position the hand at the waypoint
     Vector px, ox;
     px.resize(3);
     ox.resize(4);
-    //Vector indexFingerAngles;
+
     double maxProximal = 40;
 
     ///// Put the index finger in the starting position /////
     moveExplorationFingerBlocking(10, _curAbduction, 10);
 
 
-    // Go to the wayPoint if only it is a valid wayPoint.
-    if(_robotHand->getWayPoint(px, ox, false))
-    {
+
+    if(_robotHand->getWayPoint(px, ox, false)){ // Go to the wayPoint if only it is a valid wayPoint.
         moveArmToWayPoint(px, ox);
     }
-    else if(_contactState != UNDEFINED)
-    {
+    else if(_contactState != UNDEFINED){
         // If the contact point is not valid, then it is time to move to a new location
-        // TODO: is this intuitive?
         _contactState = MOVE_LOCATION;
     }
 
-    // Debugging
-   //  moveIndexFingerBlocking(30, _curAbduction, 40);
 
-   // _contactState = MAINTAIN_CONTACT;
-   // return;
-    ///////
 
     if(_contactState == APPROACH_OBJECT)
     {
@@ -411,7 +403,7 @@ void TappingExplorationThread::detectContact(double maxAngle)
 {
     Vector explorationFingerAngles;
     std::clock_t time = std::clock();
-    while((_explorationFinger->getContactForce()) < _contactForceThreshold) // this n ot correct
+    while((_explorationFinger->getContactForce()) < _explorationFinger->getContactForceThreshold()) // this n ot correct
     {
         // Get the angles
         _explorationFinger->getAngels(explorationFingerAngles);
@@ -475,7 +467,7 @@ bool TappingExplorationThread::confrimContact(double maxAngle)
 
             //_robotHand->getIndexFingerAngles(indexFingerAngles);
 
-            if(_explorationFinger->getContactForce() >= _contactForceThreshold)
+            if(_explorationFinger->getContactForce() >= _explorationFinger->getContactForceThreshold())
             {
                 cout << "contact confirmed" << endl;
                 _contactState = MAINTAIN_CONTACT;
