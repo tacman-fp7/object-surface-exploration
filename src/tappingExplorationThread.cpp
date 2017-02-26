@@ -411,7 +411,7 @@ void TappingExplorationThread::detectContact(double maxAngle)
 {
     Vector explorationFingerAngles;
     std::clock_t time = std::clock();
-    while((_explorationFinger->getContactForce()) < _contactForceThreshold)
+    while((_explorationFinger->getContactForce()) < _contactForceThreshold) // this n ot correct
     {
         // Get the angles
         _explorationFinger->getAngels(explorationFingerAngles);
