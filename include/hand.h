@@ -23,8 +23,16 @@ struct workspace
     double maxY;
     double minZ;
     double maxZ;
-    double disasterX;
+    double disasterX; //This will cause a disaster!
 };
+
+struct explorationAreaParams{
+    double xWidth;
+    double tableHeight;
+    int nSteps;
+};
+
+typedef struct explorationAreaParams t_explorationAreaParams;
 
 using yarp::os::ResourceFinder;
 class Hand{
@@ -54,7 +62,7 @@ public:
     bool goToEndPose();
     bool setHeight(double height);
     bool multiContact(double angle);
-
+    t_explorationAreaParams getExplorationAreaParams();
 
     Finger* getIndexFinger(){return _indexFinger;}
     Finger* getMiddleFinger(){return _middleFinger;}
@@ -120,6 +128,7 @@ private:
     bool _wayPoint_isValid;
     Vector _wayPointPos;
     Vector _wayPointOrient;
+    t_explorationAreaParams _explorationVolumeParams;
 
    BufferedPort<Bottle> _abuductionPort_out;
 protected:

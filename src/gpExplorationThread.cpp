@@ -606,90 +606,6 @@ void GPExplorationThread::sampleSurface_wiggleFingers()
     _curProximal = 0; curDistal = 0; _curAbduction = 0;
     moveExplorationFingerBlocking(_curProximal, curDistal, _curAbduction, 40);
 
-    //_robotCartesianController->waitMotionDone(0.1, 20);
-
-
-    // Now  make contact
-
-    // _contactState = STOP;
-
-    /*
-     * /////
-
-    double offset = 3.0/1000;
-
-
-    while(true){
-        desiredArmPos[2] -= offset; // offset from the middle
-        _robotCartesianController->goToPoseSync(desiredArmPos, desiredArmOrient);
-       // _robotCartesianController->waitMotionDone(0.1, 2);
-
-
-
-
-
-        bool motionDone = false;
-        while(!motionDone)
-        {
-            if(_explorationFinger->getContactForce() > 3)
-            {
-                cout  << "Abandoned motion due to force" << endl;
-                _robotCartesianController->stopControl();
-
-                break;
-            }
-
-            _robotCartesianController->checkMotionDone(&motionDone);
-        }
-
-        _objectFeatures->getIndexFingertipPosition(fingertipPosition);
-        cout << "AF: " << fingertipPosition.toString() << endl;
-
-
-
-        _objectFeatures->getIndexFingerAngles(indexFingerAngles);
-
-        if(indexFingerAngles[1] > 3 )
-        {
-            cout << "No contact!" << endl;
-            cout << "Angles: " << indexFingerAngles.toString() << endl;
-
-            offset += 3.0/1000;
-
-            continue;
-        }
-        else
-        {
-            offset = 3.0/1000;
-            break;
-        }
-
-
-    }
-
-   _objectFeatures->fingerMovePosition(7, 60);
-   yarp::os::Time::delay(2);
-   _objectFeatures->fingerMovePosition(7, 0);
-   yarp::os::Time::delay(2);
-
-    // Just to be safe
-   //////////////////// move the arm up
-
-    Vector startingPos, startingOrient;
-    Vector armPos, orient;
-
-
-
-    _objectFeatures->getArmPose(armPos, orient);
-    _objectFeatures->getStartingPose(startingPos, startingOrient);
-
-
-    _explorationFinger->toArmPosition(startingPos, desiredArmPos);
-    armPos[2] = desiredArmPos[2] + 10.0/1000; // Move the fingertip up to avoid collisiont
-    _objectFeatures->moveArmToPosition(armPos, orient);
-
-
-    _objectFeatures->setProximalAngle(10); // Needed by apporach object method */
 
 }
 
@@ -732,11 +648,13 @@ bool GPExplorationThread::initialiseGP(Vector startingPos, Vector startingOrient
 
     //_surfaceModel->loadContactData("boundingBox");
     double xMin, xMax, yMin, yMax, zMin;
-    int nSteps = 20;
-    xMax = startingPos[0];
-    xMin = xMax - 170.0/1000;
+    t_explorationAreaParams explorationParams = _robotHand->getExplorationAreaParams();
 
-    zMin = -0.135;//-0.148; // TODO: fix it! Maybe take it form reachable space
+    int nSteps = explorationParams.nSteps;  //20;
+    xMax = startingPos[0];
+    xMin = xMax - explorationParams.xWidth/1000.0;//170.0/1000;
+
+    zMin = explorationParams.tableHeight; //-0.135;//-0.148; // Table height TODO: fix it! Maybe take it form reachable space
 
     ////////////////////////////////////////////////////////////////////////////
     //// The start and the end y locations depends on the right/left hand //////
@@ -753,127 +671,17 @@ bool GPExplorationThread::initialiseGP(Vector startingPos, Vector startingOrient
         yMax = startingPos[1];
     }
 
-    // Get the table height
-    /* int prev_nRepeats = _nRepeats;
-    bool _prev_sampleSurface = _sampleSurface;
-
-    //_minZPoints.clear();
-    _sampleSurface = false;
-    _nRepeats = 2;
-    Vector pos;
-    pos.resize(3);
-    pos[0] = xMax;
-    pos[1] = yMin;
-    pos[2] = startingPos[2];
-    makeSingleContact(pos, startingOrient);
-
-    pos[0] = xMin;
-    pos[1] = yMin;
-    pos[2] = startingPos[2];
-    makeSingleContact(pos, startingOrient);
-
-    pos[0] = xMin;
-    pos[1] = yMax;
-    pos[2] = startingPos[2];
-    makeSingleContact(pos, startingOrient);
-
-    pos[0] = xMax;
-    pos[1] = yMax;
-    pos[2] = startingPos[2];
-    makeSingleContact(pos, startingOrient);
-
-    _nRepeats = prev_nRepeats;
-    _sampleSurface = _prev_sampleSurface;
-
-    sort(_minZPoints.begin(), _minZPoints.end());
-    _minZPoints.resize(3);
-    zMin = getMedian(_minZPoints);
-    cout << "Median minZ: " << zMin << endl;
-
-    //if(zMin > -0.148)
-    //   zMin = -0.148; */
 
 
 
     _surfaceModel->padBoundingBox(xMin, xMax, yMin, yMax, zMin, nSteps, 0.0/1000);
-    _surfaceModel->setBoundingBox(nSteps, 0/1000);
-    _surfaceModel->trainModel();
-    _surfaceModel->updateSurfaceEstimate();
-    //_surfaceModel->padBoundingBox(xMin, xMax, yMin, yMax, zMin, nSteps, 0.0/1000);
-
-    // Set the waypoint to the midpoint
-    /*   Vector pos;
-    pos.resize(3);
-    pos[0] = (xMin + xMax)/2.0;
-    pos[1] = (yMin + yMax)/2.0;
-    pos[2] = startingPos[2];
-    /* makeSingleContact(pos, startingOrient);
-
-    makeSingleContact(pos, startingOrient);
+    _surfaceModel->setBoundingBox(nSteps, 0.0/1000);
     _surfaceModel->trainModel();
     _surfaceModel->updateSurfaceEstimate();
 
-*/
 
     return true;
 
-
-
-    /*   //////
-    Vector pos, orient;
-    pos = startingPos;
-    orient = startingOrient;
-    double xSteps = -20.0/1000;
-    double ySteps = 0;
-    int nXGrid = 4;
-    int nYGrid = 5;
-
-    if(startingPos[1] < endingPos[1])
-        ySteps = 20.0/1000;
-    else
-        ySteps = -20.0/1000;
-
-    // Make sure the first point is valid
-    _objectFeatures->setWayPoint(pos, orient);
-    while(pos[0] >= (startingPos[0] + xSteps * nXGrid))
-    {
-
-        for (int i = 0; i < nYGrid; i++)
-        {
-
-            makeSingleContact(pos, orient);
-            pos[1] += ySteps;
-        }
-        pos[0] += xSteps;
-        pos[1] = startingPos[1];
-
-    }
-
-
-    double xMax = startingPos[0];
-    double xMin = startingPos[0] + xSteps * nXGrid;
-    double yMin, yMax;
-
-    if(startingPos[1] < endingPos[1])
-    {
-        yMin = startingPos[1];
-        yMax = endingPos[1];
-    }
-    else
-    {
-        yMin = endingPos[1];
-        yMax = startingPos[1];
-    }
-
-    _surfaceModel->padBoundingBox();
-    _surfaceModel->trainModel();
-   // _surfaceModel->setBoundingBox(xMin, xMax, yMin, yMax, 120, 5.0/1000);
-    _surfaceModel->setBoundingBox(120, 5.0/1000);
-    _surfaceModel->updateSurfaceEstimate();
-
-
-
-    return ret; */
 }
 
 double GPExplorationThread::getMedian(std::vector<double> &vec)
@@ -895,140 +703,7 @@ double GPExplorationThread::getMedian(std::vector<double> &vec)
 
 }
 
-/*void GPExplorationThread::moveArmUp()
-{
-    Vector startingPos, startingOrient;
-    Vector armPos, orient;
-    TappingExplorationThread::moveIndexFinger(10, _curAbduction);
 
-
-    _robotHand->getPose(armPos, orient);
-    _robotHand->getStartingPose(startingPos, startingOrient);
-
-    Vector desiredArmPos;
-    _explorationFinger->toArmPosition(startingPos, desiredArmPos);
-    armPos[2] = desiredArmPos[2]; // Move the fingertip up to avoid collisiont
-    //_objectFeatures->moveArmToPosition(armPos, orient);
-    _robotHand->goToPoseSync(armPos, orient, 10);
-
-    cout << "Waiting for force to return to normal value...";
-    cout.flush();
-    double force = _explorationFinger->getContactForce();
-
-    if(force > 0.25)
-    {
-        yarp::os::Bottle msg;
-        msg.addString("calib");
-
-        yarp::os::Bottle response;
-        _skinManagerCommand.write(msg, response);
-        cout << response.toString();
-
-    }
-    while(force > 0.25)
-    {
-        force = _explorationFinger->getContactForce();
-        for( int i = 0; i < 9; i++)
-            force += _explorationFinger->getContactForce();
-        force = force/10;
-    }
-
-    cout << "...done!" << endl;
-}*/
-
-/*void GPExplorationThread::makeSingleContact(Vector pos, Vector orient)
-{
-    Vector desiredArmPos;
-    _explorationFinger->toArmPosition(pos, desiredArmPos);
-
-    _objectFeatures->setWayPointGP(desiredArmPos, orient);
-    _contactState = APPROACH_OBJECT;
-    Vector fingertipPosition;
-    moveArmUp();
-    while((_contactState != FINISHED) && !isStopping() && !(_contactState == STOP))
-    {
-        switch (_contactState)
-        {
-        case UNDEFINED:
-            // This is the first round no approach has been made
-            // Get the waypoint and set the state to approaching
-            cout << "Contact state is: undefined" << endl;
-            break;
-        case  APPROACH_OBJECT:
-            // Aproach and wait for contact
-            // If there is contact, set the state to MAINTAIN_CONTACT
-            // If there is no contact, set the state to CALCULATE_NEWWAYPOINT
-            // If the limit is reached,  set the state to MOVELOCATION <= this needs to be changed for GP
-            cout << "Contact state is: approach" << endl;
-            TappingExplorationThread::approachObject();
-            break;
-        case CALCULATE_NEWWAYPONT:
-            // Use the current position of the fingertip as the
-            // next waypoint
-            cout << "Contact state is: new waypoint" << endl;
-            TappingExplorationThread::calculateNewWaypoint();
-            break;
-        case MAINTAIN_CONTACT:
-            cout << "Contact state is: maintain contact" << endl;
-            // Store update the contact location in the GP
-            // Maintain contact for a couple of seconds
-            // Set the state to GET_WAYPOINT_GP
-            //maintainContact();
-
-
-            _explorationFinger->getPosition(fingertipPosition);
-            _minZPoints.push_back(fingertipPosition[2]);
-            TappingExplorationThread::maintainContact();
-            //_contactState = STOP;
-            break;
-        case MOVE_LOCATION:
-            cout << "Contact state is: move location" << endl;
-            // Update the GP
-            // Set the waypoint to the next waypoint suggested by the GP
-            // moveToNewLocation();
-            _contactState = STOP;
-            break;
-        case SET_WAYPOINT_GP:
-            // Use the GP Model to set the next waypoint
-            // TODO: determine whether we sould terminate or not
-            cout << "ContactState is: get waypoint from GP" << endl;
-            //setWayPoint_GP();
-            _contactState = STOP;
-            break;
-        case FINISHED:
-            cout << "Contact state is: finished" << endl;
-
-            // I have to implement exit the thread procedure here
-            //TappingExplorationThread::finshExploration();
-            break;
-        }
-    }
-
-    Vector armPos, armOrient;
-    Vector startingPos, startingOrient;
-
-
-    //_objectFeatures->prepHand();
-
-    _robotHand->getPose(armPos, armOrient);
-    _robotHand->getStartingPose(startingPos, startingOrient);
-
-
-    _explorationFinger->toArmPosition(startingPos, desiredArmPos);
-    armPos[2] = desiredArmPos[2]; // Move the fingertip up to avoid collisiont
-   // _objectFeatures->moveArmToPosition(armPos, orient);
-    _robotHand->goToPoseSync(armPos, orient,10);
-
-    _curProximal = 10;
-    //   _curDistal = 90 - _curProximal;
-    //   logFingertipControl();
-    //
-    //    _objectFeatures->setProximalAngle(_curProximal);
-
-    moveIndexFinger(_curProximal, _curAbduction);
-
-}
-*/
 void GPExplorationThread::setWayPoint_GP()
 {
     // Use the GP model to calculate a new waypoint

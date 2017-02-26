@@ -121,12 +121,7 @@ void SurfaceModelGP::addContactPoint(gVec<double> posXY, gVec<double> posZ, cons
     // Add the new point to the matrix
     cout << "Adding a new contact point: " << _inputTraining.rows() - _paddingPoints.size() + 1 << endl;
 
-    //    _inputTraining.resize(_inputTraining.rows() + 1, 2);
-    //    _outputTraining.resize(_outputTraining.rows() + 1, 1);//_outputTraining.cols());
-    //    _inputTraining.setRow(posXY, _inputTraining.rows()-1);
-    //    _outputTraining.setRow(posZ, _outputTraining.rows()-1);
 
-    //if(_contactLocations.size() >)
 
     // Update padding z
     updatePaddingZ(posZ.at(0));
@@ -141,19 +136,7 @@ void SurfaceModelGP::addContactPoint(gVec<double> posXY, gVec<double> posZ, cons
         _contactLocations.push_back(newFinger);
     }
 
-    /*if(_xPoints.size() > fingerID){
-        // We have the finger in the vector get the subvector
-       _xPoints.at(fingerID).push_back(posXY.at(0));
-       _yPoints.at(fingerID).push_back(posXY.at(1));
-       _zPoints.at(fingerID).push_back(posZ.at(0));
 
-    }
-    else{
-        _xPoints.push_back(vector<double>(posXY.at(0)));
-        _yPoints.push_back(vector<double>(posXY.at(1)));
-        _zPoints.push_back(vector<double>(posZ.at(0)));
-    }
-*/
 
     mergeFingerData();
 
@@ -282,20 +265,12 @@ bool SurfaceModelGP::trainModel(){
         _opt->removeOpt("perfeval");
     _opt->addOpt("perfeval", perfeval);
 
-    //cout << "hoperf: " << opt->getOptAsString("hoperf") << endl;
-
-    //cout << "Before: " << endl << opt->toString();
-
 
     string jobId0("train");
 
-    //cout << "Training the model with size: " << _inputTraining.getSize() << endl;
     // run gurls for training
     _objectModel.run(_inputTraining, _outputTraining, *_opt, jobId0);
 
-
-    //opt->save(opt->getName());
-    //cout << "After: " << endl << opt->toString();
     return ret;
 }
 
@@ -329,25 +304,6 @@ void SurfaceModelGP::mergeFingerData()
 
     }
 
-    //typedef vector< vector<double> >::iterator fingerItr;
-    //typedef vector<double>::iterator posItr;
-
-
-
-
-
-
-
-
-    //_inputTraining =  gMat2D<double>::zeros(_inputTesting.rows(), 2);
-    /*    for(int i =0; i < _inputTraining.rows(); i++ )
-    {
-        _inputTraining(i, 1) =  _yPoints.at(i);
-        //cout << "G: " << _inputTraining[i].at(0) << ", "   << _inputTraining[i].at(1) << ", "  << _outputTraining[i].at(0) << endl;
-
-        //cout << "V: " << _xPoints.at(i)  << ", " << _yPoints.at(i)  << ", " << _zPoints.at(i) << endl;
-    }
-*/
 
 }
 
@@ -374,62 +330,6 @@ void SurfaceModelGP::padBoundingBox()
     padBoundingBox(xMin, xMax, yMin, yMax, zMin, 5, 0/1000);
 
 
-    /*    cout << "xMin:" << xMin << " xMax: " << yMax << " yMin: " << yMin << " yMax: " << yMax << endl;
-    cout << "Target Min: " << zMin << endl;
-
-    double xSteps = (xMax - xMin)/5;
-    double ySteps = (yMax - yMin)/5;
-
-    double yValue = yMin;
-    while (yValue <= yMax )
-    {
-        _xPoints.push_back(xMin);
-        _yPoints.push_back(yValue);
-        _zPoints.push_back(zMin);
-        yValue += ySteps;
-    }
-
-    yValue = yMin + ySteps;
-    while (yValue <= yMax )
-    {
-        _xPoints.push_back(xMax);
-        _yPoints.push_back(yValue);
-        _zPoints.push_back(zMin);
-        yValue += ySteps;
-    }
-
-    double xValue = xMin;
-    while(xValue <= xMax)
-    {
-        _xPoints.push_back(xValue);
-        _yPoints.push_back(yMin);
-        _zPoints.push_back(zMin);
-        xValue += xSteps;
-    }
-
-    xValue = xMin + xSteps;
-    while(xValue <= xMax)
-    {
-        _xPoints.push_back(xValue);
-        _yPoints.push_back(yMax);
-        _zPoints.push_back(zMin);
-        xValue += xSteps;
-    }
-
-
-    // Update the gvectors
-    _inputTraining.resize(_xPoints.size(),2);
-    _outputTraining.resize(_zPoints.size(),1);
-
-
-    for(int i =0; i < _xPoints.size(); i++ )
-    {
-        _inputTraining(i, 1) =  _yPoints.at(i);
-        _inputTraining(i, 0) = _xPoints.at(i);
-        _outputTraining(i,0) = _zPoints.at(i);
-    }
-
-*/
 }
 
 void SurfaceModelGP::padBoundingBox(double xMin, double xMax, double yMin, double yMax, double zMin, int nSteps, double offset)
@@ -448,18 +348,13 @@ void SurfaceModelGP::padBoundingBox(double xMin, double xMax, double yMin, doubl
     double xSteps = (xMax - xMin)/nSteps;
     double ySteps = (yMax - yMin)/nSteps;
 
-    //cout << "xSteps: " << xSteps << endl;
-    //cout << "ySteps: " << ySteps << endl;
 
     double yValue = yMin;
     while (yValue <= yMax )
     {
         _paddingPoints.push_back(point3d(xMin, yValue, zMin));
-       // _xPoints.push_back(xMin);
-       // _yPoints.push_back(yValue);
-       // _zPoints.push_back(zMin);
         yValue += ySteps;
-        //_nPaddingPoints ++;
+
     }
 
     // Check if the last point added is at maximum
@@ -467,10 +362,6 @@ void SurfaceModelGP::padBoundingBox(double xMin, double xMax, double yMin, doubl
     if(fabs(yValue - yMax) < fabs(ySteps))
     {
         _paddingPoints.push_back(point3d(xMin, yValue, zMin));
-        //_xPoints.push_back(xMin);
-        //_yPoints.push_back(yValue);
-        //_zPoints.push_back(zMin);
-        //_nPaddingPoints ++;
     }
 
     yValue = yMin;

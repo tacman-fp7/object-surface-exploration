@@ -141,6 +141,7 @@ bool Hand::setAbduction(double angle, double speed){
 
 void Hand::updateSafeWorkspace()
 {
+    //Put them in config file too
     if(_desiredStartingPose_isValid) // && _desiredEndPose_isValid)
     {
         _safeWorkspace.minX = _desiredStartingPosition[0] - 0.30; //Maximum width 13 cm + 2 cm leeway
@@ -613,6 +614,7 @@ void Hand::configure(yarp::os::ResourceFinder rf){
 
 
 
+
     //////////////////////////// Starting and End pose  ///////////////////
 
     Bottle& explorationParameters = rf.findGroup("ExplorationParameters");
@@ -622,6 +624,9 @@ void Hand::configure(yarp::os::ResourceFinder rf){
     {
         startingPose = explorationParameters.find("startingPose").asList();
         endPose = explorationParameters.find("endPose").asList();
+        _explorationVolumeParams.nSteps = explorationParameters.check("nSteps", Value(10)).asInt();
+        _explorationVolumeParams.tableHeight = explorationParameters.check("tableHeight", Value(-0.130)).asDouble();
+        _explorationVolumeParams.xWidth = explorationParameters.check("xWidth", Value(101)).asInt();
 
     }
 
@@ -703,6 +708,10 @@ void Hand::setContactSafetyForceThrehold(const double forceThreshold){
 
     // Update the value here
     _contactSafetyForceThreshold = forceThreshold;
+}
+
+t_explorationAreaParams Hand::getExplorationAreaParams(){
+    return _explorationVolumeParams;
 }
 
 bool SimHand::configure(yarp::os::ResourceFinder& rf){
