@@ -135,8 +135,8 @@ bool Hand::setAbduction(double angle, double speed){
     {
         cerr << _dbgtag << "Falied to move to the requsted positions." << endl;
         return false;
- }
-        return true;
+    }
+    return true;
 }
 
 void Hand::updateSafeWorkspace()
@@ -215,9 +215,9 @@ bool Hand::goToPoseSync(yarp::sig::Vector& pos, yarp::sig::Vector& orient, doubl
     bool ret;
     ret =  _armCartesianCtrl->goToPoseSync(pos, orient);
     if(timeout > 0){
-       if(!_armCartesianCtrl->waitMotionDone(0.1, timeout)){
-           std::cerr << _dbgtag << "warning -- goToPoseSync timed out" << endl;
-       }
+        if(!_armCartesianCtrl->waitMotionDone(0.1, timeout)){
+            std::cerr << _dbgtag << "warning -- goToPoseSync timed out" << endl;
+        }
     }
     return ret;
 
@@ -250,6 +250,36 @@ bool Hand::setHeight(double height){
     _desiredEndPosition[2] = height;
 
     return true;
+}
+
+bool Hand::moveArmUp(Finger *explorationFinger){
+
+    Vector desiredFingerPos;
+    Vector desiredArmPos, desiredArmOrient;
+    Vector currentArmPos, currentArmOrient;
+
+    // Get the starting pose
+    if(getStartingPose(desiredFingerPos, desiredArmOrient))
+    {
+
+        // Get the arm postion from the finger position
+        explorationFinger->toArmPosition(desiredFingerPos, desiredArmPos);
+
+
+        //////////////////////////////////////////////////////
+        ///// first move the hand up to avoid collisions /////
+        //////////////////////////////////////////////////////
+
+        // Get the current arm pose
+        getPose(currentArmPos, currentArmOrient);
+        // Swap the z-coordinate with that of the starting pose
+        currentArmPos[2] = desiredArmPos[2];
+        // Move the arm up
+        goToPoseSync(currentArmPos, desiredArmOrient, 20); //Todo: use either #define or config for the timeout
+    return true;
+    }
+
+    return false;
 }
 
 bool Hand::goToStartingPose(Finger * explorationFinger){
@@ -531,7 +561,7 @@ void Hand::configure(yarp::os::ResourceFinder rf){
 
     // Set the trajectory time
     _armCartesianCtrl->setTrajTime(trajectoryTime);
-    _armCartesianCtrl->setInTargetTol(10.0/1000); 
+    _armCartesianCtrl->setInTargetTol(10.0/1000);
     //strictTolerence();
 
     // Enable the torso movement

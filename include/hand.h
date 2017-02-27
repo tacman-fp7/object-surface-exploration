@@ -49,7 +49,7 @@ public:
     bool checkOpenMotionDone(); //Rename to reduce confusion
     bool checkMotionDone(bool* motionDone);
     void waitMotionDone(double period, double timeout = 0.0);
-
+    bool moveArmUp(Finger* explorationFinger);
     void setEndPose(Vector& pos, Vector& orient);
     void setStartingPose(Vector& pos, Vector& orient);
     bool getStartingPose(Vector& pos, Vector& orient);

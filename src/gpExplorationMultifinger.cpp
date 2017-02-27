@@ -31,6 +31,9 @@ void GPExplorationMultifingerThread::run()
 
         if(_paused){
             // Yield, then move the finger up and change to a meaningful state like approach object
+            _explorationFinger->prepare();
+            _robotHand->moveArmUp(_explorationFinger);
+
             yield();
             yarp::os::Time::delay(1);
             continue;
