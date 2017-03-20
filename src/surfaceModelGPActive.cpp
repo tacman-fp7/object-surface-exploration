@@ -16,7 +16,7 @@ SurfaceModelGPActive::SurfaceModelGPActive(const std::string objectName):Surface
     _dbgtg = "SurfaceModelGPActive: ";
     _nBins = 1;
     _startBin = 1;
-    _firstBinThreshold = 15;
+    _firstBinThreshold = 25;
     _lRate = 0.025;
 
     string modelFileName = _objectName + "_GPClassification";
